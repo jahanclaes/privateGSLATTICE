@@ -1,0 +1,1 @@
+CC -fopenmp -DEIGEN_NO_DEBUG -DUSE_MPI -I/u/sciteam/bryanc//Install/eigen-eigen-6b38706d90a9/ -I/u/sciteam/bryanc/Install/blitz-0.9/include/ -I/u/sciteam/bryanc/Install/include/ ../*.cc  ../Communication/*.cc -pg  -I/usr/include/atlas/ -L/u/sciteam/bryanc/Install/lib/ -O3 -L/opt/acml/5.3.1/gfortran64/lib -lacml -lgfortran -lpthread -lsprng -o vmc

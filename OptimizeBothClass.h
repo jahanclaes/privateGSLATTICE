@@ -21,7 +21,7 @@ using namespace std;
 #include "RVBp.h"
 #include "SharedWaveFunctionData.h"
 #include "input.h"
-#include "timer.h"
+#include "Timer.h"
 
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 

@@ -10,8 +10,8 @@
 void 
 RVBFastPsiClass::Init(SystemClass &system)
 {
-    NeedFrequentReset=true;
-  //  NeedFrequentReset=false;
+  //  NeedFrequentReset=true;
+  NeedFrequentReset=false;
   cerr<<"Starting Init"<<endl;
   NumSpinUp=system.x.size()/2;
   mat.Init(NumSpinUp);
@@ -186,7 +186,7 @@ RVBFastPsiClass::Init(SystemClass &system)
 
    }
   
-  ReadPairingFunction=true;
+  ReadPairingFunction=false;
   if (ReadPairingFunction){
     int bin=0;
     ifstream infile;
@@ -206,9 +206,7 @@ RVBFastPsiClass::Init(SystemClass &system)
 	infile>>PairingFunction.f0[bin].real();
 	PairingFunction.f0[bin].real(); //=PairingFunction.f0[bin].real()/100.0;
 	assert(!infile.eof());
-		infile>>PairingFunction.f0[bin].imag();
-	//	double junk;
-	//	infile>>junk;
+	infile>>PairingFunction.f0[bin].imag();
 	PairingFunction.f0[bin].imag(); //=PairingFunction.f0[bin].imag()/100.0;
       }
       cerr<<i<<" "<<j<<" "<<PairingFunction.f0[bin]<<" "<<bin<<endl;
@@ -336,7 +334,7 @@ RVBFastPsiClass::Phi(int i,int j,SystemClass &system)
   return PairingFunction.Phi(i,j);
   double gutz_correct=PairingFunction.gutz(i,j,system);
   if (fabs(gutz_correct-PairingFunction.Phi(i,j).real())>1e-10){
-    cerr<<"ERROR: "<<gutz_correct<<" "<<PairingFunction.Phi(i,j)<<" "<<i<<" "<<j<<" "<<gutz_correct/PairingFunction.Phi(i,j).real()<<endl;
+    cerr<<"ERROR: "<<gutz_correct<<" "<<PairingFunction.Phi(i,j)<<" "<<i<<" "<<j<<endl;
   }
   complex<double> toReturn(gutz_correct,0.0);
   return toReturn;

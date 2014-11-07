@@ -52,6 +52,7 @@ int main(int argc, char **argv)
   else {
     VMCDriverClass VMCDriver;
     VMCDriver.RunSingleVMC(input);
+    //    VMCDriver.RunMultipleOpt(input);
     assert(1==2);
   }
   exit(1);

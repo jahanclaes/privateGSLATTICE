@@ -1,6 +1,8 @@
 #ifndef MATRIXOPS_H
 #define MATRIXOPS_H
 #include <complex>
+#include <iostream>
+#include "Blitz.h"
 
 #define F77_DGETRF F77_FUNC(dgetrf,DGETRF)
 
@@ -10,15 +12,15 @@
 // #define F77_DGEMM  F77_FUNC(dgemm,DGEMM)
 
 extern "C" int // void 
-zgetrf_(int *m, int *n, complex<double> A[], int *lda, int ipiv[], int *info);
+zgetrf_(int *m, int *n, std::complex<double> A[], int *lda, int ipiv[], int *info);
 
 extern "C" int // void 
 dgetrf_(int *m, int *n, double A[], int *lda, int ipiv[], int *info);
 
 
 extern "C" void
-zgetri_ (int *N, complex<double> A[], int *lda, int ipiv[],
-            complex<double> work[], int *lwork, int *info);
+zgetri_ (int *N, std::complex<double> A[], int *lda, int ipiv[],
+            std::complex<double> work[], int *lwork, int *info);
 
 
 /* extern "C" void */
@@ -37,21 +39,21 @@ extern "C"{
 extern "C"{
   void zgemm_(const char&, const char&,
              const int&, const int&, const int&,
-             const complex<double>&, const complex<double>*, const int&, const complex<double>*, 
-	      const int& ,const complex<double>&, complex<double>*, const int&);
+             const std::complex<double>&, const std::complex<double>*, const int&, const std::complex<double>*, 
+	      const int& ,const std::complex<double>&, std::complex<double>*, const int&);
 
 }
 
 
 struct MatrixOps {
 // Adapted from Numerical Recipes in C
-static void LUdecomp (Array<double,2> &A, Array<int,1> &perm,
+static void LUdecomp (blitz::Array<double,2> &A, blitz::Array<int,1> &perm,
                double &sign)
 {
   int i, imax, j, k;
   int n = A.rows();
   double big, dum, sum, temp;
-  Array<double,1> vv(n);
+  blitz::Array<double,1> vv(n);
   sign = 1.0;
   
   perm.resize(n);
@@ -61,8 +63,8 @@ static void LUdecomp (Array<double,2> &A, Array<int,1> &perm,
     for (int j=0; j<n; j++)
       if (fabs(A(i,j)) > big) big = fabs(A(i,j));
     if (big == 0.0) {
-      cerr << "Singularity in LUdecomp.\n";
-      cerr << "Should abort!.\n";
+      std::cerr << "Singularity in LUdecomp.\n";
+      std::cerr << "Should abort!.\n";
       ///      abort();
     }
     vv(i) = 1.0/big;
@@ -105,8 +107,8 @@ static void LUdecomp (Array<double,2> &A, Array<int,1> &perm,
   }
 }
   
-static void MatrixMultiply(Array<double,2> &A,Array<double,2> &B,
-		    Array<double,2> &C)
+static void MatrixMultiply(blitz::Array<double,2> &A,blitz::Array<double,2> &B,
+		    blitz::Array<double,2> &C)
 {
   assert(A.extent(1)==B.extent(0));
   assert(A.extent(0)==C.extent(0));
@@ -121,8 +123,8 @@ static void MatrixMultiply(Array<double,2> &A,Array<double,2> &B,
 }
 
   
-static void MatrixMultiply(Array<complex<double>,2> &A,Array<complex<double>,2> &B,
-		    Array<complex<double>,2> &C)
+static void MatrixMultiply(blitz::Array<std::complex<double>,2> &A,blitz::Array<std::complex<double>,2> &B,
+		    blitz::Array<std::complex<double>,2> &C)
 {
   assert(A.extent(1)==B.extent(0));
   assert(A.extent(0)==C.extent(0));
@@ -137,8 +139,8 @@ static void MatrixMultiply(Array<complex<double>,2> &A,Array<complex<double>,2> 
 }
 
 
-  inline static void product(const Array<double,2>& A,
-			     const Array<double,2>& B, Array<double,2>& C) {
+  inline static void product(const blitz::Array<double,2>& A,
+			     const blitz::Array<double,2>& B, blitz::Array<double,2>& C) {
     assert(1==2);
     const char transa = 'N';
     const char transb = 'N';
@@ -150,8 +152,8 @@ static void MatrixMultiply(Array<complex<double>,2> &A,Array<complex<double>,2> 
   }
 
 
-  inline static void product(const Array<complex<double>,2>& A,
-			     const Array<complex<double>,2>& B, Array<complex<double>,2>& C) {
+  inline static void product(const blitz::Array<std::complex<double>,2>& A,
+			     const blitz::Array<std::complex<double>,2>& B, blitz::Array<std::complex<double>,2>& C) {
     const char transa = 'N';
     const char transb = 'N';
     const double one=1.0;
@@ -161,8 +163,8 @@ static void MatrixMultiply(Array<complex<double>,2> &A,Array<complex<double>,2> 
           zero, C.data(), C.cols());
   }
 
-  static void MatMult (const Array<double,2> &A, const Array<double,2> &B,
-              Array<double,2> &C)
+  static void MatMult (const blitz::Array<double,2> &A, const blitz::Array<double,2> &B,
+              blitz::Array<double,2> &C)
 {
 /*   int m = A.rows(); */
 /*   int n = B.cols(); */
@@ -174,7 +176,7 @@ static void MatrixMultiply(Array<complex<double>,2> &A,Array<complex<double>,2> 
 /*   char transB = 'T'; */
 /*   double alpha = 1.0; */
 /*   double beta = 0.0; */
-/*   GeneralArrayStorage<2> colMajor; */
+/*   Generalblitz::ArrayStorage<2> colMajor; */
 /*   colMajor.ordering() = firstDim, secondDim; */
 
 
@@ -184,8 +186,8 @@ static void MatrixMultiply(Array<complex<double>,2> &A,Array<complex<double>,2> 
 /*              B.data(), &n, &beta, C.data(), &m); */
 }
 
-/*   static void product(Array<double,2>& A, */
-/* 		      Array<double,2>& B, Array<double,2>& C) { */
+/*   static void product(blitz::Array<double,2>& A, */
+/* 		      blitz::Array<double,2>& B, blitz::Array<double,2>& C) { */
 /*     const char transa = 'N'; */
 /*     const char transb = 'N'; */
 /*     const double one=1.0; */
@@ -195,8 +197,8 @@ static void MatrixMultiply(Array<complex<double>,2> &A,Array<complex<double>,2> 
 /*           zero, C.data(), C.cols()); */
 /*   } */
 
-static void LUsolve (Array<double,2> &LU, Array<int,1> &perm,
-              Array<double,1> &b)
+static void LUsolve (blitz::Array<double,2> &LU, blitz::Array<int,1> &perm,
+              blitz::Array<double,1> &b)
 {
   int i, ii=-1,ip,j;
   double sum;
@@ -221,11 +223,11 @@ static void LUsolve (Array<double,2> &LU, Array<int,1> &perm,
   }
 }
 
-static Array<double,2> Inverse(Array<double,2> &A)
+static blitz::Array<double,2> Inverse(blitz::Array<double,2> &A)
 {
-  Array<double,2> LU(A.rows(), A.cols()), Ainv(A.rows(), A.cols());
-  Array<double,1> col(A.rows());
-  Array<int,1> perm;
+  blitz::Array<double,2> LU(A.rows(), A.cols()), Ainv(A.rows(), A.cols());
+  blitz::Array<double,1> col(A.rows());
+  blitz::Array<int,1> perm;
   double sign;
 
   LU = A;
@@ -245,9 +247,9 @@ static Array<double,2> Inverse(Array<double,2> &A)
 
 /// This function returns the determinant of A and replaces A with its                                
 /// cofactors.                                                                                        
-static complex<double>
-ComplexDetCofactors (Array<complex<double>,2> &A,
-                     Array<complex<double>,1> &work)
+static std::complex<double>
+ComplexDetCofactors (blitz::Array<std::complex<double>,2> &A,
+                     blitz::Array<std::complex<double>,1> &work)
 {
   const int maxN = 2000;
   int ipiv[maxN];
@@ -266,7 +268,7 @@ ComplexDetCofactors (Array<complex<double>,2> &A,
   int info;
   // Do LU factorization                                                                              
   zgetrf_ (&N, &M, A.data(), &N, ipiv, &info);
-  complex<double> det = 1.0;
+  std::complex<double> det = 1.0;
   int numPerm = 0;
   for (int i=0; i<N; i++) {
     det *= A(i,i);
@@ -289,8 +291,8 @@ ComplexDetCofactors (Array<complex<double>,2> &A,
 static int
 ComplexDetCofactorsWorkSize(int N)
 {
-  complex<double> work;
-  complex<double> dummy;
+  std::complex<double> work;
+  std::complex<double> dummy;
   int info;
   int ipiv;
   int lwork = -1;
@@ -301,19 +303,19 @@ ComplexDetCofactorsWorkSize(int N)
 }
 
 
-static Array<complex<double>, 2 > Inverse (Array<complex<double >,2 > &A)
+static blitz::Array<std::complex<double>, 2 > Inverse (blitz::Array<std::complex<double >,2 > &A)
 {
-  //  cerr<<"DOING THIS INVERSE"<<endl;
+  //  std::cerr<<"DOING THIS INVERSE"<<endl;
   int size =ComplexDetCofactorsWorkSize(A.extent(0));
-  Array<complex<double>,2> myInverse(A.extent(0),A.extent(1));
-  Array<complex<double>,1> work(size);
+  blitz::Array<std::complex<double>,2> myInverse(A.extent(0),A.extent(1));
+  blitz::Array<std::complex<double>,1> work(size);
   myInverse(Range::all(),Range::all())=A(Range::all(),Range::all());
   ComplexDetCofactors(myInverse,work);
   Transpose(myInverse);
   return myInverse;
 }
 
-static inline void Transpose (Array<complex<double>,2> &A)
+static inline void Transpose (blitz::Array<std::complex<double>,2> &A)
 {
   int m = A.rows();
   int n = A.cols();
@@ -326,11 +328,11 @@ static inline void Transpose (Array<complex<double>,2> &A)
   }
 }
 
-static inline void OutOfPlaceTranspose (Array<complex<double>,2> &A)
+static inline void OutOfPlaceTranspose (blitz::Array<std::complex<double>,2> &A)
 {
   int m = A.rows();
   int n = A.cols();
-  Array<complex<double>,2> Atrans (n,m);
+  blitz::Array<std::complex<double>,2> Atrans (n,m);
   for (int i=0; i<m; i++)
     for (int j=0; j<n; j++)
       Atrans(j,i) = A(i,j);
@@ -339,7 +341,7 @@ static inline void OutOfPlaceTranspose (Array<complex<double>,2> &A)
 }
 
 
-static double Determinant (const Array<double,2> &A)
+static double Determinant (const blitz::Array<double,2> &A)
 {
 
   double logDet=0.0;
@@ -352,8 +354,8 @@ static double Determinant (const Array<double,2> &A)
   if (A.rows() == 2) 
     return (A(0,0)*A(1,1)-A(0,1)*A(1,0));
   else {
-    Array<double,2> LU(m,m);
-    Array<int,1> ipiv(m);
+    blitz::Array<double,2> LU(m,m);
+    blitz::Array<int,1> ipiv(m);
     int info;
     LU = A;
     // Do LU factorization
@@ -379,9 +381,9 @@ static double Determinant (const Array<double,2> &A)
 
 
 
-static complex<double> Determinant (const Array<complex<double> ,2> &A)
+static std::complex<double> Determinant (const blitz::Array<std::complex<double> ,2> &A)
 {
-  complex<double> logDet=0.0;
+  std::complex<double> logDet=0.0;
   int m = A.rows();
   int n = A.cols();
   assert (m == n);  // Cannot take a determinant of a non-square
@@ -391,14 +393,14 @@ static complex<double> Determinant (const Array<complex<double> ,2> &A)
   if (A.rows() == 2) 
     return (A(0,0)*A(1,1)-A(0,1)*A(1,0));
   else {
-    Array<complex<double> ,2> LU(m,m);
-    Array<int,1> ipiv(m);
+    blitz::Array<std::complex<double> ,2> LU(m,m);
+    blitz::Array<int,1> ipiv(m);
     int info;
     LU = A;
     // Do LU factorization
     //    F77_DGETRF (&m, &n, LU.data(), &m, ipiv.data(), &info);
     zgetrf_(&m, &n, LU.data(), &m, ipiv.data(), &info);
-    complex<double> det = 1.0;
+    std::complex<double> det = 1.0;
     int numPerm = 0;
     for (int i=0; i<m; i++) {
       logDet+=log(LU(i,i));
@@ -413,9 +415,9 @@ static complex<double> Determinant (const Array<complex<double> ,2> &A)
 
 
 
-static int CalcParity(Array<int,1> &permutation)
+static int CalcParity(blitz::Array<int,1> &permutation)
 {
-  Array<int,1> newp(permutation);
+  blitz::Array<int,1> newp(permutation);
   int countSwaps=0;
   int i=0;
   while (i<newp.size()){
@@ -426,14 +428,14 @@ static int CalcParity(Array<int,1> &permutation)
     }
     i++;
   }
-  cerr<<"Permutation swaps is "<<i<<endl;
+  std::cerr<<"Permutation swaps is "<<i<<endl;
   return i %2;
 
 }
 
 
 
-static double mag(complex<double> a)
+static double mag(std::complex<double> a)
 {
   return sqrt(a.real()*a.real()+a.imag()*a.imag());
 }

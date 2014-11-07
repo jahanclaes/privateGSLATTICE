@@ -143,3 +143,116 @@ void Heisenberg::AllConnected(list<pair<SpinSwap,double> > &vals,
 }
 
 
+
+
+// ////////////////////////////////
+// ////////////Hubbard//////////
+// ////////////////////////////////
+
+
+void Hubbard::Init(SystemClass &system)
+{
+  string fileName("U.txt");
+  Init(system,fileName);
+  
+}
+
+
+
+void Hubbard::Init(SystemClass &system,string fileName)
+{
+  ifstream infile;
+  infile.open(fileName.c_str());
+  if (!infile){
+    cerr<<"Could not open hubbard hamiltonian "<<fileName<<endl;
+    cerr<<"Aborting!"<<endl;
+    exit(1);
+  }
+  
+  while (!infile.eof()){
+    int i;
+    int j;
+    infile>>i;
+    infile>>j;
+    if (!infile.eof())
+      bondList.push_back(make_pair(i,j));
+  }
+  infile.close();
+  U=1.0;
+}
+
+
+void Hubbard::Set_U(double temp_U)
+{
+  cerr<<"Setting U to be "<<temp_U<<endl;
+
+  U=temp_U;
+}
+complex<double> Hubbard::GetEnergyRatio(int site, int end_site, int spin,
+					SystemClass &system,
+					list<WaveFunctionClass*> &wf_list)
+{
+  system.Move(site,end_site,spin);
+  for (list<WaveFunctionClass*>::iterator wf=wf_list.begin();wf!=wf_list.end();wf++)
+    (*wf)->Move(site,end_site,spin);
+  complex<double> quick_ratio=1.0;
+  for (list<WaveFunctionClass*>::iterator wf=wf_list.begin();wf!=wf_list.end();wf++)
+    quick_ratio*=(*wf)->evaluateRatio(system,site,end_site,spin);
+
+  for (list<WaveFunctionClass*>::iterator wf=wf_list.begin();wf!=wf_list.end();wf++)
+    (*wf)->Reject(system,site,end_site,spin);
+  system.Move(end_site,site,spin);
+  for (list<WaveFunctionClass*>::iterator wf=wf_list.begin();wf!=wf_list.end();wf++)
+    (*wf)->Move(end_site,site,spin);
+  return quick_ratio;
+}
+
+double Hubbard::Energy(SystemClass &system, 
+		       list<WaveFunctionClass*> &wf_list)
+{
+
+  complex<double> energy=0.0;
+  for (int bond=0;bond<bondList.size();bond++){
+    int site=bondList[bond].first;
+    int new_site=bondList[bond].second;
+    vector<int> spins;
+
+    if (system.x(site)==2){
+      spins.push_back(1);
+      spins.push_back(-1);
+    }
+    else if (system.x(site)==0){
+      
+    }
+    else {
+      spins.push_back(system.x(site));
+    }
+
+    for (int spin_index=0;spin_index<spins.size();spin_index++){
+
+      if ( (system.x(new_site)!=2) && (system.x(new_site)!=spins[spin_index]) ){
+
+	energy+=GetEnergyRatio(site,new_site,spins[spin_index],system,
+			       wf_list);
+      }
+
+    }
+
+  }
+  for (int site=0;site<system.x.size();site++){
+    energy+=U*( (system.x(site)==2) ? 1 : 0);
+  }
+  //  cerr<<"My energy is "<<energy<<endl;
+  return energy.real();
+}
+
+
+void Hubbard::AllConnected(list<pair<SpinSwap,double> > &vals, 
+			    SystemClass &system, 
+			      list<WaveFunctionClass*>  &wf_list)
+{
+  assert(1==2);
+
+}
+
+

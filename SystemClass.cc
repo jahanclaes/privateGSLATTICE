@@ -1,5 +1,4 @@
 #include "SystemClass.h"
-//#include "RandomClass.h"
 #include <fstream>
 
 double SystemClass::minDist(dVec r1, dVec r2)
@@ -57,7 +56,20 @@ dVec SystemClass::minDiffStable(dVec r1, dVec r2)
   return minD;
 }
 
+void SystemClass::Move(int site, int end_site, int spin)
+{
+  int not_spin = (spin==1) ? -1 : 1;
+  if (x(site)==2)
+    x(site)=not_spin;
+  else 
+    x(site)=0;
+  if (x(end_site)==not_spin)
+    x(end_site)=2;
+  else 
+    x(end_site)=spin;
 
+  return;
+}
 
 void SystemClass::GenerateKList()
 {
@@ -196,8 +208,11 @@ void SystemClass::Stagger()
   //  RandomClass Random;
   x(0)=1;
   for (int i=1;i<x.size();i++){
-    x(i)=x(i-1)*-1+1;
+    x(i)=x(i-1)*-1;
   }
+  //  for (int i=1;i<x.size();i++){
+  //    x(i)=x(i-1)*-1+1;
+  //  }
   //  swap(x(0),x(1));
   //  for (int i=0;i<x.size();i++)
   //    swap(x(i),x(Random.randInt(x.size())));
@@ -211,321 +226,53 @@ void SystemClass::Stagger()
 }
 
 
-bool SystemClass::inList(int site,TinyVector<int,6> &myList)
-{
-  assert(1==2);
-  for (int i=0;i<6;i++){
-    if (site==myList(i))
-      return true;
-  }
-  return false;
-}
-
-
-void SystemClass::RotateHoneycomb(TinyVector<int,6> &honeycomb,
-				  TinyVector<int,6> &honeycomb_backup,
-				  int amt)
-{
-  assert(1==2);
-  //  TinyVector<int,6> honeycomb_backup;
-  
-  for (int i=0;i<honeycomb.length();i++)
-    honeycomb_backup(i)=x(honeycomb(i));
-  for (int i=0;i<honeycomb.length();i++)
-    x(honeycomb((i+amt+6) %6))=honeycomb_backup(i);
-}
+// bool SystemClass::inList(int site,TinyVector<int,6> &myList)
+// {
+//   assert(1==2);
+//   for (int i=0;i<6;i++){
+//     if (site==myList(i))
+//       return true;
+//   }
+//   return false;
+// }
 
 
 
-void SystemClass::RotateRhombus(TinyVector<int,4> &honeycomb,
-				TinyVector<int,4> &honeycomb_backup,
-				int amt)
-{
-  assert(1==2);
-  //  TinyVector<int,6> honeycomb_backup;
-  
-  for (int i=0;i<honeycomb.length();i++)
-    honeycomb_backup(i)=x(honeycomb(i));
-  for (int i=0;i<honeycomb.length();i++)
-    x(honeycomb((i+amt+4) %4))=honeycomb_backup(i);
-}
-
-
-
-void SystemClass::GetHoneycomb(int i,TinyVector<int,6> &locs)
-{
-  assert(1==2);
-  //    cerr<<"Getting honeycomb"<<endl;
-  int ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    //      cerr<<"Diff is "<<diff<<endl;
-    if (std::fabs(diff[0])<1e-5){
-      //	cerr<<"less 1: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      locs[0]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    //      cerr<<diff<<" "<<(std::fabs(diff[0])>1e-5)<<endl; //<<" "<<1==2<<endl;
-    if ((diff[0]>1e-5)){
-      locs[1]=i;
-      //	cerr<<"less 2: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      ip=neighbors(i,j);
-    }
-    
-  }
-  i=ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (diff[0]>1e-5 && diff[1]<1e-5){
-      locs[2]=i;
-      //	cerr<<"less 3: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      ip=neighbors(i,j);
-    }
-    
-  }
-  i=ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (std::fabs(diff[0])<1e-5){
-      locs[3]=i;
-      //	cerr<<"less 4: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      ip=neighbors(i,j);
-    }
-    
-    }
-  i=ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (diff[1]<1e-5 && diff[0]<1e-5){
-      locs[4]=i;
-      //	cerr<<"less 5: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      ip=neighbors(i,j);
-    }
-    
-  }
-  i=ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (diff[0]<1e-5 && diff[1]>1e-5){
-      locs[5]=i;
-      //	cerr<<"less 6: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      ip=neighbors(i,j);
-    }
-    
-    }
-  
-  
-  //    assert(1==2);
-  
-  
-}
-
-
-void SystemClass::GetRhombus(int i,TinyVector<int,4> &locs)
-{
-  assert(1==2);
-  //  cerr<<"Getting rhombus"<<endl;
-  int ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (std::fabs(diff[1])<1e-5 && diff[0]>1e-5){
-      locs[0]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if(diff[1]>1e-5 && diff[0]>1e-5){
-      locs[1]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-
-
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (std::fabs(diff[1])<1e-5 && diff[0]<-1e-5){
-      locs[2]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-
-
-
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (diff[1]<-1e-5 && diff[0]<-1e-5){
-      locs[3]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-  //  cerr<<"Done Getting rhombus"<<endl;
-}
-
-
-
-void SystemClass::GetRhombusB(int i,TinyVector<int,4> &locs)
-{
-  //  cerr<<"Getting rhombus"<<endl;
-  int ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (std::fabs(diff[1])<1e-5 && diff[0]>1e-5){
-      locs[0]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if(diff[1]>1e-5 && diff[0]<-1e-5){
-      locs[1]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-
-
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (std::fabs(diff[1])<1e-5 && diff[0]<-1e-5){
-      locs[2]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-
-
-
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (diff[1]<-1e-5 && diff[0]>1e-5){
-      locs[3]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-  //  cerr<<"Done Getting rhombus"<<endl;
-}
-
-
-
-
-//   //    cerr<<"Getting honeycomb"<<endl;
-//   int ip;
-//   for (int j=0;j<neighbors.extent(1);j++){
-//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-//     //      cerr<<"Diff is "<<diff<<endl;
-//     if (std::fabs(diff[0])<1e-5){
-//       //	cerr<<"less 1: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-//       locs[0]=i;
-//       ip=neighbors(i,j);
+// int SystemClass::calcABSign()
+// {
+//   assert(1==2);
+//   Array<int,1> temp_x(x.size());
+//   temp_x=x;
+//   bool ok=false;
+//   int needSwap=0;
+//   cerr<<"INIT: ";
+//   for (int i=0;i<temp_x.size();i++)
+//     cerr<<temp_x(i)<<" ";
+//   cerr<<endl;
+//   while (!ok){
+//     ok=true;
+//     for (int i=0;i<temp_x.size()-1;i++){
+//       if (temp_x(i)==1 && i<temp_x.size()/2){
+// 	ok=false;
+//       }
+//       if (temp_x(i)==1 && temp_x(i+1)==0){
+// 	swap(temp_x(i),temp_x(i+1));
+// 	needSwap++;
+//       }
 //     }
 //   }
-//   i=ip;
+//   return (needSwap %2 ? -1: 1);
+// }
+
+// bool SystemClass::notNeighbor(int i,int neighbor)
+// {
+//   assert(1==2);
 //   for (int j=0;j<neighbors.extent(1);j++){
-//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-//     //      cerr<<diff<<" "<<(std::fabs(diff[0])>1e-5)<<endl; //<<" "<<1==2<<endl;
-//     if ((diff[0]>1e-5)){
-//       locs[1]=i;
-//       //	cerr<<"less 2: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-//       ip=neighbors(i,j);
-//     }
-    
+//     if (neighbors(i,j)==neighbor)
+//       return false;
 //   }
-//   i=ip;
-//   for (int j=0;j<neighbors.extent(1);j++){
-//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-//     if (diff[0]>1e-5 && diff[1]<1e-5){
-//       locs[2]=i;
-//       //	cerr<<"less 3: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-//       ip=neighbors(i,j);
-//     }
-    
-//   }
-//   i=ip;
-//   for (int j=0;j<neighbors.extent(1);j++){
-//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-//     if (std::fabs(diff[0])<1e-5){
-//       locs[3]=i;
-//       //	cerr<<"less 4: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-//       ip=neighbors(i,j);
-//     }
-    
-//     }
-//   i=ip;
-//   for (int j=0;j<neighbors.extent(1);j++){
-//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-//     if (diff[1]<1e-5 && diff[0]<1e-5){
-//       locs[4]=i;
-//       //	cerr<<"less 5: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-//       ip=neighbors(i,j);
-//     }
-    
-//   }
-//   i=ip;
-//   for (int j=0;j<neighbors.extent(1);j++){
-//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-//     if (diff[0]<1e-5 && diff[1]>1e-5){
-//       locs[5]=i;
-//       //	cerr<<"less 6: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-//       ip=neighbors(i,j);
-//     }
-    
-//     }
-  
-  
-//   //    assert(1==2);
-  
-  
-
-
-
-int SystemClass::calcABSign()
-{
-  assert(1==2);
-  Array<int,1> temp_x(x.size());
-  temp_x=x;
-  bool ok=false;
-  int needSwap=0;
-  cerr<<"INIT: ";
-  for (int i=0;i<temp_x.size();i++)
-    cerr<<temp_x(i)<<" ";
-  cerr<<endl;
-  while (!ok){
-    ok=true;
-    for (int i=0;i<temp_x.size()-1;i++){
-      if (temp_x(i)==1 && i<temp_x.size()/2){
-	ok=false;
-      }
-      if (temp_x(i)==1 && temp_x(i+1)==0){
-	swap(temp_x(i),temp_x(i+1));
-	needSwap++;
-      }
-    }
-  }
-  return (needSwap %2 ? -1: 1);
-}
-
-bool SystemClass::notNeighbor(int i,int neighbor)
-{
-  assert(1==2);
-  for (int j=0;j<neighbors.extent(1);j++){
-    if (neighbors(i,j)==neighbor)
-      return false;
-  }
-  return true;
-}
+//   return true;
+// }
 
 void SystemClass::Swap(int i,int j)
 {

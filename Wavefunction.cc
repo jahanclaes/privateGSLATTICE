@@ -68,3 +68,25 @@ WaveFunctionClass::SetParams(double delta3,SystemClass &system)
 {
 
 }
+
+void WaveFunctionClass::Move(int site, int end_site, int spin)
+{
+  assert(1==2);
+}
+
+
+void WaveFunctionClass::UpdateDets(SystemClass &system,int site, int end_site,int spin)
+{
+  assert(1==2);
+}
+
+void WaveFunctionClass::Reject(SystemClass &system,int site,int end_site,int spin)
+{
+  assert(1==2);
+}
+
+complex<double> WaveFunctionClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
+{
+  assert(1==2);
+
+}

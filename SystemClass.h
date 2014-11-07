@@ -24,20 +24,12 @@ class SystemClass
   void ReadNeighbors();
   void SetupABSites();
   void Stagger();
-  void GetHoneycomb(int i,TinyVector<int,6> &locs);
-  void GetRhombus(int i,TinyVector<int,4> &locs);
-  void GetRhombusB(int i,TinyVector<int,4> &locs);
-  bool notNeighbor(int i,int neighbor);
   void Swap(int i, int j);
-  void RotateHoneycomb(TinyVector<int,6> &honeycomb,
-		       TinyVector<int,6> &honeycomb_backup,
-		       int amt);
-  void RotateRhombus(TinyVector<int,4> &honeycomb,
-		     TinyVector<int,4> &honeycomb_backup,
-		     int amt);
+  void Move(int site, int end_site, int spin);
 
-  bool inList(int site,TinyVector<int,6> &myList);
-  int calcABSign();
+  //  bool notNeighbor(int i,int neighbor);
+  //  bool inList(int site,TinyVector<int,6> &myList);
+  //  int calcABSign();
 };
 
 #endif

@@ -18,6 +18,7 @@ using namespace std;
 #include "DerivClass.h"
 #include "ProjGutz.h"
 #include "RVB_fast.h"
+#include "RVBp.h"
 #include "SharedWaveFunctionData.h"
 #include "input.h"
 #include "timer.h"
@@ -52,6 +53,34 @@ public:
   vector<TimerClass*> myTimers;
   TimerClass InitTimer;
 
+
+  void TestDerivs(int derivInt,WaveFunctionClass &Psi)
+  {
+    cerr<<"Testing the derivative "<<derivInt<<endl;
+    double currParam=Psi.GetParam_real(derivInt);
+    for (double myStep=-0.01;myStep<0.011;myStep+=0.01){
+      double step_energy=0.0;
+      double countSteps=0.0;
+      Psi.SetParam_real(derivInt,currParam+myStep);
+      for (int sweeps=0;sweeps<opt_equilSweeps;sweeps++)
+	Sweep_hop();
+
+      for (int sweeps=0;sweeps<opt_SampleSweeps*1000;sweeps++){
+	Sweep_hop();
+      
+	double te=0;
+	for (list<HamiltonianClass*>::iterator iter=Ham.begin();iter!=Ham.end();iter++){
+	  double tte=(*iter)->Energy(System,wf_list);
+	  te+=tte;
+	}
+	countSteps+=1;
+	step_energy+=te;
+      }
+      
+      cerr<<"The energy for step "<<myStep<<" is "<<step_energy/countSteps<<endl;
+    }
+    
+  }
 
   void Copy(OptimizeBothClass &b)
   {
@@ -137,7 +166,8 @@ public:
       }
       else if (wf_type_string=="RVB"){
 	cerr<<"ADDING RVB"<<endl;
-	RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
+	//	RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
+	RVBpPsiClass *RVB=new RVBpPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
 	RVB->Init(System);
 	wf_list.push_back(RVB); 
       }
@@ -151,24 +181,24 @@ public:
 
 
     std::stringstream ss;
-    ss << "Heisenberg"<<i;
+    ss << "Hubbard"<<i;
     string check=ss.str();
     
     cerr<<"Checking Hamiltonian "<<check<<" and getting "<<myInput.IsVariable(check)<<endl;
     //    while (input.count(check)!=0){
     while (myInput.IsVariable(check)){
-      Heisenberg *H_temp=new Heisenberg(check);
+      Hubbard *H_temp=new Hubbard(check);
       H_temp->Init(System,myInput.GetVariable(check));
       std::stringstream ssJ;
-      ssJ<<"Heisenberg"<<i<<"_J";
+      ssJ<<"Hubbard"<<i<<"_U";
       assert(myInput.IsVariable(ssJ.str()));
-      H_temp->Set_J(myInput.toDouble(myInput.GetVariable(ssJ.str())));
+      H_temp->Set_U(myInput.toDouble(myInput.GetVariable(ssJ.str())));
       //      H_temp->Set_J(atof(input[ssJ.str()].c_str()));
-      cerr<<"The J that is set for "<<check<<" is "<<H_temp->J<<endl;
+      cerr<<"The U that is set for "<<check<<" is "<<H_temp->U<<endl;
       Ham.push_back(H_temp);
       std::stringstream ss;
       i++;
-      ss << "Heisenberg"<<i;
+      ss << "Hubbard"<<i;
       check=ss.str();
       cerr<<"Checking: "<<myInput.IsVariable(check)<<endl;
     }
@@ -257,12 +287,61 @@ public:
       }
     }
     //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
+    return (double)numAccepted/(double)numAttempted;
+    //
+  }
+
+  double Sweep_hop()
+  {
+    int numAccepted=0;
+    int numAttempted=0;
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
       if ((*wf_iter)->NeedFrequentReset){
 	complex<double> ans=(*wf_iter)->evaluate(System);
       }
     }
-
+    for (int step=0;step<System.x.size();step++){ 
+      //      cerr<<"On step "<<step<<endl;
+      int site=Random.randInt(System.x.size());
+      while (System.x(site)==0)
+	site=Random.randInt(System.x.size());
+      int spin=System.x(site);
+      if (System.x(site)==2) 
+	spin=(Random.randInt(2) == 0 ? -1: 1);
+      
+      int end_site=Random.randInt(System.x.size());
+      while (end_site == site || System.x(end_site)==2 || System.x(end_site)==spin){
+	end_site=Random.randInt(System.x.size());
+      }
+      System.Move(site,end_site,spin);
+      for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+	(*wf_iter)->Move(site,end_site,spin);
+      complex<double> quick_ratio=1.0;
+      for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+	complex<double> myRatioIs=(*wf_iter)->evaluateRatio(System,site,end_site,spin);
+	quick_ratio*=myRatioIs;
+      }
+      double ranNum=Random.ranf();
+      numAttempted++;
+      if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
+	numAccepted++;
+	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+	  (*wf_iter)->UpdateDets(System,site,end_site,spin);
+	
+	//accept
+	
+      }
+      else {
+	System.Move(end_site,site,spin);
+	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+	  (*wf_iter)->Move(end_site,site,spin);
+	
+ 	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+	  (*wf_iter)->Reject(System,site,end_site,spin);
+	
+      }
+    }
+    //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
     return (double)numAccepted/(double)numAttempted;
     //
   }
@@ -431,9 +510,9 @@ void BroadcastParams(CommunicatorClass &myComm)
     double energy=0.0;
     int NumCounts=0;
     for (int sweeps=0;sweeps<opt_equilSweeps;sweeps++)
-      Sweep();
+      Sweep_hop();
     for (int sweeps=0;sweeps<opt_SampleSweeps;sweeps++){
-      Sweep();
+      Sweep_hop();
       double te=0;
       for (list<HamiltonianClass*>::iterator iter=Ham.begin();iter!=Ham.end();iter++){
 	double tte=(*iter)->Energy(System,wf_list);
@@ -529,14 +608,14 @@ void BroadcastParams(CommunicatorClass &myComm)
     double numAccept=0;
     if (equilibrate){
       for (int sweeps=0;sweeps<VMC_equilSweeps;sweeps++){
-	Sweep();
+	Sweep_hop();
       }
     }
     vector<double> energy_terms(Ham.size(),0);
     double energy=0.0;
     int NumCounts=0;
     for (int sweeps=0;sweeps<VMC_SampleSweeps;sweeps++){
-      numAccept+=Sweep();
+      numAccept+=Sweep_hop();
       numAttempt+=1;
       NumCounts++;
       int i=0;

@@ -30,9 +30,14 @@ public:
   virtual complex<double> evaluate(SystemClass &system)=0;
   virtual complex<double> evaluateRatio(SystemClass &system,int swap1, int swap2)=0;
   virtual complex<double> evaluateRatio_check(SystemClass &system, int swap1, int swap2)=0;
+  virtual complex<double> evaluateRatio(SystemClass &system,int start, int stop, int spin);
   virtual void Swap(int i, int j)=0;
+  virtual void Move(int site, int end_site, int spin);
   virtual void UpdateDets(SystemClass &system,int swap1, int swap2)=0;
   virtual void Reject(SystemClass &system,int swap1,int swap2);
+
+  virtual void UpdateDets(SystemClass &system,int site, int end_site,int spin);
+  virtual void Reject(SystemClass &system,int site,int end_site,int spin);
 
 
   virtual void SetParams(double delta3,SystemClass &system);

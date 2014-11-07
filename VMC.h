@@ -81,12 +81,11 @@ class VMCDriverClass
     cerr<<"POST INIT"<<endl;
     VMC.EvaluateAll();
     cerr<<"POST evaluate all"<<endl;
-    VMC.SaveParams("params.dat");
+    //    VMC.SaveParams("params.dat");
     cerr<<"C"<<endl;
     int step=0;
     VMC.VMC(true);
-    //    while (1==1){
-    for (int aa=0;aa<100;aa++){
+    while (1==1){
       step++;
       VMC.VMC(false);
       
@@ -108,8 +107,8 @@ class VMCDriverClass
     Random.Init();
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     //need to delete these eventually if we don't want memory to leak
-    //wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
+    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+    //    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
     
     OptimizeBothClass VMC(Random);
     //Must send the input so that it can initilalize Hamiltonians
@@ -656,6 +655,32 @@ double MeasureStaggered(OptimizeBothClass &vmc)
   }
 
   
+  double RunMultipleVMC(vector<OptimizeBothClass*> &VMC_vec)
+  {
+
+    double energy=0.0;
+    double count=0.0;
+    double energy2=0.0;
+#pragma omp parallel for 
+    for (int i=0;i<VMC_vec.size();i++){ 
+	VMC_vec[i]->EvaluateAll(); 
+	VMC_vec[i]->VMC(true); 
+      } 
+
+
+#pragma omp parallel for reduction(+:energy,count,energy2)
+      for (int i=0;i<VMC_vec.size();i++){ 
+	  VMC_vec[i]->EvaluateAll(); 
+	  count=count+1;
+	  double myEnergy=VMC_vec[i]->VMC(true); 
+	  energy+=myEnergy;
+	  energy2+=myEnergy*myEnergy;
+      }
+      cerr<<"Variance: "<<(energy/count)*(energy/count)-(energy2/count)<<endl;
+      cerr<<"std error: "<<((energy/count)*(energy/count)-(energy2/count))/sqrt(count)<<endl;
+      return energy/count;
+  }
+
   //  void RunMultipleOpt(ifstream &infile)
   void RunMultipleOpt(InputClass &myInput)
   {
@@ -745,6 +770,54 @@ double MeasureStaggered(OptimizeBothClass &vmc)
        VMC_combine.Combine(VMC_vec);
        VMC_combine.VarDeriv.ParallelCombine(myComm); 
        CombineTimer.Stop();
+       cerr<<"The derivative of number 0 is "<<VMC_combine.VarDeriv.ComputeDerivp(1)<<endl;
+       cerr<<"The energy for the derivative is "<<VMC_combine.VarDeriv.ComputeEnergy()<<endl;
+
+       {
+	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1);
+	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam-0.02);
+       }
+       double pre=RunMultipleVMC(VMC_vec);
+       cerr<<"pre is "<<pre<<endl;
+
+
+
+       {
+	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1);
+	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01);
+       }
+       pre=RunMultipleVMC(VMC_vec);
+       cerr<<"pre is "<<pre<<endl;
+
+       {
+	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1);
+	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01);
+       }
+       double val=RunMultipleVMC(VMC_vec);
+       cerr<<"val is "<<val<<endl;
+
+
+       {
+	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1);
+	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01);
+       }
+       double post=RunMultipleVMC(VMC_vec);
+       cerr<<"post is "<<post<<endl;
+
+
+
+       {
+	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1);
+	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01);
+       }
+       post=RunMultipleVMC(VMC_vec);
+       cerr<<"post is "<<post<<endl;
+
+       cerr<<"The finite difference is "<<(post-pre)/(0.02)<<endl;
+       exit(1);
+       
+       //       VMC_combine.TestDerivs(1,**(VMC_combine.wf_list.begin()));
+
        TakeStepTimer.Start();
        cerr<<"Outside "<<endl;
        if (myComm.MyProc()==0){ 

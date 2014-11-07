@@ -67,5 +67,29 @@ class Heisenberg : public HamiltonianClass
 
 };
 
+class Hubbard : public HamiltonianClass
+{
+ public:
+ Hubbard(string myName): HamiltonianClass(myName)
+  {
+  }
+
+  double U;
+  double Energy(SystemClass &system,
+		list<WaveFunctionClass*> &wf_list);
+  vector<pair<int,int> > bondList;
+  void Init(SystemClass &system);
+  void Init(SystemClass &system,string fileName);
+  void Set_U(double temp_U);
+  void AllConnected(list<pair<SpinSwap,double> > &vals,
+		    SystemClass &system,
+		    list<WaveFunctionClass*>  &wf_list);
+
+  complex<double> GetEnergyRatio(int site, int end_site, int spin,
+ 				 SystemClass &system,
+				 list<WaveFunctionClass*> &wf_list);
+
+};
+
 
 #endif

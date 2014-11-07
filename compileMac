@@ -1,0 +1,1 @@
+/opt/local/bin/mpicxx-mpich-gcc48  -framework accelerate -DUSE_MPI -fopenmp -O4 -I/Users/bkclark/Install/blitz-0.9/ -I/Users/bkclark/BoxSync/Code/gslatticeqmc/e/eigen-eigen-6b38706d90a9/ -pthread  -L/opt/local/lib/ -lsprng  -llapack ../*.cc ../Communication/*.cc 

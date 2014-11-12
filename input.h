@@ -2,7 +2,7 @@
 #define input_h
 #include <vector>
 #include <string>
-
+#include <map>
 using namespace std;
 
 class InputTree
@@ -26,6 +26,11 @@ class InputClass
   double toDouble(string myString)
   {
     return atof(myString.c_str());
+  }
+  bool toBool(string myString)
+  {
+    RemoveTrailingWhiteSpace(myString);
+    return (myString=="true"  ? true: false);
   }
   bool IsVariable(string myVar)
     {

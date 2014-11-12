@@ -67,6 +67,13 @@ class VMCDriverClass
 
     CommunicatorClass myComm;
     cerr<<"My processor is "<<myComm.MyProc()<<endl;
+    std::ostringstream filename;
+    string outFileBase=myInput.GetVariable("OutFileBase");
+    filename<<outFileBase<<"energy."<<myComm.MyProc();
+    //    unique_ptr<ofstream> outfile(new ofstream);
+    ofstream *outfile = new ofstream();
+    outfile->open(filename.str().c_str());
+
     RandomClass Random(myComm);
     Random.Init();
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
@@ -78,17 +85,18 @@ class VMCDriverClass
     VMC.VMC_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
     VMC.VMC_SampleSweeps=myInput.toInteger(myInput.GetVariable("SampleSweeps"));
 
-    cerr<<"POST INIT"<<endl;
+    //    cerr<<"POST INIT"<<endl;
     VMC.EvaluateAll();
-    cerr<<"POST evaluate all"<<endl;
-    VMC.SaveParams("params.dat");
-    cerr<<"C"<<endl;
+    //    cerr<<"POST evaluate all"<<endl;
+    if (myComm.MyProc()==0)
+      VMC.SaveParams("params.dat");
+    //    cerr<<"C"<<endl;
     int step=0;
-    VMC.VMC(true);
-    //    while (1==1){
-    for (int aa=0;aa<100;aa++){
+    VMC.VMC(true,outfile);
+    while (1==1){
+    //    for (int aa=0;aa<100;aa++){
       step++;
-      VMC.VMC(false);
+      VMC.VMC(false,outfile);
       
       //      if (step % 5==0){
       //	((Heisenberg*)(*VMC.Ham.begin()))->PrintHistogram(VMC.System);

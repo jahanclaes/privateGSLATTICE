@@ -11,7 +11,7 @@
 #include "WaveFunction.h"
 #include "SmartMatrix.h"
 #include "PairingFunctionAllBin.h"
-
+#include "input.h"
 
 class RVBFastPsiClass  : public WaveFunctionClass
 {
@@ -61,7 +61,8 @@ public:
 
   complex<double> Deriv(SystemClass &system,int bin); 
 
-  void Init(SystemClass &system);
+  void Init(SystemClass &system,
+	    InputClass &myInput);
   void Swap(int i, int j);
   void SetParams(double delta3,SystemClass &system);
   

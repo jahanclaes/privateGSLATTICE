@@ -8,7 +8,8 @@
 ////spin 1 -> second index
 
 void 
-RVBFastPsiClass::Init(SystemClass &system)
+RVBFastPsiClass::Init(SystemClass &system,
+		      InputClass &myInput)
 {
     NeedFrequentReset=true;
   //  NeedFrequentReset=false;
@@ -185,12 +186,31 @@ RVBFastPsiClass::Init(SystemClass &system)
 
 
    }
-  
-  ReadPairingFunction=true;
+   string pairingFunctionName("PairingFunction.dat");
+   if (myInput.IsVariable("ReadPairingFunction")){
+     cerr<<"Trying to read pairing function bool"<<endl;
+     ReadPairingFunction=myInput.toBool(myInput.GetVariable("ReadPairingFunction"));
+     cerr<<"The value is "<<myInput.GetVariable("ReadPairingFunction")<<endl;
+     cerr<<"Read pairing function bool "<<endl;
+     cerr<<(1==1)<<" "<<ReadPairingFunction<<endl;
+   }
+   else{
+     cerr<<"Not reading input bool"<<endl;
+   }
+
+   if (myInput.IsVariable("PairingFunctionName"))
+     pairingFunctionName=myInput.GetVariable("PairingFunctionName");
+   
+   if (!ReadPairingFunction){
+     cerr<<"I am not READING THE PAPIRING FUNCTION"<<endl;
+   }
+   //  ReadPairingFunction=true;
   if (ReadPairingFunction){
+    cerr<<"I AM READING PAIRING FUNCTION NAME "<<pairingFunctionName<<endl;
     int bin=0;
     ifstream infile;
-    infile.open("PairingFunction.dat");
+    //    infile.open("PairingFunction.dat");
+    infile.open(pairingFunctionName.c_str());
     assert(infile);
     while (!infile.eof()){
       int i;	int j; double tr; double ti;

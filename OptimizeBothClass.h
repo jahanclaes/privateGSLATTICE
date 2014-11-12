@@ -20,7 +20,7 @@ using namespace std;
 #include "RVB_fast.h"
 #include "SharedWaveFunctionData.h"
 #include "input.h"
-#include "timer.h"
+#include "Timer.h"
 
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 
@@ -138,7 +138,7 @@ public:
       else if (wf_type_string=="RVB"){
 	cerr<<"ADDING RVB"<<endl;
 	RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
-	RVB->Init(System);
+	RVB->Init(System,myInput);
 	wf_list.push_back(RVB); 
       }
       
@@ -522,9 +522,10 @@ void BroadcastParams(CommunicatorClass &myComm)
   }
 
 
-  double VMC(bool equilibrate)
+ double VMC(bool equilibrate,
+	    ofstream* outfile=NULL)
   {
-    cerr<<"Started VMC"<<endl;
+    //    cerr<<"Started VMC"<<endl;
     double numAttempt=0;
     double numAccept=0;
     if (equilibrate){
@@ -557,23 +558,26 @@ void BroadcastParams(CommunicatorClass &myComm)
     //    Array<complex<double>,1> derivs(NumParams);
     //    (*(wf_list.begin()))->AllDerivs(System,derivs,0,derivs.size());
     //    (*(wf_list.begin()))->CheckDerivs(System,derivs,0,derivs.size());
-
+    //    cerr<<"THE OUTFILE IS "<<outfile<<endl;
     double oldEnergy=energy/(double)NumCounts;
     if ((1==1)) { 
-      cerr<<"VMCENERGY: "<<energy/(double)NumCounts<<" "<<endl;
-      cerr<<"J1 J2: "<<((*(Ham.begin()))->term1)/(double)NumCounts<<" "<<((*(Ham.begin()))->term2)/(double)NumCounts<<endl;
+      if (outfile!=NULL){
+	(*outfile)<< (energy/(double)NumCounts) <<" "<<endl;
+      }
+      //      cerr<<"VMCENERGY: "<<energy/(double)NumCounts<<" "<<endl;
+      //      cerr<<"J1 J2: "<<((*(Ham.begin()))->term1)/(double)NumCounts<<" "<<((*(Ham.begin()))->term2)/(double)NumCounts<<endl;
       (*(Ham.begin()))->term1=0; (*(Ham.begin()))->term2=0;
 
-      cerr<<"ENERGY TERMS: ";
+      //      cerr<<"ENERGY TERMS: ";
       for (int i=0;i<energy_terms.size();i++)
-	cerr<<energy_terms[i]/(double)NumCounts<<" ";
-      cerr<<endl;
+	//	cerr<<energy_terms[i]/(double)NumCounts<<" ";
+	//      cerr<<endl;
 
-      cerr<<"ACCEPT: "<<numAccept/numAttempt<<endl;
+	//      cerr<<"ACCEPT: "<<numAccept/numAttempt<<endl;
       energy=0.0;
       NumCounts=0;
     }
-    cerr<<"Ended VMC"<<endl;
+    //    cerr<<"Ended VMC"<<endl;
     return oldEnergy;
   }
   

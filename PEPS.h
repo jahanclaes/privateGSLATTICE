@@ -15,7 +15,7 @@ class PEPSClass  : public WaveFunctionClass
 {
 public:
   int NumSpinUp;
-  PEPSClass(PairingFunctionMany &t_PF) : PF(t_PF)
+  PEPSClass() 
   {
   }
 
@@ -48,33 +48,28 @@ public:
     Name="PEPS";
     NeedFrequentReset=false;
     NumSpinUp=system.x.size()/2;
-    PF.ProcessSystem(system);
-
     bool ReadParams=false;
     if (ReadParams){
     }
-    NumParams=PF.NumParams; //Correlators;
+    //SET ME CORRECTLY!  IMPLEMENT!
+    NumParams=0;
   }
   double GetParam_real(int i)
   {
-    pair<int,int> myLoc=PF.ParamLoc[i];
-    return PF.f0[myLoc.first][myLoc.second].real();
+    //IMPLEMENT ME!
   }
   void SetParam_real(int i,double param)
   {
-    pair<int,int> myLoc=PF.ParamLoc[i];
-    PF.f0[myLoc.first][myLoc.second].real()=param;
+    //IMPLEMENT ME!
   }
 
   double GetParam_imag(int i)
   {
-    pair<int,int> myLoc=PF.ParamLoc[i];
-    return PF.f0[myLoc.first][myLoc.second].imag();
+    //IMPLEMENT ME!
   }
   void SetParam_imag(int i,double param)
   {
-    pair<int,int> myLoc=PF.ParamLoc[i];
-    PF.f0[myLoc.first][myLoc.second].imag()=param;
+    //IMPLEMENT ME!
   }
 
 

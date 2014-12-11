@@ -85,6 +85,36 @@ CPSClass::evaluate(SystemClass &system)
   return total;
 }
 
+complex<double> 
+CPSClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
+{
+  //  complex<double> toCheck=evaluateRatio_check(system,swap1,swap2);
+//   //  cerr<<"ENDTERING"<<endl;
+  double ratio=1.0;
+  ///for each particle you need to know all the correlators you've upset
+  set<int> correlatorsChanged;
+  correlatorsChanged.insert(PF.correlatorsForSite[start].begin(),PF.correlatorsForSite[start].end());
+  correlatorsChanged.insert(PF.correlatorsForSite[stop].begin(),PF.correlatorsForSite[stop].end());
+  //  cerr<<"PRE FOR LOOP"<<endl;
+  for (set<int>::iterator corrIter = correlatorsChanged.begin();corrIter!=correlatorsChanged.end();corrIter++){
+    int corr=*corrIter;
+    double newVal=PF.corr2Val(system.x,corr).real();
+     //    cerr<<"swap1 swap2 "<<swap1<<" "<<swap2<<" "<<corr<<endl;
+     //    for (int k=0;k<PF.myCorrs[corr].size();k++)
+     //      cerr<<PF.myCorrs[corr][k]<<endl;
+     //    cerr<<"newVal is "<<newVal<<endl;
+    system.Move(start,stop,spin);
+    //    system.Swap(swap1,swap2);
+    double oldVal=PF.corr2Val(system.x,corr).real();
+    system.Move(start,stop,spin);
+    //system.Swap(swap1,swap2);
+    ratio*=(newVal/oldVal);
+  }
+  //  cerr<<"POST FOR LOOP"<<endl;
+  //  cerr<<"CHECKING: "<<ratio<<" "<<toCheck<<endl;
+  return ratio;
+  
+}
 
 //assumes x(swap1) != x(swap2)
 //When swap1 and swap2 exchange, the term that corresponds to them

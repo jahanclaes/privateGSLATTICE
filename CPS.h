@@ -26,6 +26,17 @@ public:
   void Swap(int i, int j)
   {
   }
+
+  void Move(int site, int end_site, int spin)
+  {
+    
+  }
+  void Reject(SystemClass &system,int site,int end_site,int spin)
+  {
+    
+  }
+
+
   void AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs);
   void AllDerivs(SystemClass &system, Array<complex<double>,1> &derivs,int start,int stop);
   void RealDerivs(SystemClass &system, Array<complex<double>,1> &derivs)  ;
@@ -67,13 +78,22 @@ public:
     PF.f0[myLoc.first][myLoc.second].imag()=param;
   }
 
+
+  complex<double> evaluateRatio(SystemClass &system,int start, int stop, int spin);
   
+
   complex<double> evaluate(SystemClass &system);
   complex<double> evaluateRatio(SystemClass &system,int swap1, int swap2);
   complex<double> evaluateRatio_check(SystemClass &system, int swap1, int swap2);
   void UpdateDets(SystemClass &system,int swap1, int swap2)
   {
   }
+
+  void UpdateDets(SystemClass &system,int site, int end_site,int spin)
+  {
+
+  }
+
 
 };
 

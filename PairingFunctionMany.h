@@ -37,7 +37,7 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
     int bin=0;
     for (int i=0;i<myCorrs[corr].size();i++){
       bin=bin+x(myCorrs[corr][i])*mult;
-      mult*=2;
+      mult*=4;
     }
     return f0[corr][bin];
   }
@@ -49,7 +49,7 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
     int bin=0;
     for (int i=0;i<myCorrs[corr].size();i++){
       bin=bin+x(myCorrs[corr][i])*mult;
-      mult*=2;
+      mult*=4;
     }
     return bin;
   }

@@ -71,8 +71,8 @@ class VMCDriverClass
     Random.Init();
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     //need to delete these eventually if we don't want memory to leak
-    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-    //    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
+    //    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
     OptimizeBothClass VMC(Random);
     VMC.Init(wf_list,myInput);
     VMC.VMC_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
@@ -107,8 +107,8 @@ class VMCDriverClass
     Random.Init();
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     //need to delete these eventually if we don't want memory to leak
-    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-    //    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
+    //    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
     
     OptimizeBothClass VMC(Random);
     //Must send the input so that it can initilalize Hamiltonians

@@ -73,6 +73,7 @@ class VMCDriverClass
     //need to delete these eventually if we don't want memory to leak
     //    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
+    //    wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
     OptimizeBothClass VMC(Random);
     VMC.Init(wf_list,myInput);
     VMC.VMC_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
@@ -709,11 +710,14 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     string waveFunction=myInput.GetVariable("WaveFunction");
-    if (waveFunction=="CPS")
+    if (waveFunction=="CPS"){
       wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
+      wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+    }
     else if (waveFunction=="RVB")
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-    else 
+    if (waveFunction!="CPS" && waveFunction!="RVB")
+      //    else 
       assert(1==2);
 
     VMC_combine.Init(wf_list,myInput);
@@ -770,51 +774,52 @@ double MeasureStaggered(OptimizeBothClass &vmc)
        VMC_combine.Combine(VMC_vec);
        VMC_combine.VarDeriv.ParallelCombine(myComm); 
        CombineTimer.Stop();
-       cerr<<"The derivative of number 0 is "<<VMC_combine.VarDeriv.ComputeDerivp(1)<<endl;
-       cerr<<"The energy for the derivative is "<<VMC_combine.VarDeriv.ComputeEnergy()<<endl;
 
-       {
-	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1);
-	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam-0.02);
-       }
-       double pre=RunMultipleVMC(VMC_vec);
-       cerr<<"pre is "<<pre<<endl;
+/*        cerr<<"The derivative of number 0 is "<<VMC_combine.VarDeriv.ComputeDerivp(1)<<endl; */
+/*        cerr<<"The energy for the derivative is "<<VMC_combine.VarDeriv.ComputeEnergy()<<endl; */
 
-
-
-       {
-	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1);
-	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01);
-       }
-       pre=RunMultipleVMC(VMC_vec);
-       cerr<<"pre is "<<pre<<endl;
-
-       {
-	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1);
-	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01);
-       }
-       double val=RunMultipleVMC(VMC_vec);
-       cerr<<"val is "<<val<<endl;
-
-
-       {
-	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1);
-	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01);
-       }
-       double post=RunMultipleVMC(VMC_vec);
-       cerr<<"post is "<<post<<endl;
+/*        { */
+/* 	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1); */
+/* 	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam-0.02); */
+/*        } */
+/*        double pre=RunMultipleVMC(VMC_vec); */
+/*        cerr<<"pre is "<<pre<<endl; */
 
 
 
-       {
-	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1);
-	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01);
-       }
-       post=RunMultipleVMC(VMC_vec);
-       cerr<<"post is "<<post<<endl;
+/*        { */
+/* 	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1); */
+/* 	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01); */
+/*        } */
+/*        pre=RunMultipleVMC(VMC_vec); */
+/*        cerr<<"pre is "<<pre<<endl; */
 
-       cerr<<"The finite difference is "<<(post-pre)/(0.02)<<endl;
-       exit(1);
+/*        { */
+/* 	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1); */
+/* 	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01); */
+/*        } */
+/*        double val=RunMultipleVMC(VMC_vec); */
+/*        cerr<<"val is "<<val<<endl; */
+
+
+/*        { */
+/* 	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1); */
+/* 	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01); */
+/*        } */
+/*        double post=RunMultipleVMC(VMC_vec); */
+/*        cerr<<"post is "<<post<<endl; */
+
+
+
+/*        { */
+/* 	 double currParam=(*(VMC_vec[0]->wf_list.begin()))->GetParam_real(1); */
+/* 	 (*(VMC_vec[0]->wf_list.begin()))->SetParam_real(1,currParam+0.01); */
+/*        } */
+/*        post=RunMultipleVMC(VMC_vec); */
+/*        cerr<<"post is "<<post<<endl; */
+
+/*        cerr<<"The finite difference is "<<(post-pre)/(0.02)<<endl; */
+/*        exit(1); */
        
        //       VMC_combine.TestDerivs(1,**(VMC_combine.wf_list.begin()));
 

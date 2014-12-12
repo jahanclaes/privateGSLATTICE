@@ -36,9 +36,14 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
     int mult=1;
     int bin=0;
     for (int i=0;i<myCorrs[corr].size();i++){
-      bin=bin+x(myCorrs[corr][i])*mult;
+      //      bin=bin+x(myCorrs[corr][i])*mult;
+      bin=bin+(x(myCorrs[corr][i])+1)*mult;
       mult*=4;
     }
+    //    cerr<<"My value is "<<f0[corr][bin]<<endl;
+    //    cerr<<"I am looking at "<<corr<<" "<<bin<<endl;
+    assert(corr<f0.size());
+    assert(bin<f0[corr].size());
     return f0[corr][bin];
   }
 
@@ -48,7 +53,7 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
     int mult=1;
     int bin=0;
     for (int i=0;i<myCorrs[corr].size();i++){
-      bin=bin+x(myCorrs[corr][i])*mult;
+      bin=bin+(x(myCorrs[corr][i])+1)*mult;
       mult*=4;
     }
     return bin;
@@ -120,8 +125,8 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
 
     for (int i=0;i<NumCorrelators;i++){
       //      cerr<<"This number is "<<(1<<myCorrs[i].size())<<endl;
-      f0[i].resize(1<<myCorrs[i].size());
-      binLoc[i].resize(1<<myCorrs[i].size());
+      f0[i].resize(1<<(myCorrs[i].size()*2));
+      binLoc[i].resize(1<<(myCorrs[i].size()*2));
       for (int j=0;j<binLoc[i].size();j++){
 	binLoc[i][j]=NumParams;
 	ParamLoc.push_back(make_pair(i,j));
@@ -180,11 +185,11 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
     for (int i=0;i<NumCorrelators;i++){
       //      if (f0[i].size()==16){ // && i<2){
       for (int j=0;j<f0[i].size();j++){
-	f0[i][j]=0.0;
+	f0[i][j]=1.0;
       }
 
-      if (i==0)
-	f0[i][0]=1.0;
+      //if (i==0)
+      //	f0[i][0]=1.0;
     	
 	//	f0[i][1]=0.0;
 	//      }
@@ -199,7 +204,7 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
       //	}
 
       for (int j=0;j<f0[i].size();j++){
-	f0[i][j]=f0[i][j]+j*1.002+i*0.001;
+	f0[i][j]=f0[i][j]+j*0.002+i*0.001;
       }
       
       /*     for (int i=0;i<NumCorrelators;i++) { */
@@ -217,12 +222,13 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
 /*         f0[0][2]=0.3; */
 /*         f0[0][3]=0.2; */
 /*   } */
-  
-    for (int i=0;i<NumCorrelators;i++){
-      for (int j=0;j<f0[i].size();j++){
-	cerr<<"Parameter: "<<i<<" "<<j<<" "<<f0[i][j]<<endl;
-      }
-    }
+//    cerr<<"READING THE PARAMETERS"<<endl;
+/*     for (int i=0;i<NumCorrelators;i++){ */
+/*       for (int j=0;j<f0[i].size();j++){ */
+/* 	cerr<<"Parameter: "<<i<<" "<<j<<" "<<f0[i][j]<<endl; */
+/*       } */
+/*     } */
+
   }
 };
 

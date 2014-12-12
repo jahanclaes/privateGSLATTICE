@@ -58,7 +58,7 @@ public:
 
   void Combine(vector<DerivClass*> &Derivs)
   {
-    cerr<<"THE COMBINE SIZE IS "<<Derivs.size()<<endl;
+    //    cerr<<"THE COMBINE SIZE IS "<<Derivs.size()<<endl;
     for (int i=0;i<Derivs.size();i++){
       NumTimes+=Derivs[i]->NumTimes;
       E_avgp+=Derivs[i]->E_avgp;

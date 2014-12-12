@@ -21,7 +21,7 @@ RVBpPsiClass::Init(SystemClass &system)
   cerr<<"RVB BINS"<<endl;
   PairingFunction.Init(system);
   cerr<<"RVB BINS done"<<endl;
-  ReadParams=true;
+  ReadParams=false;
 
 //   bool param2=false;
 //   if (ReadParams){

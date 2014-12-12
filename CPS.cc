@@ -99,13 +99,15 @@ CPSClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
   for (set<int>::iterator corrIter = correlatorsChanged.begin();corrIter!=correlatorsChanged.end();corrIter++){
     int corr=*corrIter;
     double newVal=PF.corr2Val(system.x,corr).real();
+    //    cerr<<"newVal is "<<newVal<<endl;
      //    cerr<<"swap1 swap2 "<<swap1<<" "<<swap2<<" "<<corr<<endl;
      //    for (int k=0;k<PF.myCorrs[corr].size();k++)
      //      cerr<<PF.myCorrs[corr][k]<<endl;
      //    cerr<<"newVal is "<<newVal<<endl;
-    system.Move(start,stop,spin);
+    system.Move(stop,start,spin);
     //    system.Swap(swap1,swap2);
     double oldVal=PF.corr2Val(system.x,corr).real();
+    //    cerr<<"oldVal is "<<oldVal<<endl;
     system.Move(start,stop,spin);
     //system.Swap(swap1,swap2);
     ratio*=(newVal/oldVal);

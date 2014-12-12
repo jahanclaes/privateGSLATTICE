@@ -14,6 +14,7 @@ using namespace std;
 #include "WaveFunction.h"
 #include "Hamiltonian.h"
 #include "CPS.h"
+#include "PEPS.h"
 #include "TripletWF.h"
 #include "DerivClass.h"
 #include "ProjGutz.h"
@@ -106,7 +107,7 @@ public:
       vec_Derivs.push_back(&(vec[i]->VarDeriv));
     }
     VarDeriv.Combine(vec_Derivs);
-    cerr<<"COMBINED: "<<VarDeriv.NumTimes<<endl;
+    //    cerr<<"COMBINED: "<<VarDeriv.NumTimes<<endl;
   }
 
 
@@ -164,6 +165,13 @@ public:
 	t_CPS->Init(System);
 	wf_list.push_back(t_CPS);
       }
+      else if (wf_type_string=="PEPS"){
+	cerr<<"ADDING PEPS"<<endl;
+	PEPSClass *t_PEPS=new PEPSClass();
+	t_PEPS->Init(System);
+	wf_list.push_back(t_PEPS);
+      }
+
       else if (wf_type_string=="RVB"){
 	cerr<<"ADDING RVB"<<endl;
 	//	RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
@@ -293,6 +301,7 @@ public:
 
   double Sweep_hop()
   {
+      //    cerr<<endl;
     int numAccepted=0;
     int numAttempted=0;
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
@@ -321,6 +330,7 @@ public:
 	complex<double> myRatioIs=(*wf_iter)->evaluateRatio(System,site,end_site,spin);
 	quick_ratio*=myRatioIs;
       }
+      //      cerr<<"My ratio is "<<quick_ratio.real()<<endl;
       double ranNum=Random.ranf();
       numAttempted++;
       if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 

@@ -53,7 +53,7 @@ PEPSClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
   double ratio=1.0;
   ///for each particle you need to know all the correlators you've upset
   double newVal=0.0;  //FIX ME !f(system.x);
-  system.Move(start,stop,spin);
+  system.Move(stop,start,spin);
   double oldVal=0.0;  //FIX ME f(system.x);
   system.Move(start,stop,spin);
   ratio*=(newVal/oldVal);

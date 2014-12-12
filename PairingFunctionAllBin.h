@@ -30,6 +30,7 @@ class PairingFunctionAllBin : public SharedWaveFunctionDataClass
 
   void AddBinVal(int i, int j)
   {
+
     bool found=false;
     if (i>j)
       swap(i,j);

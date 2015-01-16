@@ -11,7 +11,8 @@ class SystemClass
   Array<int,1> ABSites;
   void Init();
   double tau;
-  Array<int,2> neighbors;
+  vector<vector<int > > neighbors;
+  //  Array<int,2> neighbors;
   vector<dVec> rList;
   vector<dVec> kList;
   int N1; int N2;
@@ -22,6 +23,7 @@ class SystemClass
   void GenerateRList();
   void GenerateKList();
   void ReadNeighbors();
+  void ReadNeighbors_old();
   void SetupABSites();
   void Stagger();
   void GetHoneycomb(int i,TinyVector<int,6> &locs);

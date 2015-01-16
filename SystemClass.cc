@@ -124,22 +124,47 @@ void SystemClass::GenerateRList()
 
 
 
+void SystemClass::ReadNeighbors_old()
+{
+  
+//   ifstream infile;
+//   infile.open("neighbors.txt");
+//   int numNeighbors;
+//   infile>>numNeighbors;
+//   //    cerr<<"numNeighbors is "<<numNeighbors<<" "<<rList.size()<<endl;
+//   neighbors.resize(rList.size(),numNeighbors);
+//   int latticeSite;
+//   int neighbor;
+//   while (!infile.eof()){
+//     infile>>latticeSite;
+//     if (!infile.eof())
+//       for (int i=0;i<numNeighbors;i++)
+// 	infile>>neighbors(latticeSite,i);
+//   }
+}
+
 void SystemClass::ReadNeighbors()
 {
   
   ifstream infile;
   infile.open("neighbors.txt");
   int numNeighbors;
-  infile>>numNeighbors;
+  //  infile>>numNeighbors;
   //    cerr<<"numNeighbors is "<<numNeighbors<<" "<<rList.size()<<endl;
-  neighbors.resize(rList.size(),numNeighbors);
+  //  neighbors.resize(rList.size(),numNeighbors);
+  neighbors.resize(rList.size());
   int latticeSite;
   int neighbor;
+  int count=-1;
   while (!infile.eof()){
     infile>>latticeSite;
+    infile>>numNeighbors;
+    count++;
+    neighbors[count].resize(numNeighbors);
     if (!infile.eof())
       for (int i=0;i<numNeighbors;i++)
-	infile>>neighbors(latticeSite,i);
+	infile>>neighbors[latticeSite][i];
+	//	infile>>neighbors(latticeSite,i);
   }
 }
 
@@ -157,20 +182,22 @@ void SystemClass::SetupABSites()
   bool notDone=true;
   while (notDone){
     notDone=false;
-    for (int i=0;i<neighbors.extent(0);i++)
-      for (int j=0;j<neighbors.extent(1);j++){
+    //    for (int i=0;i<neighbors.extent(0);i++)
+    //      for (int j=0;j<neighbors.extent(1);j++){
+    for (int i=0;i<neighbors.size();i++){
+      for (int j=0;j<neighbors[i].size();j++){
 	if (ABSites(i)==0)
-	  ABSites(neighbors(i,j))=1;
+	  ABSites(neighbors[i][j])=1;
 	else if (ABSites(i)==1)
-	  ABSites(neighbors(i,j))=0;
+	  ABSites(neighbors[i][j])=0;
 	else if (ABSites(i)==-1)
 	  notDone=true;
       }
+    }
   }
   for (int i=0;i<ABSites.size();i++)
     cerr<<"ABSITES: "<<i<<" "<<ABSites(i)<<endl;
 }
-
 
 void SystemClass::Init()
 {
@@ -255,71 +282,71 @@ void SystemClass::RotateRhombus(TinyVector<int,4> &honeycomb,
 void SystemClass::GetHoneycomb(int i,TinyVector<int,6> &locs)
 {
   assert(1==2);
-  //    cerr<<"Getting honeycomb"<<endl;
-  int ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    //      cerr<<"Diff is "<<diff<<endl;
-    if (std::fabs(diff[0])<1e-5){
-      //	cerr<<"less 1: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      locs[0]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    //      cerr<<diff<<" "<<(std::fabs(diff[0])>1e-5)<<endl; //<<" "<<1==2<<endl;
-    if ((diff[0]>1e-5)){
-      locs[1]=i;
-      //	cerr<<"less 2: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      ip=neighbors(i,j);
-    }
+//   //    cerr<<"Getting honeycomb"<<endl;
+//   int ip;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     //      cerr<<"Diff is "<<diff<<endl;
+//     if (std::fabs(diff[0])<1e-5){
+//       //	cerr<<"less 1: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
+//       locs[0]=i;
+//       ip=neighbors(i,j);
+//     }
+//   }
+//   i=ip;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     //      cerr<<diff<<" "<<(std::fabs(diff[0])>1e-5)<<endl; //<<" "<<1==2<<endl;
+//     if ((diff[0]>1e-5)){
+//       locs[1]=i;
+//       //	cerr<<"less 2: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
+//       ip=neighbors(i,j);
+//     }
     
-  }
-  i=ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (diff[0]>1e-5 && diff[1]<1e-5){
-      locs[2]=i;
-      //	cerr<<"less 3: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      ip=neighbors(i,j);
-    }
+//   }
+//   i=ip;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if (diff[0]>1e-5 && diff[1]<1e-5){
+//       locs[2]=i;
+//       //	cerr<<"less 3: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
+//       ip=neighbors(i,j);
+//     }
     
-  }
-  i=ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (std::fabs(diff[0])<1e-5){
-      locs[3]=i;
-      //	cerr<<"less 4: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      ip=neighbors(i,j);
-    }
+//   }
+//   i=ip;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if (std::fabs(diff[0])<1e-5){
+//       locs[3]=i;
+//       //	cerr<<"less 4: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
+//       ip=neighbors(i,j);
+//     }
     
-    }
-  i=ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (diff[1]<1e-5 && diff[0]<1e-5){
-      locs[4]=i;
-      //	cerr<<"less 5: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      ip=neighbors(i,j);
-    }
+//     }
+//   i=ip;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if (diff[1]<1e-5 && diff[0]<1e-5){
+//       locs[4]=i;
+//       //	cerr<<"less 5: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
+//       ip=neighbors(i,j);
+//     }
     
-  }
-  i=ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (diff[0]<1e-5 && diff[1]>1e-5){
-      locs[5]=i;
-      //	cerr<<"less 6: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
-      ip=neighbors(i,j);
-    }
+//   }
+//   i=ip;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if (diff[0]<1e-5 && diff[1]>1e-5){
+//       locs[5]=i;
+//       //	cerr<<"less 6: "<<i<<" "<<neighbors(i,j)<<" "<<diff<<endl;
+//       ip=neighbors(i,j);
+//     }
     
-    }
+//     }
   
   
-  //    assert(1==2);
+//   //    assert(1==2);
   
   
 }
@@ -328,94 +355,95 @@ void SystemClass::GetHoneycomb(int i,TinyVector<int,6> &locs)
 void SystemClass::GetRhombus(int i,TinyVector<int,4> &locs)
 {
   assert(1==2);
-  //  cerr<<"Getting rhombus"<<endl;
-  int ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (std::fabs(diff[1])<1e-5 && diff[0]>1e-5){
-      locs[0]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
+//   //  cerr<<"Getting rhombus"<<endl;
+//   int ip;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if (std::fabs(diff[1])<1e-5 && diff[0]>1e-5){
+//       locs[0]=i;
+//       ip=neighbors(i,j);
+//     }
+//   }
+//   i=ip;
 
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if(diff[1]>1e-5 && diff[0]>1e-5){
-      locs[1]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-
-
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (std::fabs(diff[1])<1e-5 && diff[0]<-1e-5){
-      locs[2]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if(diff[1]>1e-5 && diff[0]>1e-5){
+//       locs[1]=i;
+//       ip=neighbors(i,j);
+//     }
+//   }
+//   i=ip;
 
 
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if (std::fabs(diff[1])<1e-5 && diff[0]<-1e-5){
+//       locs[2]=i;
+//       ip=neighbors(i,j);
+//     }
+//   }
+//   i=ip;
 
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (diff[1]<-1e-5 && diff[0]<-1e-5){
-      locs[3]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-  //  cerr<<"Done Getting rhombus"<<endl;
+
+
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if (diff[1]<-1e-5 && diff[0]<-1e-5){
+//       locs[3]=i;
+//       ip=neighbors(i,j);
+//     }
+//   }
+//   i=ip;
+//   //  cerr<<"Done Getting rhombus"<<endl;
 }
 
 
 
 void SystemClass::GetRhombusB(int i,TinyVector<int,4> &locs)
 {
-  //  cerr<<"Getting rhombus"<<endl;
-  int ip;
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (std::fabs(diff[1])<1e-5 && diff[0]>1e-5){
-      locs[0]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
+  assert(1==2);
+//   //  cerr<<"Getting rhombus"<<endl;
+//   int ip;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if (std::fabs(diff[1])<1e-5 && diff[0]>1e-5){
+//       locs[0]=i;
+//       ip=neighbors(i,j);
+//     }
+//   }
+//   i=ip;
 
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if(diff[1]>1e-5 && diff[0]<-1e-5){
-      locs[1]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-
-
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (std::fabs(diff[1])<1e-5 && diff[0]<-1e-5){
-      locs[2]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if(diff[1]>1e-5 && diff[0]<-1e-5){
+//       locs[1]=i;
+//       ip=neighbors(i,j);
+//     }
+//   }
+//   i=ip;
 
 
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if (std::fabs(diff[1])<1e-5 && diff[0]<-1e-5){
+//       locs[2]=i;
+//       ip=neighbors(i,j);
+//     }
+//   }
+//   i=ip;
 
-  for (int j=0;j<neighbors.extent(1);j++){
-    dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
-    if (diff[1]<-1e-5 && diff[0]>1e-5){
-      locs[3]=i;
-      ip=neighbors(i,j);
-    }
-  }
-  i=ip;
-  //  cerr<<"Done Getting rhombus"<<endl;
+
+
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     dVec diff=minDiff(rList[neighbors(i,j)],rList[i]);
+//     if (diff[1]<-1e-5 && diff[0]>1e-5){
+//       locs[3]=i;
+//       ip=neighbors(i,j);
+//     }
+//   }
+//   i=ip;
+//   //  cerr<<"Done Getting rhombus"<<endl;
 }
 
 
@@ -520,11 +548,11 @@ int SystemClass::calcABSign()
 bool SystemClass::notNeighbor(int i,int neighbor)
 {
   assert(1==2);
-  for (int j=0;j<neighbors.extent(1);j++){
-    if (neighbors(i,j)==neighbor)
-      return false;
-  }
-  return true;
+//   for (int j=0;j<neighbors.extent(1);j++){
+//     if (neighbors(i,j)==neighbor)
+//       return false;
+//   }
+//   return true;
 }
 
 void SystemClass::Swap(int i,int j)

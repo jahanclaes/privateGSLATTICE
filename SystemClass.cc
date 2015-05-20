@@ -183,6 +183,17 @@ void SystemClass::SetupABSites()
     cerr<<"ABSITES: "<<i<<" "<<ABSites(i)<<endl;
 }
 
+int SystemClass::CountElectrons(int i,int j)
+{
+  int numElectrons=0;
+  int myMin=min(i,j);
+  int myMax=max(i,j);
+  for (int count=myMin+1;count<myMax;count++){
+    numElectrons+=abs(x(count));
+  }
+  return numElectrons;
+
+}
 
 void SystemClass::Init()
 {

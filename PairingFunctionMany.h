@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <stdlib.h>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <bitset>
 #include <set>
 #include <utility>
@@ -15,7 +15,8 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
 {
  public:
 
-  std::tr1::unordered_map<unsigned long, vector<int> > NewMap;
+  //  std::tr1::unordered_map<unsigned long, vector<int> > NewMap;
+  std::unordered_map<unsigned long, vector<int> > NewMap;
   //  std::tr1::unordered_map<vector<bool>, vector<int> > NewMap2;
 
   void Init(SystemClass &system)

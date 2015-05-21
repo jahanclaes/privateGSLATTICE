@@ -27,6 +27,14 @@ class InputClass
   {
     return atof(myString.c_str());
   }
+  bool toBoolean(string myString)
+  {
+    cerr<<"STRING: "<<myString<<endl;
+    RemoveWhiteSpace(myString);
+    if ( (myString!="true") && (myString!="false") )
+      assert(1==2);
+    return (myString=="true");
+  }
   bool IsVariable(string myVar)
     {
       return tree.input.count(myVar)==1;

@@ -748,8 +748,17 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 
 
     }
-    VMC_combine.GetParams("params.dat"); 
-     VMC_combine.EvaluateAll();
+
+    bool readAllParams=false;
+    if (myInput.IsVariable("ReadParams")){
+      readAllParams=myInput.toBoolean(myInput.GetVariable("ReadParams"));
+      if (readAllParams){
+	string paramFile=myInput.GetVariable("ParamFile");
+	VMC_combine.GetParams(paramFile.c_str()); 	
+      }
+    }
+
+    VMC_combine.EvaluateAll();
 
 #pragma omp parallel for 
      for (int i=0;i<NumWalkers;i++){ 

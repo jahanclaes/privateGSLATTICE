@@ -204,9 +204,10 @@ complex<double> Hubbard::GetEnergyRatio(int site, int end_site, int spin,
   system.Move(end_site,site,spin);
   for (list<WaveFunctionClass*>::iterator wf=wf_list.begin();wf!=wf_list.end();wf++)
     (*wf)->Move(end_site,site,spin);
-  int sign =  ( (system.CountElectrons(site,end_site) % 2) == 0 )  ? 1: -1;
-  quick_ratio.real()*=sign;
-  quick_ratio.imag()*=sign;
+  int sign =  ( (system.CountElectrons(site,end_site,spin) % 2) == 0 )  ? 1: -1;
+  //  cerr<<"My sign is "<<sign<<endl;
+  quick_ratio.real(quick_ratio.real()*sign); // *=sign;
+  quick_ratio.imag(quick_ratio.imag()*sign); //*=sign;
   return quick_ratio;
 }
 
@@ -308,6 +309,7 @@ complex<double> Hopping::GetEnergyRatio(int site, int end_site, int spin,
 					SystemClass &system,
 					list<WaveFunctionClass*> &wf_list)
 {
+  assert(1==2);
   system.Move(site,end_site,spin);
   for (list<WaveFunctionClass*>::iterator wf=wf_list.begin();wf!=wf_list.end();wf++)
     (*wf)->Move(site,end_site,spin);
@@ -321,7 +323,7 @@ complex<double> Hopping::GetEnergyRatio(int site, int end_site, int spin,
   for (list<WaveFunctionClass*>::iterator wf=wf_list.begin();wf!=wf_list.end();wf++)
     (*wf)->Move(end_site,site,spin);
 
-  int sign =  ( (system.CountElectrons(site,end_site) % 2) == 0 )  ? 1: -1;
+  int sign =  ( (system.CountElectrons(site,end_site,spin) % 2) == 0 )  ? 1: -1;
   quick_ratio.real()*=sign;
   quick_ratio.imag()*=sign;
   return quick_ratio;

@@ -712,7 +712,7 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     string waveFunction=myInput.GetVariable("WaveFunction");
     if (waveFunction=="CPS"){
       wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
-      wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+      //      wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     }
     else if (waveFunction=="RVB")
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
@@ -748,7 +748,7 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 
 
     }
-    //    VMC_combine.GetParams("params.dat"); 
+    VMC_combine.GetParams("params.dat"); 
      VMC_combine.EvaluateAll();
 
 #pragma omp parallel for 

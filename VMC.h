@@ -716,7 +716,11 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     }
     else if (waveFunction=="RVB")
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-    if (waveFunction!="CPS" && waveFunction!="RVB")
+    else if (waveFunction=="RVBCPS"){
+      wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+      wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
+    }
+    else if (waveFunction!="CPS" && waveFunction!="RVB")
       //    else 
       assert(1==2);
 

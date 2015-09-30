@@ -38,6 +38,9 @@ class InputClass
     }
   string GetVariable(string myVar)
   {
+    if (!IsVariable(myVar)){
+      cerr<<"Can't find variable "<<myVar<<endl;
+    }
     assert(IsVariable(myVar));
     return tree.input[myVar];
   }

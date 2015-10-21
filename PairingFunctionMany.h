@@ -16,7 +16,6 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
  public:
 
   std::tr1::unordered_map<unsigned long, vector<int> > NewMap;
-  //  std::unordered_map<unsigned long, vector<int> > NewMap;
   //  std::tr1::unordered_map<vector<bool>, vector<int> > NewMap2;
 
   void Init(SystemClass &system)

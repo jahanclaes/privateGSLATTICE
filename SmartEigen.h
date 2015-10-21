@@ -21,7 +21,7 @@ class SmartEigen
   Eigen::MatrixXcd MInverse_saved;
   Eigen::MatrixXcd M_saved;
 
-  
+
 
   //  blitz::Array<complex<double> ,2> M;
   //  blitz::Array<complex<double> ,2> MInverse;
@@ -38,7 +38,6 @@ class SmartEigen
   vector<int> DetPos;
   vector<int> UpPos;
   vector<int> DownPos;
-  double GetParity();
   //  blitz::Array<int,1> DetPos; 
 
 /*   //variables for 1 row and 1 col update */
@@ -50,12 +49,10 @@ class SmartEigen
 /*   blitz::Array<complex<double> ,2> MInverseV_DetInverse; */
 /*   blitz::Array<complex<double> ,2> VU; */
   
-
-
   complex<double>  Det();
   void SaveInverse();
   void RestoreInverse();
-  void Init(int size,int size2);
+  void Init(int size);
   void CalcAndSaveInverse();
   complex<double>  ColRatio(int colIndex,Eigen::VectorXcd &col);
   complex<double>  RowRatio(int colIndex,Eigen::VectorXcd &col);

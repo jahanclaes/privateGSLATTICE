@@ -183,18 +183,6 @@ void SystemClass::SetupABSites()
     cerr<<"ABSITES: "<<i<<" "<<ABSites(i)<<endl;
 }
 
-int SystemClass::CountElectrons(int i,int j,int spin)
-{
-  int numElectrons=0;
-  int myMin=min(i,j);
-  int myMax=max(i,j);
-  for (int count=myMin+1;count<myMax;count++){
-    numElectrons += ( (x(count)==spin  || x(count)==2) ? 1: 0 );
-    //    numElectrons+=abs(x(count));
-  }
-  return numElectrons;
-
-}
 
 void SystemClass::Init()
 {
@@ -222,16 +210,6 @@ void SystemClass::Stagger()
   for (int i=1;i<x.size();i++){
     x(i)=x(i-1)*-1;
   }
-  //  x(0)=2;
-  //  x(1)=2;
-  //  x(3)=2;
-
-
-
-  //  x(0)=0;
-  //  x(1)=0;
-  //  x(2)=0;
-  //  x(3)=0;
   //  for (int i=1;i<x.size();i++){
   //    x(i)=x(i-1)*-1+1;
   //  }

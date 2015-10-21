@@ -10,10 +10,113 @@ PEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1> &derivs)
 void 
 PEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int start, int stop)
 {
+  int** PhyCfg = new int* [W_];
+  for(int i=0; i<W_; i++) PhyCfg[i] = new int [L_];
+  for(int i=0; i<L_*W_; i++)
+    {
+      if(system.x(i)==0 ) PhyCfg[i/L_][i%L_] = 0;
+      if(system.x(i)==1 ) PhyCfg[i/L_][i%L_] = 1;
+      if(system.x(i)==-1) PhyCfg[i/L_][i%L_] = 2;
+      if(system.x(i)==2 ) PhyCfg[i/L_][i%L_] = 3;
+    }
+  ///////////////////////////////
+  peps->diff(PhyCfg);
+  ///////////////////////////////
+  for(int i=start; i<stop; i++) derivs(i)=0;
+  ///////////////////////////////
+  int N_edge = 4*(2*D_*D_+D_*D_*D_*(L_-2));
+  int N_mid  = 4*(2*D_*D_*D_+D_*D_*D_*D_*(L_-2));
+  int r_, c_, phy_, s_, l_;
   for (int i=start;i<stop;i++)
-    derivs(i)=0.0;
+    {
+      if( i<0 || i>=(2*N_edge+(W_-2)*N_mid) )
+      {
+	cout<<"GetParam_real(int i): i out of bound!"<<endl;
+	exit(0);
+      }
+      else if(i<N_edge)
+	{
+	  r_ = 1;
+	  if(i<4*D_*D_)
+	    {
+	      c_ = 1;
+	      phy_ = i/(D_*D_);
+	      s_ = (i%(D_*D_))/D_;
+	      l_ = (i%(D_*D_))%D_;
+	    }
+	  else if( i>=(N_edge-4*D_*D_) )
+	    {
+	      c_ = L_ - 1;
+	      phy_ = (i+4*D_*D_-N_edge)/(D_*D_);
+	      s_ = ((i+4*D_*D_-N_edge)%(D_*D_))/D_;
+	      l_ = ((i+4*D_*D_-N_edge)%(D_*D_))%D_;
+	    }
+	  else
+	    {
+	      c_ = (i-4*D_*D_)/(4*D_*D_*D_) + 1;
+	      phy_ = (i-(c_-1)*4*D_*D_*D_-4*D_*D_)/(D_*D_*D_);
+	      s_ = ((i-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))/(D_*D_);
+	      l_ = ((i-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))%(D_*D_);
+	    }
+	}
+      else if( i>=N_edge && i<(NumParams-N_edge) )
+	{
+	  r_ = (i-N_edge)/N_mid + 1;
+	  int ii = (i-N_edge)%N_mid;
+	  if(ii<4*D_*D_*D_)
+	    {
+	      c_ = 1;
+	      phy_ = ii/(D_*D_*D_);
+	      s_ = (ii%(D_*D_*D_))/D_;
+	      l_ = (ii%(D_*D_*D_))%D_;
+	    }
+	  else if( ii>=(N_mid-4*D_*D_*D_) )
+	    {
+	      c_ = L_ - 1;
+	      phy_ = (ii+4*D_*D_*D_-N_mid)/(D_*D_*D_);
+	      s_ = ((ii+4*D_*D_*D_-N_mid)%(D_*D_*D_))/D_;
+	      l_ = ((ii+4*D_*D_*D_-N_mid)%(D_*D_*D_))%D_;
+	    }
+	  else
+	    {
+	      c_ = (ii-4*D_*D_*D_)/(4*D_*D_*D_*D_) + 1;
+	      phy_ = (ii-(c_-1)*4*D_*D_*D_*D_-4*D_*D_*D_)/(D_*D_*D_*D_);
+	      s_ = ((ii-(c_-1)*4*D_*D_*D_*D_-4*D_*D_*D_)%(D_*D_*D_*D_))/(D_*D_);
+	      l_ = ((ii-(c_-1)*4*D_*D_*D_*D_-4*D_*D_*D_)%(D_*D_*D_*D_))%(D_*D_);
+	    }
+	}
+      else if( i>=(NumParams-N_edge) )
+	{
+	  r_ = W_ - 1;
+	  int ii = i+N_edge-NumParams;
+	  if(ii<4*D_*D_)
+	    {
+	      c_ = 1;
+	      phy_ = ii/(D_*D_);
+	      s_ = (ii%(D_*D_))/D_;
+	      l_ = (ii%(D_*D_))%D_;
+	    }
+	  else if( ii>=(N_edge-4*D_*D_) )
+	    {
+	      c_ = L_ - 1;
+	      phy_ = (ii+4*D_*D_-N_edge)/(D_*D_);
+	      s_ = ((ii+4*D_*D_-N_edge)%(D_*D_))/D_;
+	      l_ = ((ii+4*D_*D_-N_edge)%(D_*D_))%D_;
+	    }
+	  else
+	    {
+	      c_ = (ii-4*D_*D_)/(4*D_*D_*D_) + 1;
+	      phy_ = (ii-(c_-1)*4*D_*D_*D_-4*D_*D_)/(D_*D_*D_);
+	      s_ = ((ii-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))/(D_*D_);
+	      l_ = ((ii-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))%(D_*D_);
+	    }
+	}
 
-  //IMPLEMENT ME!!
+      if(PhyCfg[r_][c_]==phy_) derivs(i) = peps->DiffT_[r_][c_][s_](l_);
+    }
+  ///////////////////////////////
+  for(int i=0; i<W_; i++) delete [] PhyCfg[i];
+  delete [] PhyCfg;
   return;
 }
 
@@ -40,21 +143,36 @@ PEPSClass::CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,in
 complex<double> 
 PEPSClass::evaluate(SystemClass &system)
 {
-  //MIGHT IMPLEMENT
-  assert(1==2);
+  int** PhyCfg = new int* [W_];
+  for(int i=0; i<W_; i++) PhyCfg[i] = new int [L_];
+  for(int i=0; i<L_*W_; i++)
+    {
+      if(system.x(i)==0 ) PhyCfg[i/L_][i%L_] = 0;
+      if(system.x(i)==1 ) PhyCfg[i/L_][i%L_] = 1;
+      if(system.x(i)==-1) PhyCfg[i/L_][i%L_] = 2;
+      if(system.x(i)==2 ) PhyCfg[i/L_][i%L_] = 3;
+    }
+  complex<double> temp = peps->contract(PhyCfg,W_/2);
+  for(int i=0; i<W_; i++) delete [] PhyCfg[i];
+  delete [] PhyCfg;
+  return temp;
+  //assert(1==2);
   
 }
 
 complex<double> 
 PEPSClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
 {
-  //IMLEMENT ME!
+  //IMPLEMENT ME!
   //  complex<double> toCheck=evaluateRatio_check(system,swap1,swap2);
+  complex<double> temp;
   double ratio=1.0;
   ///for each particle you need to know all the correlators you've upset
-  double newVal=0.0;  //FIX ME !f(system.x);
+  temp = evaluate(system);
+  double newVal=temp.real();  //FIX ME !f(system.x);
   system.Move(stop,start,spin);
-  double oldVal=0.0;  //FIX ME f(system.x);
+  temp = evaluate(system);
+  double oldVal=temp.real();  //FIX ME f(system.x);
   system.Move(start,stop,spin);
   ratio*=(newVal/oldVal);
   return ratio;

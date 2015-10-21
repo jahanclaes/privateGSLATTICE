@@ -72,8 +72,8 @@ class VMCDriverClass
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     //need to delete these eventually if we don't want memory to leak
     //    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
-    //    wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
+    //    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
+    wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
     OptimizeBothClass VMC(Random);
     VMC.Init(wf_list,myInput);
     VMC.VMC_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
@@ -712,15 +712,13 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     string waveFunction=myInput.GetVariable("WaveFunction");
     if (waveFunction=="CPS"){
       wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
-      //      wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+      wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     }
     else if (waveFunction=="RVB")
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-    else if (waveFunction=="RVBCPS"){
-      wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-      wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
-    }
-    else if (waveFunction!="CPS" && waveFunction!="RVB")
+    else if (waveFunction=="PEPS")
+      wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
+    else //if (waveFunction!="CPS" && waveFunction!="RVB")
       //    else 
       assert(1==2);
 
@@ -752,17 +750,8 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 
 
     }
-
-    bool readAllParams=false;
-    if (myInput.IsVariable("ReadParams")){
-      readAllParams=myInput.toBoolean(myInput.GetVariable("ReadParams"));
-      if (readAllParams){
-	string paramFile=myInput.GetVariable("ParamFile");
-	VMC_combine.GetParams(paramFile.c_str()); 	
-      }
-    }
-
-    VMC_combine.EvaluateAll();
+    //    VMC_combine.GetParams("params.dat"); 
+     VMC_combine.EvaluateAll();
 
 #pragma omp parallel for 
      for (int i=0;i<NumWalkers;i++){ 

@@ -49,11 +49,18 @@ int main(int argc, char **argv)
     VMCDriver.RunMultipleOpt(input);
 
   }
+  else if (myRunType=="FiniteT"){
+    cerr<<"Running Finite T"<<endl;
+    VMCDriverClass VMCDriver;
+    VMCDriver.RunFiniteT(infile);
+
+  }
   else {
     VMCDriverClass VMCDriver;
     VMCDriver.RunSingleVMC(input);
     assert(1==2);
   }
+
   exit(1);
 //   infile.open(fileName.c_str());
 

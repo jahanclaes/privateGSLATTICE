@@ -188,10 +188,10 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 
 
 
-  void RunFiniteT(ifstream &infile)
+  void RunFiniteT(InputClass &input)
   {
-    std::map<string,string> input;
-    ReadInput(infile,input);
+    //    std::map<string,string> input;
+    //    ReadInput(infile,input);
     CommunicatorClass myComm; 
     cerr<<"My processor is "<<myComm.MyProc()<<endl; 
     RandomClass Random(myComm); 
@@ -205,10 +205,13 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     //    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
     VMC_combine.Init(wf_list,input);
-    VMC_combine.opt_equilSweeps=atoi(input["EquilSweeps"].c_str());
-    VMC_combine.opt_SampleSweeps=atoi(input["SampleSweeps"].c_str()); 
 
-    int NumWalkers=atoi(input["NumWalkers"].c_str()); 
+    //    VMC_combine.opt_equilSweeps=atoi(input["EquilSweeps"].c_str());
+    //    VMC_combine.opt_SampleSweeps=atoi(input["SampleSweeps"].c_str()); 
+    VMC_combine.opt_equilSweeps=input.toInteger(input.GetVariable("EquilSweeps"));  //atoi(input["EquilSweeps"].c_str());
+    VMC_combine.opt_SampleSweeps=input.toInteger(input.GetVariable("SampleSweeps")); //atoi(input["SampleSweeps"].c_str()); 
+
+    int NumWalkers=input.toInteger(input.GetVariable("NumWalkers")); // atoi(input["NumWalkers"].c_str()); 
     cerr<<"Number of Walkers: "<<NumWalkers<<endl;
     cerr<<"Equil Sweeps: "<<VMC_combine.opt_equilSweeps<<endl;
     cerr<<"Sample Sweeps: "<<VMC_combine.opt_SampleSweeps<<endl;

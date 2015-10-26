@@ -52,10 +52,11 @@ int main(int argc, char **argv)
   else if (myRunType=="FiniteT"){
     cerr<<"Running Finite T"<<endl;
     VMCDriverClass VMCDriver;
-    VMCDriver.RunFiniteT(infile);
+    VMCDriver.RunFiniteT(input);
 
   }
   else {
+    assert(1==2);
     VMCDriverClass VMCDriver;
     VMCDriver.RunSingleVMC(input);
     assert(1==2);

@@ -237,9 +237,12 @@ double MeasureStaggered(OptimizeBothClass &vmc)
      ofstream energyFile;
      energyFile.open("Energy.dat");
 
+
+     int max_markovSteps= input.toInteger(input.GetVariable("markovSteps"));
+     int numSteps=input.toInteger(input.GetVariable("TimeStepsTaken"));
      ///INITIALIZATION UP TO HERE SHOULD BE SAME FOR FINITE TEMPERATURE!
-     for (int markovSteps=0;markovSteps<1000;markovSteps++){
-     int numSteps=10;
+     for (int markovSteps=0;markovSteps<max_markovSteps;markovSteps++){
+       //     int numSteps=10;
      for (int step=0;step<numSteps;step++){ 
        if (myComm.MyProc()==0)
 	 cerr<<"Step number: "<<step<<endl; 

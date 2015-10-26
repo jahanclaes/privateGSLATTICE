@@ -33,6 +33,7 @@ public:
   list<HamiltonianClass*> Ham;
   Array<complex<double >,1> ParamsOld;
   Array<complex<double>,1> derivs;
+  bool computeObservables;
   
   OptType opt;
   double StepSize;
@@ -107,8 +108,8 @@ public:
    }
 
    void Init(list<pair<string, SharedWaveFunctionDataClass*> > &wf_init,InputClass &myInput)
-  {
-
+   {
+     computeObservables=false;
     VMC_equilSweeps=100;
     VMC_SampleSweeps=1000; // 10000*1000;
     opt_equilSweeps=100; //times 40

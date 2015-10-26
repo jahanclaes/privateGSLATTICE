@@ -234,12 +234,21 @@ double MeasureStaggered(OptimizeBothClass &vmc)
        VMC_vec[i]->EvaluateAll(); 
        VMC_vec[i]->VMC(true); 
      } 
+     
      ofstream energyFile;
      energyFile.open("Energy.dat");
 
 
      int max_markovSteps= input.toInteger(input.GetVariable("markovSteps"));
      int numSteps=input.toInteger(input.GetVariable("TimeStepsTaken"));
+     string outFileBase=input.GetVariable("OutFileBase");
+     vector<ofstream*> myFiles(NumWalkers);
+     for (int i=0;i<NumWalkers;i++){
+       std::ostringstream filename;
+       filename<<outFileBase<<"observables."<<myComm.MyProc()<<"_"<<i;
+       myFiles[i]= new ofstream();
+       myFiles[i]->open(filename.str().c_str());
+     }
      ///INITIALIZATION UP TO HERE SHOULD BE SAME FOR FINITE TEMPERATURE!
      for (int markovSteps=0;markovSteps<max_markovSteps;markovSteps++){
        //     int numSteps=10;
@@ -274,7 +283,16 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 	 VMC_vec[i]->EvaluateAll(); 
        //I don't think VMC_Combine needs to evaluate all but I'm a bit worried?
      }
+     //Here is where you want to compute the observables
 
+     ///This will be slow when you have many walkers per node!
+     //BUG: Slow 
+     for (int i=0;i<NumWalkers;i++)  {
+       VMC_vec[i]->computeObservables=true;
+       VMC_vec[i]->VMC(true,myFiles[i]);
+       VMC_vec[i]->computeObservables=false;
+     }
+	 
      VMC_vec[0]->VMC(true); 
      cerr<<"The particles are at ";
      for (int i=0;i<VMC_vec[0]->System.x.size();i++)

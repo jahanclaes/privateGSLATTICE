@@ -208,7 +208,7 @@ complex<double> Hubbard::GetEnergyRatio(int site, int end_site, int spin,
   //  cerr<<"My sign is "<<sign<<endl;
   quick_ratio.real(quick_ratio.real()*sign); // *=sign;
   quick_ratio.imag(quick_ratio.imag()*sign); //*=sign;
-  return quick_ratio;
+  return quick_ratio*-1.0;
 }
 
 double Hubbard::Energy(SystemClass &system, 

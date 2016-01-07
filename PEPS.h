@@ -64,8 +64,8 @@ public:
     //Need to find out how to read paramters
     L_ = 4;
     W_ = 4;
-    D_ = 5;
-    VD_ = 25;
+    D_ = 2;
+    VD_ = 10;//used to be 25
 
     //peps = new PEPS_Base(W, L, phyD, D, VD);
     peps = new PEPS_Base(W_, L_, 4, D_, VD_);

@@ -13,6 +13,8 @@
 #include "Hamiltonian.h"
 #include "exact.h"
 #include "Timer.h"
+#include "SharedEigs.h"
+
 class VMCDriverClass
 {
  public:
@@ -71,7 +73,8 @@ class VMCDriverClass
     Random.Init();
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     //need to delete these eventually if we don't want memory to leak
-        wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
+    //        wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
+        wf_list.push_back(make_pair("SLATERDET",new SharedEigsClass()));
     //    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
     //wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
     OptimizeBothClass VMC(Random);
@@ -721,6 +724,11 @@ double MeasureStaggered(OptimizeBothClass &vmc)
       wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
     else if (waveFunction=="BACKFLOW")
       wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
+    else if (waveFunction=="SLATERDET"){
+      wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
+      wf_list.push_back(make_pair("SLATERDETDOWN",new SharedEigsClass()));
+    }
+      
     else //if (waveFunction!="CPS" && waveFunction!="RVB")
       //    else 
       assert(1==2);

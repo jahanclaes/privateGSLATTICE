@@ -24,7 +24,7 @@ using namespace std;
 #include "input.h"
 #include "Timer.h"
 #include "BackFlow.h"
-
+#include "SlaterDet.h"
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 
 class OptimizeBothClass
@@ -187,7 +187,38 @@ public:
         t_BACKFLOW->Init(System);
         wf_list.push_back(t_BACKFLOW);
       }
-      
+
+      else if (wf_type_string=="SLATERDET"){
+        cerr<<"ADDING Slater Det"<<endl;
+	{
+	  SlaterDetPsiClass *t_SLATERDET=new SlaterDetPsiClass(*((SharedEigsClass*)((*iter).second)));
+	  t_SLATERDET->Init(System,1);
+	  wf_list.push_back(t_SLATERDET);
+	}
+	{
+	  SlaterDetPsiClass *t_SLATERDET=new SlaterDetPsiClass(*((SharedEigsClass*)((*iter).second)));
+	  t_SLATERDET->Init(System,-1);
+	  wf_list.push_back(t_SLATERDET);
+	}
+      }
+      else if (wf_type_string=="SLATERDETUP"){
+        cerr<<"ADDING Slater Det up"<<endl;
+	{
+	  SlaterDetPsiClass *t_SLATERDET=new SlaterDetPsiClass(*((SharedEigsClass*)((*iter).second)));
+	  t_SLATERDET->Init(System,1);
+	  wf_list.push_back(t_SLATERDET);
+	}
+
+      }
+       else if (wf_type_string=="SLATERDETDOWN"){
+        cerr<<"ADDING Slater Det down"<<endl;
+	{
+	  SlaterDetPsiClass *t_SLATERDET=new SlaterDetPsiClass(*((SharedEigsClass*)((*iter).second)));
+	  t_SLATERDET->Init(System,-1);
+	  wf_list.push_back(t_SLATERDET);
+	}
+      }
+
     }
     
     cerr<<"Initializing the hamiltonian"<<endl;

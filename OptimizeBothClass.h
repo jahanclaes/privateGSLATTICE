@@ -23,6 +23,7 @@ using namespace std;
 #include "SharedWaveFunctionData.h"
 #include "input.h"
 #include "Timer.h"
+#include "BackFlow.h"
 
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 
@@ -178,6 +179,13 @@ public:
 	RVBpPsiClass *RVB=new RVBpPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
 	RVB->Init(System);
 	wf_list.push_back(RVB); 
+      }
+
+      else if (wf_type_string=="BACKFLOW"){
+        cerr<<"ADDING BACKFLOW"<<endl;
+        BackFlowClass *t_BACKFLOW=new BackFlowClass();
+        t_BACKFLOW->Init(System);
+        wf_list.push_back(t_BACKFLOW);
       }
       
     }
@@ -390,6 +398,7 @@ void BroadcastParams(CommunicatorClass &myComm)
  void SaveParams(string fileName)
  {
    ofstream outfile;
+   outfile.precision(std::numeric_limits<double>::digits10 + 1);
    outfile.open(fileName.c_str());
    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
      WaveFunctionClass &Psi =**wf_iter;
@@ -445,7 +454,8 @@ void BroadcastParams(CommunicatorClass &myComm)
        if (myDeriv.real()!=0)
 	 cerr<<"My parameter deriv is "<<myDeriv<<" "<<(myDeriv.real())/abs(myDeriv.real())<<" "<<Psi.GetParam_real(i)<<endl;
        if (opt==GRADIENT || opt==TIMEEVOLUTION)
-	 Psi.SetParam_real(i,Psi.GetParam_real(i)+-StepSize*(myDeriv.real())); 
+	 Psi.SetParam_real(i,Psi.GetParam_real(i)+-StepSize*(myDeriv.real())); //Han-Yi Chou
+       //Psi.SetParam_real(i, Psi.GetParam_real(i)+1.);
        else if (opt==SR && myDeriv.real()!=0)
 	 Psi.SetParam_real(i,Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf());
        else if (myDeriv.real()==0){
@@ -478,7 +488,7 @@ void BroadcastParams(CommunicatorClass &myComm)
    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
      (*wf_iter)->evaluate(System);
    }
-   
+   cerr<<"Done with evaluate all"<<endl;
  }
  
  
@@ -511,7 +521,7 @@ void BroadcastParams(CommunicatorClass &myComm)
       currStart=currStart+Psi.NumParams;
     }
         
-    
+    //cout << "I am here" << endl; 
     VarDeriv.Clear();
     derivs=0;
     
@@ -618,6 +628,7 @@ void BroadcastParams(CommunicatorClass &myComm)
     double numAccept=0;
     if (equilibrate){
       for (int sweeps=0;sweeps<VMC_equilSweeps;sweeps++){
+	//	cerr<<"Doing step "<<sweeps<<endl;
 	Sweep_hop();
       }
     }
@@ -625,6 +636,7 @@ void BroadcastParams(CommunicatorClass &myComm)
     double energy=0.0;
     int NumCounts=0;
     for (int sweeps=0;sweeps<VMC_SampleSweeps;sweeps++){
+      //      cerr<<"Doing step "<<sweeps<<endl;
       numAccept+=Sweep_hop();
       numAttempt+=1;
       NumCounts++;

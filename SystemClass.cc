@@ -126,12 +126,12 @@ void SystemClass::GenerateRList()
 #endif
     if (!infile.eof())
       rList.push_back(r);
-    
+  //cerr << r << endl;  
   }
   infile.close();
   cerr<<"done reading r points"<<endl;
   cerr<<"list size "<<rList.size()<<endl;
-
+  
 }
 
 
@@ -277,5 +277,19 @@ void SystemClass::Stagger()
 void SystemClass::Swap(int i,int j)
 {
   swap(x(i),x(j));
+
+}
+
+//Han-Yi Chou 11/12
+int SystemClass::CountElectrons(int i,int j,int spin)
+{
+  int numElectrons=0;
+  int myMin=min(i,j);
+  int myMax=max(i,j);
+  for (int count=myMin+1;count<myMax;count++){
+    numElectrons += ( (x(count)==spin  || x(count)==2) ? 1: 0 );
+    //    numElectrons+=abs(x(count));
+  }
+  return numElectrons;
 
 }

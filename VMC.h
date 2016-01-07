@@ -71,9 +71,9 @@ class VMCDriverClass
     Random.Init();
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     //need to delete these eventually if we don't want memory to leak
-    //    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+        wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
     //    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
-    wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
+    //wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
     OptimizeBothClass VMC(Random);
     VMC.Init(wf_list,myInput);
     VMC.VMC_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
@@ -88,8 +88,7 @@ class VMCDriverClass
     VMC.VMC(true);
     while (1==1){
       step++;
-      VMC.VMC(false);
-      
+      VMC.VMC(false);//if(step>0)break; //Han-Yi Chou
       //      if (step % 5==0){
       //	((Heisenberg*)(*VMC.Ham.begin()))->PrintHistogram(VMC.System);
       //	((Heisenberg*)(*VMC.Ham.begin()))->ClearHistogram();
@@ -109,7 +108,8 @@ class VMCDriverClass
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     //need to delete these eventually if we don't want memory to leak
     //    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
+    //wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
+    wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionMany()));
     
     OptimizeBothClass VMC(Random);
     //Must send the input so that it can initilalize Hamiltonians
@@ -685,6 +685,7 @@ double MeasureStaggered(OptimizeBothClass &vmc)
   //  void RunMultipleOpt(ifstream &infile)
   void RunMultipleOpt(InputClass &myInput)
   {
+    cerr<<"Running multiple opt "<<endl;
     //    std::map<string,string> input;
     //    ReadInput(infile,input);
     vector<TimerClass*> myTimers;
@@ -718,6 +719,8 @@ double MeasureStaggered(OptimizeBothClass &vmc)
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     else if (waveFunction=="PEPS")
       wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
+    else if (waveFunction=="BACKFLOW")
+      wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
     else //if (waveFunction!="CPS" && waveFunction!="RVB")
       //    else 
       assert(1==2);
@@ -755,9 +758,13 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 
 #pragma omp parallel for 
      for (int i=0;i<NumWalkers;i++){ 
-       cerr<<"On walker "<<i<<endl; 
-       VMC_vec[i]->EvaluateAll(); 
-       VMC_vec[i]->VMC(true); 
+       //#pragma omp critical 
+       {
+	 cerr<<"On walker "<<i<<endl; 
+	 VMC_vec[i]->EvaluateAll(); 
+	 VMC_vec[i]->VMC(true); 
+       cerr<<"Done with walker "<<i<<endl;
+       }
      } 
 
      ofstream energyFile;
@@ -769,7 +776,9 @@ double MeasureStaggered(OptimizeBothClass &vmc)
        OptimizeTimer.Start();
 #pragma omp parallel for 
        for (int i=0;i<NumWalkers;i++) { 
+	 //	 cerr<<"Going to optimize"<<endl;
 	 VMC_vec[i]->Optimize(); 
+	 //	 cerr<<"done wiht optimize"<<endl;
        } 
        OptimizeTimer.Stop();
        CombineTimer.Start();

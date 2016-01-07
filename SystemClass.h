@@ -26,7 +26,7 @@ class SystemClass
   void Stagger();
   void Swap(int i, int j);
   void Move(int site, int end_site, int spin);
-
+  int CountElectrons(int i,int j,int spin);
   //  bool notNeighbor(int i,int neighbor);
   //  bool inList(int site,TinyVector<int,6> &myList);
   //  int calcABSign();

@@ -74,12 +74,12 @@ class VMCDriverClass
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     //need to delete these eventually if we don't want memory to leak
     //        wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
-      wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
-      wf_list.push_back(make_pair("SLATERDETDOWN",new SharedEigsClass()));
+    //      wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
+    //      wf_list.push_back(make_pair("SLATERDETDOWN",new SharedEigsClass()));
      
     //    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
     //wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
-    //    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     OptimizeBothClass VMC(Random);
     VMC.Init(wf_list,myInput);
     VMC.VMC_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
@@ -721,8 +721,10 @@ double MeasureStaggered(OptimizeBothClass &vmc)
       wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     }
-    else if (waveFunction=="RVB")
+    else if (waveFunction=="RVB"){
+      wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+    }
     else if (waveFunction=="PEPS")
       wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
     else if (waveFunction=="BACKFLOW")

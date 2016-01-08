@@ -82,7 +82,7 @@ public:
     int r_, c_, phy_, s_, l_;
     if( i<0 || i>=(2*N_edge+(W_-2)*N_mid) )
       {
-	cout<<"GetParam_real(int i): i out of bound!"<<endl;
+	cout<<"GetParam_real(int i): "<<i <<" "<<(2*N_edge+(W_-2)*N_mid)<<"out of bound!"<<endl;
 	exit(0);
       }
     else if(i<N_edge)
@@ -173,7 +173,8 @@ public:
     int r_, c_, phy_, s_, l_;
     if( i<0 || i>=(2*N_edge+(W_-2)*N_mid) )
     {
-      cout<<"GetParam_real(int i): i out of bound!"<<endl;
+      cout<<"SetParam_real(int i): "<<i <<" "<<(2*N_edge+(W_-2)*N_mid)<<"out of bound!"<<endl;
+      //      cout<<"GetParam_real(int i): i out of bound!"<<endl;
       exit(0);
     }
     else if(i<N_edge)

@@ -14,8 +14,12 @@ RVBpPsiClass::Init(SystemClass &system)
   NeedFrequentReset=true;
   //  NeedFrequentReset=false;
   cerr<<"Starting Init"<<endl;
-  NumSpinUp=system.x.size()/2;
-  mat.Init(NumSpinUp);
+  NumSpinUp=0;
+  for (int i=0;i<system.x.size();i++){
+    NumSpinUp += ((system.x(i)==1 || system.x(i)==2) ? 1: 0);
+  }
+    //  NumSpinUp=system.x.size()/2;
+  mat.Init(NumSpinUp,system.x.size());
   //  u.resize(NumSpinUp);  
   //  up.resize(NumSpinUp);
   cerr<<"RVB BINS"<<endl;
@@ -242,6 +246,7 @@ RVBpPsiClass::Swap(int i, int j)
 
 void RVBpPsiClass::Move(int site, int end_site, int spin)
 {
+  //  cerr<<"Moving from site "<<site<<" to "<<end_site<<" with spin "<<spin <<endl;
   if (spin==1){
     mat.UpPos[end_site]=mat.UpPos[site];
     mat.UpPos[site]=-1;
@@ -410,7 +415,7 @@ complex<double>
 RVBpPsiClass::evaluate_noChange(SystemClass &system)
 {
   SmartEigen mat_check;
-  mat_check.Init(mat.M.rows());
+  mat_check.Init(mat.M.rows(),mat.UpPos.size());
   FillDet(system,mat_check);
   return mat_check.Det();
 }
@@ -472,27 +477,68 @@ RVBpPsiClass::UpdateDets(SystemClass &system,int site, int end_site,int spin)
 complex<double>
 RVBpPsiClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
 {
+//   cerr<<"In evaluate ratio "<<endl;
+//   for (int i=0;i<mat.UpPos.size();i++){
+//     cerr<<i<<" "<<mat.UpPos[i]<<endl;
+//   }
+//   cerr<<endl;
+//   for (int i=0;i<mat.DownPos.size();i++){
+//     cerr<<i<<" "<<mat.DownPos[i]<<endl;
+//   }
+
+  int countParity=0;
+  int myMin=min(start,stop);
+  int myMax=max(start,stop);
+  if (spin==1){
+    for (int i=myMin+1;i<myMax;i++)
+      if (mat.UpPos[i]!=-1)
+	countParity++;
+  }
+  else {
+    for (int i=myMin+1;i<myMax;i++)
+      if (mat.DownPos[i]!=-1)
+	countParity++;
+  }
+  //  cerr<<"DIFF IS "<<countParity<<" "<<system.CountElectrons(start,stop,spin)<<endl;
+  countParity = ( (countParity % 2) ==0 ) ?  1: -1;
+  //
   int not_spin = (spin==1) ? -1 : 1;
   col=Eigen::VectorXcd::Zero(NumSpinUp);
   for (int site=0;site<system.x.size();site++){
+    //    cerr<<"Site vals: "<<system.x(site)<<endl;
     if (spin==1 && (system.x(site)==not_spin ||  system.x(site)==2)){
+      //      cerr<<"UP: "<<col.size()<<" "<<mat.DownPos[site]<<" "<<mat.M.rows()<<" "<<mat.M.cols()<<endl;
       col(mat.DownPos[site])=Phi(stop,site,system);
     }
     else if (spin==-1 && (system.x(site)==not_spin ||  system.x(site)==2)){
+      //      cerr<<"DOWN: "<<col.size()<<" "<<mat.UpPos[site]<<endl;
       col(mat.UpPos[site])=Phi(site,stop,system);
     }
   }
+  //  cerr<<"HERE"<<endl;
   if (spin==1){
     complex<double> ratio= mat.RowRatio(mat.UpPos[stop],col);
+    //    cerr<<"A"<<endl;
     //    complex<double> ratio_check=evaluateRatio_check(system,start,stop,spin);
+    //    cerr<<"B"<<endl;
+    ratio.real()*=countParity;
+    ratio.imag()*=countParity;
     //    cerr<<"Ratios A are: "<<ratio<<" "<<ratio_check<<endl;
-    return ratio;
+
+    return ratio; //_check;
   }
   else{
+
     complex<double> ratio= mat.ColRatio(mat.DownPos[stop],col);
+    //    cerr<<"AA"<<endl;
+
     //    complex<double> ratio_check=evaluateRatio_check(system,start,stop,spin);
+    //    cerr<<"BB"<<endl;
+    ratio.real()*=countParity;
+    ratio.imag()*=countParity;
+
     //    cerr<<"Ratios B are: "<<ratio<<" "<<ratio_check<<endl;
-    return ratio;
+    return ratio;// _check;
   }
 }
 
@@ -507,7 +553,7 @@ RVBpPsiClass::evaluateRatio_check(SystemClass &system, int site, int end_site,
   //  assert(1==2);
 
   SmartEigen mat_check;
-  mat_check.Init(mat.M.rows());
+  mat_check.Init(mat.M.rows(),mat.UpPos.size());
   system.Move(end_site,site,spin);
   FillDet(system,mat_check);
   complex<double> pre=mat_check.Det();
@@ -667,6 +713,10 @@ RVBpPsiClass::evaluateRatio_energy(SystemClass &system,int swap1, int swap2)
 void 
 RVBpPsiClass::FillDet(SystemClass &system,SmartEigen &myMat)
 {
+  //  cerr<<"FILLING NOW "<<system.x.size()<<endl;
+  //  for (int i=0;i<system.x.size();i++){
+  //    cerr<<system.x(i)<<endl;
+  //  }
   int upDet=-1;
   int downDet=-1;
   for (int i=0;i<system.x.size();i++){
@@ -676,6 +726,7 @@ RVBpPsiClass::FillDet(SystemClass &system,SmartEigen &myMat)
       for (int j=0;j<system.x.size();j++){
 	if ((system.x(j)==-1) || (system.x(j)==2) ){
 	  downDet++;
+	  //	  cerr<<"GRR GRR"<<upDet<<" "<<downDet<<endl;
 	  myMat.M(upDet,downDet)=Phi(i,j,system);
 	  myMat.UpPos[i]=upDet;
 	  myMat.DownPos[j]=downDet;
@@ -683,6 +734,18 @@ RVBpPsiClass::FillDet(SystemClass &system,SmartEigen &myMat)
       }
     }
   }
+
+//   cerr<<"In evaluate ratio "<<endl;
+//   for (int i=0;i<mat.UpPos.size();i++){
+//     cerr<<i<<" "<<mat.UpPos[i]<<endl;
+//   }
+//   cerr<<endl;
+//   for (int i=0;i<mat.DownPos.size();i++){
+//     cerr<<i<<" "<<mat.DownPos[i]<<endl;
+//   }
+
+//   cerr<<"Done FILLING NOW"<<endl;
+
   //  cerr<<"CHECKING NOW"<<endl;
   //  FillDet_check(system,myMat);
   //  cerr<<"done CHECKING NOW"<<endl;

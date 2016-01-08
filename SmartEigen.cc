@@ -22,6 +22,44 @@ void SmartEigen::SaveInverse()
   }
 
 
+double SmartEigen::GetParity()
+{
+  vector<int> swapMe;
+  for (int i=0;i<UpPos.size();i++){
+    if (UpPos[i]!=-1)
+      swapMe.push_back(UpPos[i]);
+  }
+
+  int countSwaps=0;
+  for (int i =swapMe.size()-1;i>=0;i--){
+    for (int j=0;j<swapMe.size()-1;j++){
+      if (swapMe[j]>swapMe[j+1]){
+	swap(swapMe[j],swapMe[j+1]);
+	countSwaps++;
+      }
+    }
+  }
+
+  swapMe.clear();
+  for (int i=0;i<DownPos.size();i++){
+    if (DownPos[i]!=-1)
+      swapMe.push_back(DownPos[i]);
+  }
+
+  for (int i =swapMe.size()-1;i>=0;i--){
+    for (int j=0;j<swapMe.size()-1;j++){
+      if (swapMe[j]>swapMe[j+1]){
+	swap(swapMe[j],swapMe[j+1]);
+	countSwaps++;
+      }
+    }
+  }
+
+  return ((countSwaps % 2) == 0 ? 1 : -1);
+
+
+}
+
 void SmartEigen::RestoreInverse()
   {
     assert(1==2);
@@ -29,12 +67,12 @@ void SmartEigen::RestoreInverse()
     M=M_saved;
   }
 
-  void SmartEigen::Init(int size)
+void SmartEigen::Init(int size,int size2)
   {
     M.resize(size,size);
-    DetPos.resize(2*size);
-    UpPos.resize(2*size);
-    DownPos.resize(2*size);
+    DetPos.resize(size2);
+    UpPos.resize(size2);
+    DownPos.resize(size2);
 /*     M.resize(size,size); */
 /*     MInverse.resize(size,size); */
 /*     MInverseu.resize(size); */

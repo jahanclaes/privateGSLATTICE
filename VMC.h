@@ -14,7 +14,6 @@
 #include "exact.h"
 #include "Timer.h"
 #include "SharedEigs.h"
-
 class VMCDriverClass
 {
  public:
@@ -73,13 +72,12 @@ class VMCDriverClass
     Random.Init();
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     //need to delete these eventually if we don't want memory to leak
-    //        wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
-    //      wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
-    //      wf_list.push_back(make_pair("SLATERDETDOWN",new SharedEigsClass()));
-     
+        wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
+	//	wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
+	//	wf_list.push_back(make_pair("SLATERDETDOWN",new SharedEigsClass()));
+	//	wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     //    wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
     //wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
-    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     OptimizeBothClass VMC(Random);
     VMC.Init(wf_list,myInput);
     VMC.VMC_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
@@ -720,11 +718,12 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     if (waveFunction=="CPS"){
       wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+
     }
     else if (waveFunction=="RVB"){
-      wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
+      //      wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-      //      wf_list.push_back(make_pair("JASTROW",new PairingFunctionAllBin()));
+      wf_list.push_back(make_pair("JASTROW",new PairingFunctionAllBin()));
     }
     else if (waveFunction=="PEPS")
       wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
@@ -734,7 +733,6 @@ double MeasureStaggered(OptimizeBothClass &vmc)
       wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
       wf_list.push_back(make_pair("SLATERDETDOWN",new SharedEigsClass()));
     }
-      
     else //if (waveFunction!="CPS" && waveFunction!="RVB")
       //    else 
       assert(1==2);
@@ -772,13 +770,9 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 
 #pragma omp parallel for 
      for (int i=0;i<NumWalkers;i++){ 
-       //#pragma omp critical 
-       {
-	 cerr<<"On walker "<<i<<endl; 
-	 VMC_vec[i]->EvaluateAll(); 
-	 VMC_vec[i]->VMC(true); 
-       cerr<<"Done with walker "<<i<<endl;
-       }
+       cerr<<"On walker "<<i<<endl; 
+       VMC_vec[i]->EvaluateAll(); 
+       VMC_vec[i]->VMC(true); 
      } 
 
      ofstream energyFile;
@@ -790,9 +784,7 @@ double MeasureStaggered(OptimizeBothClass &vmc)
        OptimizeTimer.Start();
 #pragma omp parallel for 
        for (int i=0;i<NumWalkers;i++) { 
-	 //	 cerr<<"Going to optimize"<<endl;
 	 VMC_vec[i]->Optimize(); 
-	 //	 cerr<<"done wiht optimize"<<endl;
        } 
        OptimizeTimer.Stop();
        CombineTimer.Start();
@@ -849,13 +841,16 @@ double MeasureStaggered(OptimizeBothClass &vmc)
        //       VMC_combine.TestDerivs(1,**(VMC_combine.wf_list.begin()));
 
        TakeStepTimer.Start();
-       cerr<<"Outside "<<endl;
+       //       cerr<<"Outside "<<endl;
        if (myComm.MyProc()==0){ 
 	 VMC_combine.TakeStep(myComm); 
        } 
        TakeStepTimer.Stop();
        BroadcastStepTimer.Start();
        VMC_combine.BroadcastParams(myComm); 
+       for (int i=0;i<NumWalkers;i++){ 
+	 VMC_vec[i]->MatchParams(VMC_combine);
+       }
        if (myComm.MyProc()==0){
 	 string fileName="params.dat.";
 	 ostringstream ss;

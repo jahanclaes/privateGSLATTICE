@@ -26,6 +26,7 @@ using namespace std;
 #include "BackFlow.h"
 #include "SlaterDet.h"
 #include "Jastrow.h"
+
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 
 class OptimizeBothClass
@@ -187,13 +188,14 @@ public:
 	t_JASTROW->Init(System);
 	wf_list.push_back(t_JASTROW);
       }
+
       else if (wf_type_string=="BACKFLOW"){
         cerr<<"ADDING BACKFLOW"<<endl;
         BackFlowClass *t_BACKFLOW=new BackFlowClass();
         t_BACKFLOW->Init(System);
         wf_list.push_back(t_BACKFLOW);
       }
-
+      
       else if (wf_type_string=="SLATERDET"){
         cerr<<"ADDING Slater Det"<<endl;
 	{
@@ -216,7 +218,7 @@ public:
 	}
 
       }
-       else if (wf_type_string=="SLATERDETDOWN"){
+      else if (wf_type_string=="SLATERDETDOWN"){
         cerr<<"ADDING Slater Det down"<<endl;
 	{
 	  SlaterDetPsiClass *t_SLATERDET=new SlaterDetPsiClass(*((SharedEigsClass*)((*iter).second)));
@@ -224,6 +226,8 @@ public:
 	  wf_list.push_back(t_SLATERDET);
 	}
       }
+
+      
 
     }
     
@@ -400,6 +404,35 @@ public:
     return (double)numAccepted/(double)numAttempted;
     //
   }
+  void MatchParams(OptimizeBothClass &vmc)
+  {
+  vector<complex<double> > myParams; 
+  for (list<WaveFunctionClass*>::iterator wf_iter=vmc.wf_list.begin();wf_iter!=vmc.wf_list.end();wf_iter++){
+      WaveFunctionClass &Psi =**wf_iter;
+      for (int i=0;i<Psi.NumParams;i++){
+	complex<double> myVal(Psi.GetParam_real(i),Psi.GetParam_imag(i));
+	myParams.push_back(myVal);
+      }
+  }
+  int countMe=0;
+  for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      WaveFunctionClass &Psi =**wf_iter;
+      for (int i=0;i<Psi.NumParams;i++){
+/* 	if (myComm.MyProc()==0){ */
+/* 	  cerr<<"SETTING PARAMETER "<< */
+	  
+/* 	} */
+	
+	Psi.SetParam_real(i,myParams[countMe].real());
+	Psi.SetParam_imag(i,myParams[countMe].imag());
+	countMe++;
+      }
+  }
+  
+
+
+  }
+
 
 
 void BroadcastParams(CommunicatorClass &myComm)
@@ -488,11 +521,14 @@ void BroadcastParams(CommunicatorClass &myComm)
 	 myDeriv=VarDeriv.ComputeDerivSR(currStart+i);
        else 
 	 myDeriv=VarDeriv.ComputeDerivp(currStart+i);
-       if (myDeriv.real()!=0)
-	 cerr<<"My parameter deriv is "<<myDeriv<<" "<<(myDeriv.real())/abs(myDeriv.real())<<" "<<Psi.GetParam_real(i)<<endl;
-       if (opt==GRADIENT || opt==TIMEEVOLUTION)
+       //       if (myDeriv.real()!=0)
+       //	 cerr<<"My parameter deriv is "<<myDeriv<<" "<<(myDeriv.real())/abs(myDeriv.real())<<" "<<Psi.GetParam_real(i)<<endl;
+       cerr<<"My parameter deriv is "<<i<< " "<<myDeriv<<" "<<(myDeriv.real())/abs(myDeriv.real())<<" "<<Psi.GetParam_real(i)<<endl;
+       if (opt==GRADIENT || opt==TIMEEVOLUTION){
 	 Psi.SetParam_real(i,Psi.GetParam_real(i)+-StepSize*(myDeriv.real())); //Han-Yi Chou
-       //Psi.SetParam_real(i, Psi.GetParam_real(i)+1.);
+	 //	 if (i==0)
+	 //	   Psi.SetParam_real(i, Psi.GetParam_real(i)+0.2);
+       }
        else if (opt==SR && myDeriv.real()!=0)
 	 Psi.SetParam_real(i,Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf());
        else if (myDeriv.real()==0){
@@ -525,7 +561,7 @@ void BroadcastParams(CommunicatorClass &myComm)
    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
      (*wf_iter)->evaluate(System);
    }
-   cerr<<"Done with evaluate all"<<endl;
+   
  }
  
  

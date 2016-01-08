@@ -25,6 +25,7 @@ using namespace std;
 #include "Timer.h"
 #include "BackFlow.h"
 #include "SlaterDet.h"
+#include "Jastrow.h"
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 
 class OptimizeBothClass
@@ -180,7 +181,12 @@ public:
 	RVB->Init(System);
 	wf_list.push_back(RVB); 
       }
-
+      else if (wf_type_string=="JASTROW"){
+	cerr<<"ADDING JASTROW"<<endl;
+	JastrowClass  *t_JASTROW  = new JastrowClass();
+	t_JASTROW->Init(System);
+	wf_list.push_back(t_JASTROW);
+      }
       else if (wf_type_string=="BACKFLOW"){
         cerr<<"ADDING BACKFLOW"<<endl;
         BackFlowClass *t_BACKFLOW=new BackFlowClass();

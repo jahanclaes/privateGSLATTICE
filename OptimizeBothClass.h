@@ -418,11 +418,6 @@ public:
   for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
       WaveFunctionClass &Psi =**wf_iter;
       for (int i=0;i<Psi.NumParams;i++){
-/* 	if (myComm.MyProc()==0){ */
-/* 	  cerr<<"SETTING PARAMETER "<< */
-	  
-/* 	} */
-	
 	Psi.SetParam_real(i,myParams[countMe].real());
 	Psi.SetParam_imag(i,myParams[countMe].imag());
 	countMe++;

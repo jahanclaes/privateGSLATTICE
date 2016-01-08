@@ -39,6 +39,7 @@ int main(int argc, char **argv)
   cerr<<"File name is "<<fileName<<endl;
   ifstream infile;
   infile.open(fileName.c_str());
+  assert(infile);
   InputClass input;
   input.Read(infile);
   infile.close();

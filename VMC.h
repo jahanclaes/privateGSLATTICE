@@ -71,6 +71,36 @@ class VMCDriverClass
     RandomClass Random(myComm);
     Random.Init();
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
+
+    int check=0;
+    while (myInput.OpenSection("WaveFunction",check)){
+      string waveFunction=myInput.GetVariable("name");
+      cerr<<"Found the "<<check<<" wavefunction called"<<waveFunction<<endl;
+      if (waveFunction=="PEPS")
+	wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
+      else if (waveFunction=="CPS"){
+	wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));	
+      }
+      else if (waveFunction=="RVB"){
+	wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+      }
+      else if (waveFunction=="BACKFLOW")
+	wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
+      else if (waveFunction=="JASTROW"){
+	wf_list.push_back(make_pair("JASTROW",new PairingFunctionAllBin()));
+      }
+      else if (waveFunction=="SLATERDET"){
+	wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
+	wf_list.push_back(make_pair("SLATERDETDOWN",new SharedEigsClass()));
+      }
+      else{
+	cerr<<"Could not find wavefunction: "<<waveFunction <<endl;
+      }
+      myInput.CloseSection();
+      check++;
+    }    
+
+
     //need to delete these eventually if we don't want memory to leak
         wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
 	//	wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
@@ -714,28 +744,39 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     OptimizeBothClass VMC_combine(Random); 
     
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
-    string waveFunction=myInput.GetVariable("WaveFunction");
-    if (waveFunction=="CPS"){
-      wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
-      wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+    int check=0;
+    while (myInput.OpenSection("WaveFunction",check)){
+      string waveFunction=myInput.GetVariable("name");
+      cerr<<"Found the "<<check<<" wavefunction called"<<waveFunction<<endl;
+      if (waveFunction=="PEPS")
+	wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
+      else if (waveFunction=="CPS"){
+	wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));	
+      }
+      else if (waveFunction=="RVB"){
+	wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+      }
+      else if (waveFunction=="BACKFLOW")
+	wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
+      else if (waveFunction=="JASTROW"){
+	wf_list.push_back(make_pair("JASTROW",new PairingFunctionAllBin()));
+      }
+      else if (waveFunction=="SLATERDET"){
+	wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
+	wf_list.push_back(make_pair("SLATERDETDOWN",new SharedEigsClass()));
+      }
+      else{
+	cerr<<"Could not find wavefunction: "<<waveFunction <<endl;
+      }
+      myInput.CloseSection();
+      check++;
+    }    
 
-    }
-    else if (waveFunction=="RVB"){
-      //      wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
-      wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-      wf_list.push_back(make_pair("JASTROW",new PairingFunctionAllBin()));
-    }
-    else if (waveFunction=="PEPS")
-      wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
-    else if (waveFunction=="BACKFLOW")
-      wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
-    else if (waveFunction=="SLATERDET"){
-      wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
-      wf_list.push_back(make_pair("SLATERDETDOWN",new SharedEigsClass()));
-    }
-    else //if (waveFunction!="CPS" && waveFunction!="RVB")
-      //    else 
-      assert(1==2);
+
+
+
+
+    
 
     VMC_combine.Init(wf_list,myInput);
     

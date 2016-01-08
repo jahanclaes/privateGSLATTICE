@@ -29,7 +29,7 @@ class InputClass
   }
   bool IsVariable(string myVar)
     {
-      return tree.input.count(myVar)==1;
+      return tree->input.count(myVar)==1;
     }
   string GetVariable(string myVar)
   {
@@ -37,10 +37,45 @@ class InputClass
       cerr<<"Missing variable "<<myVar<<endl;
     }
     assert(IsVariable(myVar));
-    return tree.input[myVar];
+    return tree->input[myVar];
   }
+
+  bool OpenSection(string myVar,int num)
+  {
+    int foundSection=0;
+    for (int i=0;i<tree->sections.size();i++){
+      if (tree->sections[i]->name==myVar && foundSection==num){
+	tree=tree->sections[i];
+	return true;
+      }
+      else {
+	foundSection++;
+      }
+    }
+    return false;
+  }
+
   
-  InputTree tree;
+  bool OpenSection(string myVar)
+  {
+    for (int i=0;i<tree->sections.size();i++){
+      if (tree->sections[i]->name==myVar){
+	tree=tree->sections[i];
+	return true;
+      }
+    }
+    return false;
+  }
+
+  void CloseSection()
+  {
+    cerr<<"Closing the section"<<endl;
+    cerr<<"The tree is currently "<<tree->name<<" "<<tree->parent->name<<endl;
+    tree=tree->parent;
+    cerr<<"Now the tree is  "<<tree->name<<endl;
+    return;
+  }
+  InputTree *tree;
   void RemoveTrailingWhiteSpace(string &s)
   {
     int lastPos=s.find_last_not_of(" \t\n\v\f\r");
@@ -60,24 +95,32 @@ class InputClass
     RemoveLeadingWhiteSpace(s);
   }
   void Read(ifstream &infile)
-  {
-    tree.name="root";
-    InputTree *currentTree=&tree;
+  { 
+    cerr<<"Reading input"<<endl;
+    tree=new InputTree();
+    tree->name="root";
+    InputTree *currentTree;
+    currentTree=tree;
 
     while (!infile.eof()){
       string line;
       infile>>line;
       RemoveWhiteSpace(line);
       if (line[line.size()-1]==':'){
-	line.substr(0,line.size()-1);
+	cerr<<"Reading section "<<endl;
+	line=line.substr(0,line.size()-1);
 	InputTree *t=new InputTree();
 	t->name=line;
+	cerr<<"Pushed the tree "<<line<<endl;
 	t->parent=currentTree;
 	currentTree->sections.push_back(t);
 	currentTree=t;
+	cerr<<"Done reading section"<<endl;
       }
       else if (line=="END"){
+	cerr<<"ending section "<<endl;
 	currentTree=currentTree->parent;
+	cerr<<"Done ending section"<<endl;
       }
       else if (line.size()==0){
       }
@@ -93,8 +136,8 @@ class InputClass
       
 
     }
-
-  };
+    cerr<<"done Reading input"<<endl;
+  }
   
   
 

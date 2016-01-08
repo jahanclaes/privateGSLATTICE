@@ -10,6 +10,7 @@ PEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1> &derivs)
 void 
 PEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int start, int stop)
 {
+  complex<double> currentValue=evaluate(system);
   int** PhyCfg = new int* [W_];
   for(int i=0; i<W_; i++) PhyCfg[i] = new int [L_];
   for(int i=0; i<L_*W_; i++)
@@ -19,6 +20,7 @@ PEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int 
       if(system.x(i)==-1) PhyCfg[i/L_][i%L_] = 2;
       if(system.x(i)==2 ) PhyCfg[i/L_][i%L_] = 3;
     }
+
   ///////////////////////////////
   peps->diff(PhyCfg);
   ///////////////////////////////
@@ -112,7 +114,7 @@ PEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int 
 	    }
 	}
 
-      if(PhyCfg[r_][c_]==phy_) derivs(i) = peps->DiffT_[r_][c_][s_](l_);
+      if(PhyCfg[r_][c_]==phy_) derivs(i) = peps->DiffT_[r_][c_][s_](l_)/currentValue;
     }
   ///////////////////////////////
   for(int i=0; i<W_; i++) delete [] PhyCfg[i];

@@ -722,9 +722,9 @@ double MeasureStaggered(OptimizeBothClass &vmc)
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     }
     else if (waveFunction=="RVB"){
-      //      wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
+      wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
-      wf_list.push_back(make_pair("JASTROW",new PairingFunctionAllBin()));
+      //      wf_list.push_back(make_pair("JASTROW",new PairingFunctionAllBin()));
     }
     else if (waveFunction=="PEPS")
       wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));

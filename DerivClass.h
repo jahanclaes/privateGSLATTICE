@@ -175,7 +175,7 @@ public:
     }
   complex<double> ComputeVariance()
     {
-      return (E_avgp.real()/NumTimes)*(E_avgp.real()/NumTimes)-E_avg2p.real()/NumTimes;
+      return -1*((E_avgp.real()/NumTimes)*(E_avgp.real()/NumTimes)-E_avg2p.real()/NumTimes);
     }
   complex<double> ComputeDerivp(int param)
     {

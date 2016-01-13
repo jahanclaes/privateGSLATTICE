@@ -171,9 +171,30 @@ public:
       else if (wf_type_string=="PEPS"){
 	cerr<<"ADDING PEPS"<<endl;
 	PEPSClass *t_PEPS=new PEPSClass();
-	t_PEPS->Init(System);
-	wf_list.push_back(t_PEPS);
+
+	int L,D,W,chi;
+
+	int check=0;
+	while (myInput.OpenSection("WaveFunction",check)){
+	  string waveFunction=myInput.GetVariable("name");
+	  cerr<<"Found the "<<check<<" wavefunction called"<<waveFunction<<endl;
+
+	  if (waveFunction=="PEPS"){
+	    D=myInput.toInteger(myInput.GetVariable("D"));
+	    chi=myInput.toInteger(myInput.GetVariable("chi"));
+	    L=myInput.toInteger(myInput.GetVariable("L"));
+	    W=myInput.toInteger(myInput.GetVariable("W"));
+	  }
+	  myInput.CloseSection();
+	  check++;
+	}
+	
+	t_PEPS->Init(System,L,W,D,chi);
+      	wf_list.push_back(t_PEPS);
       }
+
+
+
 
       else if (wf_type_string=="RVB"){
 	cerr<<"ADDING RVB"<<endl;

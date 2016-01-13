@@ -27,6 +27,16 @@ class InputClass
   {
     return atof(myString.c_str());
   }
+  bool toBool(string myString)
+  {
+    if (myString=="True")
+      return true;
+    else if (myString=="False")
+      return false;
+    cerr<<"You have a boolean which is neither true nor false"<<endl;
+    exit(1);
+      
+  }
   bool IsVariable(string myVar)
     {
       return tree->input.count(myVar)==1;

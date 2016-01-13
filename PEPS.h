@@ -52,7 +52,7 @@ public:
 
   void  CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int start, int stop);
     
-  void Init(SystemClass &system)
+  void Init(SystemClass &system,int tL_, int tW_, int tD_, int tVD_)
   {
     Name="PEPS";
     NeedFrequentReset=false;
@@ -62,10 +62,10 @@ public:
     }
     //SET ME CORRECTLY!  IMPLEMENT!
     //Need to find out how to read paramters
-    L_ = 4;
-    W_ = 4;
-    D_ = 2;
-    VD_ = 10;//used to be 25
+        L_ = tL_;
+        W_ = tW_;
+        D_ = tD_;
+        VD_ = tVD_;//used to be 25
 
     //peps = new PEPS_Base(W, L, phyD, D, VD);
     peps = new PEPS_Base(W_, L_, 4, D_, VD_);

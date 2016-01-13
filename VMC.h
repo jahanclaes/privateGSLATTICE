@@ -112,9 +112,13 @@ class VMCDriverClass
     VMC.VMC_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
     VMC.VMC_SampleSweeps=myInput.toInteger(myInput.GetVariable("SampleSweeps"));
 
+    VMC.GetParams("params.dat"); 
+
+
     cerr<<"POST INIT"<<endl;
     VMC.EvaluateAll();
     cerr<<"POST evaluate all"<<endl;
+
     //    VMC.SaveParams("params.dat");
     cerr<<"C"<<endl;
     int step=0;
@@ -748,8 +752,10 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     while (myInput.OpenSection("WaveFunction",check)){
       string waveFunction=myInput.GetVariable("name");
       cerr<<"Found the "<<check<<" wavefunction called"<<waveFunction<<endl;
-      if (waveFunction=="PEPS")
+      if (waveFunction=="PEPS"){
 	wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
+	
+      }
       else if  (waveFunction=="CPS"){
 	wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));	
       }
@@ -853,7 +859,23 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 
 
     }
-    //    VMC_combine.GetParams("params.dat"); 
+    ///GETTING PARAMETERS
+    if (myInput.IsVariable("ReadParams")){
+      bool toRead=myInput.toBool(myInput.GetVariable("ReadParams"));
+      if (toRead){
+	string param_fileName=myInput.GetVariable("ParamFileName");
+	//	VMC_combine.GetParams("params.dat"); 
+	VMC_combine.GetParams(param_fileName); 
+	for (int i=0;i<NumWalkers;i++){ 
+	  VMC_vec[i]->MatchParams(VMC_combine);
+	}
+      }
+    }
+    //DONE GETTING PARAMETERS
+
+
+
+
      VMC_combine.EvaluateAll();
 
 #pragma omp parallel for 

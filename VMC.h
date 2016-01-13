@@ -95,6 +95,7 @@ class VMCDriverClass
       }
       else{
 	cerr<<"Could not find wavefunction: "<<waveFunction <<endl;
+	exit(1);
       }
       myInput.CloseSection();
       check++;
@@ -112,7 +113,19 @@ class VMCDriverClass
     VMC.VMC_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
     VMC.VMC_SampleSweeps=myInput.toInteger(myInput.GetVariable("SampleSweeps"));
 
-    VMC.GetParams("params.dat"); 
+    /////    VMC.GetParams("params.dat"); 
+
+
+    ///GETTING PARAMETERS
+    if (myInput.IsVariable("ReadParams")){
+      bool toRead=myInput.toBool(myInput.GetVariable("ReadParams"));
+      if (toRead){
+	string param_fileName=myInput.GetVariable("ParamFileName");
+	VMC.GetParams(param_fileName); 
+      }
+    }
+    //DONE GETTING PARAMETERS
+
 
 
     cerr<<"POST INIT"<<endl;
@@ -773,6 +786,7 @@ double MeasureStaggered(OptimizeBothClass &vmc)
       }
       else{
 	cerr<<"Could not find wavefunction: "<<waveFunction <<endl;
+	exit(1);
       }
       myInput.CloseSection();
       check++;
@@ -859,6 +873,8 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 
 
     }
+
+
     ///GETTING PARAMETERS
     if (myInput.IsVariable("ReadParams")){
       bool toRead=myInput.toBool(myInput.GetVariable("ReadParams"));

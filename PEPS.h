@@ -69,7 +69,9 @@ public:
 
     //peps = new PEPS_Base(W, L, phyD, D, VD);
     peps = new PEPS_Base(W_, L_, 4, D_, VD_);
-
+	
+	peps.setNearProductState();
+	
     int N_edge = 4*(2*D_*D_+D_*D_*D_*(L_-2));
     int N_mid  = 4*(2*D_*D_*D_+D_*D_*D_*D_*(L_-2));
     NumParams=2*N_edge + (W_-2)*N_mid;

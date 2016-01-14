@@ -41,11 +41,13 @@ class PEPS_Base{
 	double build_UpLow_MPS(int ** PhyC, int Urow, int Lrow); // returns norm
 	double contract(int ** PhyC, int ptm);
 	double diff(int ** PhyC);
-	void setValue();//need to implement data structure later
+	void setValue(){}; // need to implement data structure later
 	////////////////////////////////////////////////////////////
 	//                    Sub Routines                        //
 	////////////////////////////////////////////////////////////
-	void setRandom(){};
+	void setRandom();
+	void setNearProductState(); // staggered 
+	void setNearUniform(); 
 	void M_setZero(int phyDim, int Dim, Mxd ** MPS);
 	void M_setRandom(int phyDim, int Dim, Mxd ** MPS);
 	double psiphi (int pD, Mxd ** Psi, Mxd ** Phi);

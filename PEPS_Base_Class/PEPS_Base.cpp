@@ -2,13 +2,15 @@
 #define PEPS_BASE_C
 
 //#include "PEPS_Base.h"
+// #include <Eigen/Dense>
+#define Mxd Eigen::MatrixXd
 
 PEPS_Base::PEPS_Base(int length, int width, int physicalDim, int BondDim, int MaxBondDim)
 {
 	initted_ = false;
 	SVD_Tolerance = 1e-10;
 	Var_Tolerance = 1e-10;
-	cout<<"Initializing PEPS_Base object";
+	cout<<"Initializing PEPS_Base object\n";
 	if(initted_)
 	{
 		std::cout<<"Please call Clear() to clear data member before changing the system size"<<std::endl;
@@ -903,9 +905,116 @@ double PEPS_Base::diff(int ** PhyC)
 	}
 }
 
-void PEPS_Base::setValue()
+void PEPS_Base::setRandom()
 {
-	
+	if(initted_)
+	{
+		for(int i = 0; i < W; i++)
+		{
+			for(int j = 0; j < L; j++)
+			{
+				for(int k = 0; k < phyD; k++)
+				{
+					if(i==0||i==W-1)
+					{
+						for(int l = 0; l < D; l++)
+						{
+							PEPS_[i][j][k][l].setRandom();
+						}
+					}
+					else
+					{
+						for(int l = 0; l < D*D; l++)
+						{
+							PEPS_[i][j][k][l].setRandom();
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void PEPS_Base::setNearUniform()
+{
+	if(initted_)
+	{
+		for(int i = 0; i < W; i++)
+		{
+			for(int j = 0; j < L; j++)
+			{
+				for(int k = 0; k < phyD; k++)
+				{
+					if(i==0||i==W-1)
+					{
+						for(int l = 0; l < D; l++)
+						{
+							Mxd tp(PEPS_[i][j][k][l].rows(),PEPS_[i][j][k][l].cols());
+							tp.setIdentity();
+							PEPS_[i][j][k][l].setRandom();
+							PEPS_[i][j][k][l] = 0.1 * PEPS_[i][j][k][l] + 0.37 * tp;
+						}
+					}
+					else
+					{
+						for(int l = 0; l < D*D; l++)
+						{
+							Mxd tp(PEPS_[i][j][k][l].rows(),PEPS_[i][j][k][l].cols());
+							tp.setIdentity();
+							PEPS_[i][j][k][l].setRandom();
+							PEPS_[i][j][k][l] = 0.1 * PEPS_[i][j][k][l] + 0.37 * tp;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void PEPS_Base::setNearProductState()
+{
+	if(initted_)
+	{
+		for(int i = 0; i < W; i++)
+		{
+			for(int j = 0; j < L; j++)
+			{
+				for(int k = 0; k < phyD; k++)
+				{
+					if(i==0||i==W-1)
+					{
+						for(int l = 0; l < D; l++)
+						{
+							Mxd tp(PEPS_[i][j][k][l].rows(),PEPS_[i][j][k][l].cols());
+							if( (i+j)%2==0 && k==1 )
+								tp.setIdentity();
+							else if( (i+j)%2==1 && k==2 )
+								tp.setIdentity();
+							else
+								tp.setZero();
+							PEPS_[i][j][k][l].setRandom();
+							PEPS_[i][j][k][l] = 0.36 * PEPS_[i][j][k][l] + 0.37 * tp;
+						}
+					}
+					else
+					{
+						for(int l = 0; l < D*D; l++)
+						{
+							Mxd tp(PEPS_[i][j][k][l].rows(),PEPS_[i][j][k][l].cols());
+							if( (i+j)%2==0 && k==1 )
+								tp.setIdentity();
+							else if( (i+j)%2==1 && k==2 )
+								tp.setIdentity();
+							else
+								tp.setZero();
+							PEPS_[i][j][k][l].setRandom();
+							PEPS_[i][j][k][l] = 0.36 * PEPS_[i][j][k][l] + 0.37 * tp;
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 void PEPS_Base::M_setZero(int phyDim, int Dim, Mxd ** MPS)

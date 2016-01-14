@@ -70,7 +70,11 @@ public:
     //peps = new PEPS_Base(W, L, phyD, D, VD);
     peps = new PEPS_Base(W_, L_, 4, D_, VD_);
 	
-	peps.setNearProductState();
+	// choose a starting configuration
+	peps->setNearProductState();
+	// peps->setProductState();
+	// peps->setNearUniform();
+	// peps->setUniform();
 	
     int N_edge = 4*(2*D_*D_+D_*D_*D_*(L_-2));
     int N_mid  = 4*(2*D_*D_*D_+D_*D_*D_*D_*(L_-2));

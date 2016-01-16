@@ -33,21 +33,22 @@ int main (int argc, char const *argv[])
 	{
 		PhyConfig[i] = new int [L]();
 	}
-	// for(int i = 0; i < W; ++i)
-	// {
-	// 	for(int j = 0; j < L; ++j)
-	// 	{
-	// 		if((i+j)%2==0)
-	// 			PhyConfig[i][j] = 1;
-	// 		else
-	// 			PhyConfig[i][j] = 2;
-	// 	}
-	// }
+	for(int i = 0; i < W; ++i)
+	{
+		for(int j = 0; j < L; ++j)
+		{
+			if((i+j)%2==0)
+				PhyConfig[i][j] = 1;
+			else
+				PhyConfig[i][j] = 2;
+		}
+	}
+	PhyConfig[0][0] = 3;
 	////////////////////////////////////////////////
 	// PEPS_Base peps(W, L, phyD, D, VD);
 	PEPS_Base * peps;
 	peps = new PEPS_Base(W, L, phyD, D, VD);
-	peps->setNearUniform();
+	peps->setProductState();
 	// peps->setNearProductState();
 	cout<<peps->contract(PhyConfig, 2)<<endl<<endl;
 	cout<<peps->contract(PhyConfig, 1)<<endl<<endl;

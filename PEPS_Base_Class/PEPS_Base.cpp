@@ -935,6 +935,40 @@ void PEPS_Base::setRandom()
 	}
 }
 
+void PEPS_Base::setUniform()
+{
+	if(initted_)
+	{
+		for(int i = 0; i < W; i++)
+		{
+			for(int j = 0; j < L; j++)
+			{
+				for(int k = 0; k < phyD; k++)
+				{
+					if(i==0||i==W-1)
+					{
+						for(int l = 0; l < D; l++)
+						{
+							Mxd tp(PEPS_[i][j][k][l].rows(),PEPS_[i][j][k][l].cols());
+							tp.setIdentity();
+							PEPS_[i][j][k][l] = 0.37 * tp;
+						}
+					}
+					else
+					{
+						for(int l = 0; l < D*D; l++)
+						{
+							Mxd tp(PEPS_[i][j][k][l].rows(),PEPS_[i][j][k][l].cols());
+							tp.setIdentity();
+							PEPS_[i][j][k][l] = 0.37 * tp;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 void PEPS_Base::setNearUniform()
 {
 	if(initted_)
@@ -963,6 +997,50 @@ void PEPS_Base::setNearUniform()
 							tp.setIdentity();
 							PEPS_[i][j][k][l].setRandom();
 							PEPS_[i][j][k][l] = 0.1 * PEPS_[i][j][k][l] + 0.37 * tp;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void PEPS_Base::setProductState()
+{
+	if(initted_)
+	{
+		for(int i = 0; i < W; i++)
+		{
+			for(int j = 0; j < L; j++)
+			{
+				for(int k = 0; k < phyD; k++)
+				{
+					if(i==0||i==W-1)
+					{
+						for(int l = 0; l < D; l++)
+						{
+							Mxd tp(PEPS_[i][j][k][l].rows(),PEPS_[i][j][k][l].cols());
+							if( (i+j)%2==0 && k==1 )
+								tp.setIdentity();
+							else if( (i+j)%2==1 && k==2 )
+								tp.setIdentity();
+							else
+								tp.setZero();
+							PEPS_[i][j][k][l] = 0.37 * tp;
+						}
+					}
+					else
+					{
+						for(int l = 0; l < D*D; l++)
+						{
+							Mxd tp(PEPS_[i][j][k][l].rows(),PEPS_[i][j][k][l].cols());
+							if( (i+j)%2==0 && k==1 )
+								tp.setIdentity();
+							else if( (i+j)%2==1 && k==2 )
+								tp.setIdentity();
+							else
+								tp.setZero();
+							PEPS_[i][j][k][l] = 0.37 * tp;
 						}
 					}
 				}

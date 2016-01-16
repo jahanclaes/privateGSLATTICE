@@ -46,8 +46,10 @@ class PEPS_Base{
 	//                    Sub Routines                        //
 	////////////////////////////////////////////////////////////
 	void setRandom();
+	void setProductState(); // staggered 
 	void setNearProductState(); // staggered 
-	void setNearUniform(); 
+	void setNearUniform();
+	void setUniform(); 
 	void M_setZero(int phyDim, int Dim, Mxd ** MPS);
 	void M_setRandom(int phyDim, int Dim, Mxd ** MPS);
 	double psiphi (int pD, Mxd ** Psi, Mxd ** Phi);

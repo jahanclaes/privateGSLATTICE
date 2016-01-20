@@ -12,20 +12,23 @@
 #include "WaveFunction.h"
 #include "PairingFunctionMany.h"
 
-#include "cPEPS_Base_Class/PEPS_Base.h"
+#include "cPEPS_Base_Class/cpeps.h"
 
-class PEPSClass  : public WaveFunctionClass
+class cPEPSClass  : public WaveFunctionClass
 {
 public:
 
-  int L_;
-  int W_;
-  int D_;
-  int VD_;
-  PEPS_Base * peps;
+  int xL;        // x-direction is periodic
+  int yL;        // y-direction is open
+  int pD;        // physical dimension -- 4 for Hubbard
+  int xBD;       // bond dimnesion in x-direction
+  int yBD;       // bond dimnesion in y-direction
+  int max_yBD;   // max bond dimnesion in y-direction (beyond which trucation is performed)
+  double tol;    // error tollerance of the truncation scheme
+  cPEPS * peps;
 
   int NumSpinUp;
-  PEPSClass() 
+  cPEPSClass() 
   {
   }
 
@@ -52,7 +55,7 @@ public:
 
   void  CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int start, int stop);
     
-  void Init(SystemClass &system,int tL_, int tW_, int tD_, int tVD_)
+  void Init(SystemClass &system, int xlen, int ylen, int phy, int xd, int yd, int maxd, double err_tol)
   {
     Name="cPEPS";
     NeedFrequentReset=false;
@@ -62,13 +65,15 @@ public:
     }
     //SET ME CORRECTLY!  IMPLEMENT!
     //Need to find out how to read paramters
-        L_ = tL_;
-        W_ = tW_;
-        D_ = tD_;
-        VD_ = tVD_;//used to be 25
+	xL      = xlen;
+	yL      = ylen;
+	pD      = phy;
+	xBD     = xd;
+	yBD     = yd;
+	max_yBD = maxd;
+	tol     = err_tol;
 
-    //peps = new PEPS_Base(W, L, phyD, D, VD);
-    peps = new PEPS_Base(W_, L_, 4, D_, VD_);
+    peps = new cPEPS(xL,yL,pD,xBD,yBD,max_yBD,tol);
 	
 	// choose a starting configuration
     //	peps->setNearProductState();
@@ -76,192 +81,66 @@ public:
 	// peps->setNearUniform();
 	// peps->setUniform();
 
-	
-    int N_edge = 4*(2*D_*D_+D_*D_*D_*(L_-2));
-    int N_mid  = 4*(2*D_*D_*D_+D_*D_*D_*D_*(L_-2));
-    NumParams=2*N_edge + (W_-2)*N_mid;
+    NumParams=peps->numParams;
   }
+  
   double GetParam_real(int i)
   {
-    //IMPLEMENT ME!
-    int N_edge = 4*(2*D_*D_+D_*D_*D_*(L_-2));
-    int N_mid  = 4*(2*D_*D_*D_+D_*D_*D_*D_*(L_-2));
-    int r_, c_, phy_, s_, l_;
-    if( i<0 || i>=(2*N_edge+(W_-2)*N_mid) )
-      {
-	cout<<"GetParam_real(int i): "<<i <<" "<<(2*N_edge+(W_-2)*N_mid)<<"out of bound!"<<endl;
-	exit(0);
-      }
-    else if(i<N_edge)
-      {
-	r_ = 1;
-	if(i<4*D_*D_)
+	  //IMPLEMENT ME!
+	  assert(i>=0);
+	  
+	  int x   = i / (peps->numParams/xL);
+	  int idx = i - x * (peps->numParams/xL);
+	  int y   = 0;
+	  int pT  = 0;
+	  int pF  = 0;
+	  
+	  for(int j = 0; j < yL; ++j)
 	  {
-	    c_ = 1;
-	    phy_ = i/(D_*D_);
-	    s_ = (i%(D_*D_))/D_;
-	    l_ = (i%(D_*D_))%D_;
+		  if(idx >= pD*xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1])
+		  {
+			  idx -= pD*xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1];
+		  }else
+		  {
+			  y    = j;
+			  pT   = idx / (xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  idx -= pT * (xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  pF   = idx / (peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  idx -= pF * (*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  break;
+		  }
 	  }
-	else if( i>=(N_edge-4*D_*D_) )
-	  {
-            c_ = L_ - 1;
-            phy_ = (i+4*D_*D_-N_edge)/(D_*D_);
-            s_ = ((i+4*D_*D_-N_edge)%(D_*D_))/D_;
-            l_ = ((i+4*D_*D_-N_edge)%(D_*D_))%D_;
-	  }
-	else
-	  {
-            c_ = (i-4*D_*D_)/(4*D_*D_*D_) + 1;
-            phy_ = (i-(c_-1)*4*D_*D_*D_-4*D_*D_)/(D_*D_*D_);
-            s_ = ((i-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))/(D_*D_);
-            l_ = ((i-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))%(D_*D_);
-	  }
-      }
-    else if( i>=N_edge && i<(NumParams-N_edge) )
-      {
-	r_ = (i-N_edge)/N_mid + 1;
-	int ii = (i-N_edge)%N_mid;
-	if(ii<4*D_*D_*D_)
-          {
-            c_ = 1;
-            phy_ = ii/(D_*D_*D_);
-            s_ = (ii%(D_*D_*D_))/D_;
-            l_ = (ii%(D_*D_*D_))%D_;
-          }
-	else if( ii>=(N_mid-4*D_*D_*D_) )
-          {
-            c_ = L_ - 1;
-            phy_ = (ii+4*D_*D_*D_-N_mid)/(D_*D_*D_);
-            s_ = ((ii+4*D_*D_*D_-N_mid)%(D_*D_*D_))/D_;
-            l_ = ((ii+4*D_*D_*D_-N_mid)%(D_*D_*D_))%D_;
-          }
-        else
-          {
-            c_ = (ii-4*D_*D_*D_)/(4*D_*D_*D_*D_) + 1;
-            phy_ = (ii-(c_-1)*4*D_*D_*D_*D_-4*D_*D_*D_)/(D_*D_*D_*D_);
-            s_ = ((ii-(c_-1)*4*D_*D_*D_*D_-4*D_*D_*D_)%(D_*D_*D_*D_))/(D_*D_);
-            l_ = ((ii-(c_-1)*4*D_*D_*D_*D_-4*D_*D_*D_)%(D_*D_*D_*D_))%(D_*D_);
-          }
-      }
-    else if( i>=(NumParams-N_edge) )
-      {
-        r_ = W_ - 1;
-        int ii = i+N_edge-NumParams;
-        if(ii<4*D_*D_)
-          {
-            c_ = 1;
-            phy_ = ii/(D_*D_);
-            s_ = (ii%(D_*D_))/D_;
-            l_ = (ii%(D_*D_))%D_;
-          }
-        else if( ii>=(N_edge-4*D_*D_) )
-          {
-            c_ = L_ - 1;
-            phy_ = (ii+4*D_*D_-N_edge)/(D_*D_);
-            s_ = ((ii+4*D_*D_-N_edge)%(D_*D_))/D_;
-            l_ = ((ii+4*D_*D_-N_edge)%(D_*D_))%D_;
-          }
-        else
-          {
-            c_ = (ii-4*D_*D_)/(4*D_*D_*D_) + 1;
-            phy_ = (ii-(c_-1)*4*D_*D_*D_-4*D_*D_)/(D_*D_*D_);
-            s_ = ((ii-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))/(D_*D_);
-            l_ = ((ii-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))%(D_*D_);
-          }
-      }
-
-    return peps->PEPS_[r_][c_][phy_][s_](l_);
+	  
+	  return peps->TN[x].T[y][pT][pF](idx);
   }
+  
   void SetParam_real(int i, double param)
   {
-    //IMPLEMENT ME!
-    int N_edge = 4*(2*D_*D_+D_*D_*D_*(L_-2));
-    int N_mid  = 4*(2*D_*D_*D_+D_*D_*D_*D_*(L_-2));
-    int r_, c_, phy_, s_, l_;
-    if( i<0 || i>=(2*N_edge+(W_-2)*N_mid) )
-    {
-      cout<<"SetParam_real(int i): "<<i <<" "<<(2*N_edge+(W_-2)*N_mid)<<"out of bound!"<<endl;
-      //      cout<<"GetParam_real(int i): i out of bound!"<<endl;
-      exit(0);
-    }
-    else if(i<N_edge)
-      {
-        r_ = 1;
-        if(i<4*D_*D_)
-          {
-            c_ = 1;
-            phy_ = i/(D_*D_);
-            s_ = (i%(D_*D_))/D_;
-            l_ = (i%(D_*D_))%D_;
-          }
-        else if( i>=(N_edge-4*D_*D_) )
-          {
-            c_ = L_ - 1;
-            phy_ = (i+4*D_*D_-N_edge)/(D_*D_);
-            s_ = ((i+4*D_*D_-N_edge)%(D_*D_))/D_;
-            l_ = ((i+4*D_*D_-N_edge)%(D_*D_))%D_;
-          }
-        else
-          {
-            c_ = (i-4*D_*D_)/(4*D_*D_*D_) + 1;
-            phy_ = (i-(c_-1)*4*D_*D_*D_-4*D_*D_)/(D_*D_*D_);
-            s_ = ((i-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))/(D_*D_);
-            l_ = ((i-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))%(D_*D_);
-          }
-      }
-    else if( i>=N_edge && i<(NumParams-N_edge) )
-      {
-        r_ = (i-N_edge)/N_mid + 1;
-        int ii = (i-N_edge)%N_mid;
-        if(ii<4*D_*D_*D_)
-          {
-            c_ = 1;
-            phy_ = ii/(D_*D_*D_);
-            s_ = (ii%(D_*D_*D_))/D_;
-            l_ = (ii%(D_*D_*D_))%D_;
-          }
-        else if( ii>=(N_mid-4*D_*D_*D_) )
-          {
-            c_ = L_ - 1;
-            phy_ = (ii+4*D_*D_*D_-N_mid)/(D_*D_*D_);
-            s_ = ((ii+4*D_*D_*D_-N_mid)%(D_*D_*D_))/D_;
-            l_ = ((ii+4*D_*D_*D_-N_mid)%(D_*D_*D_))%D_;
-          }
-        else
-          {
-            c_ = (ii-4*D_*D_*D_)/(4*D_*D_*D_*D_) + 1;
-            phy_ = (ii-(c_-1)*4*D_*D_*D_*D_-4*D_*D_*D_)/(D_*D_*D_*D_);
-            s_ = ((ii-(c_-1)*4*D_*D_*D_*D_-4*D_*D_*D_)%(D_*D_*D_*D_))/(D_*D_);
-            l_ = ((ii-(c_-1)*4*D_*D_*D_*D_-4*D_*D_*D_)%(D_*D_*D_*D_))%(D_*D_);
-          }
-      }
-    else if( i>=(NumParams-N_edge) )
-      {
-        r_ = W_ - 1;
-        int ii = i+N_edge-NumParams;
-        if(ii<4*D_*D_)
-          {
-            c_ = 1;
-            phy_ = ii/(D_*D_);
-            s_ = (ii%(D_*D_))/D_;
-            l_ = (ii%(D_*D_))%D_;
-          }
-        else if( ii>=(N_edge-4*D_*D_) )
-          {
-            c_ = L_ - 1;
-            phy_ = (ii+4*D_*D_-N_edge)/(D_*D_);
-            s_ = ((ii+4*D_*D_-N_edge)%(D_*D_))/D_;
-            l_ = ((ii+4*D_*D_-N_edge)%(D_*D_))%D_;
-          }
-        else
-          {
-            c_ = (ii-4*D_*D_)/(4*D_*D_*D_) + 1;
-            phy_ = (ii-(c_-1)*4*D_*D_*D_-4*D_*D_)/(D_*D_*D_);
-            s_ = ((ii-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))/(D_*D_);
-            l_ = ((ii-(c_-1)*4*D_*D_*D_-4*D_*D_)%(D_*D_*D_))%(D_*D_);
-          }
-      }
-    peps->PEPS_[r_][c_][phy_][s_](l_) = param;
+	  //IMPLEMENT ME!
+	  assert(i>=0);
+	  
+	  int x   = i / (peps->numParams/xL);
+	  int idx = i - x * (peps->numParams/xL);
+	  int y   = 0;
+	  int pT  = 0;
+	  int pF  = 0;
+	  
+	  for(int j = 0; j < yL; ++j)
+	  {
+		  if(idx >= pD*xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1])
+		  {
+			  idx -= pD*xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1];
+		  }else
+		  {
+			  y    = j;
+			  pT   = idx / (xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  idx -= pT * (xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  pF   = idx / (peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  idx -= pF * (*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  break;
+		  }
+	  }
+	  peps->TN[x].T[y][pT][pF](idx) = param;
   }
 
   double GetParam_imag(int i)

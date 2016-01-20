@@ -307,10 +307,10 @@ cPEPS::cPEPS(int xlen, int ylen, int phy, int xd, int yd, int maxBD, double tl):
 	{
 		TN[i].setTensorList(i,yL,pD,xBD,yBD);
 		TN[i].setRandom();
+		numParams += TN[i].numParams;
 		
 		dTN[i].setdTensorList(i,yL,xBD,yBD);
 		dTN[i].setZero();
-		numParams += dTN[i].numParams;
 	}
 	
 	tMPO = new MPO [xL];
@@ -354,10 +354,10 @@ void cPEPS::setcPEPS(int xlen, int ylen, int phy, int xd, int yd, int maxBD, dou
 		{
 			TN[i].setTensorList(i,yL,pD,xBD,yBD);
 			TN[i].setRandom();
+			numParams += TN[i].numParams;
 		
 			dTN[i].setdTensorList(i,yL,xBD,yBD);
 			dTN[i].setZero();
-			numParams += dTN[i].numParams;
 		}
 		
 		tMPO = new MPO [xL];

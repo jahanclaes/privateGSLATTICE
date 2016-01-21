@@ -5,13 +5,13 @@
 #include "SmartPfaffian.h"
 
 void 
-PEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1> &derivs)
+cPEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1> &derivs)
 {
   AllDerivs(system,derivs,0,derivs.size());
 }
 
 void 
-PEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int start, int stop)
+cPEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int start, int stop)
 {
   complex<double> currentValue=evaluate(system);
   int** PhyCfg = new int* [xL];
@@ -49,7 +49,7 @@ PEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int 
 			  pT   = idx / (xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
 			  idx -= pT * (xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
 			  pF   = idx / (peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
-			  idx -= pF * (*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  idx -= pF * (peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
 			  break;
 		  }
 	  }
@@ -63,7 +63,7 @@ PEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int 
 
 
 void 
-PEPSClass::RealDerivs(SystemClass &system, Array<complex<double>,1> &derivs)
+cPEPSClass::RealDerivs(SystemClass &system, Array<complex<double>,1> &derivs)
 {
   assert(1==2);
 }
@@ -73,7 +73,7 @@ PEPSClass::RealDerivs(SystemClass &system, Array<complex<double>,1> &derivs)
 
 
 void 
-PEPSClass::CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int start, int stop)
+cPEPSClass::CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int start, int stop)
 {
   assert(1==2);
   return;
@@ -82,7 +82,7 @@ PEPSClass::CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,in
 
 
 complex<double> 
-PEPSClass::evaluate(SystemClass &system)
+cPEPSClass::evaluate(SystemClass &system)
 {
   int** PhyCfg = new int* [xL];
   for(int i=0; i<xL; i++) PhyCfg[i] = new int [yL];
@@ -102,7 +102,7 @@ PEPSClass::evaluate(SystemClass &system)
 }
 
 complex<double> 
-PEPSClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
+cPEPSClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
 {
   //IMPLEMENT ME!
   //  complex<double> toCheck=evaluateRatio_check(system,swap1,swap2);
@@ -125,14 +125,14 @@ PEPSClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
 //doesn't change at all. 
 //Called after the particles have been swapped!
 complex<double> 
-PEPSClass::evaluateRatio(SystemClass &system, int swap1, int swap2)
+cPEPSClass::evaluateRatio(SystemClass &system, int swap1, int swap2)
 {
   assert(1==2);
 }
 
 
 complex<double> 
-PEPSClass::logevaluate(SystemClass &system,int &sign)
+cPEPSClass::logevaluate(SystemClass &system,int &sign)
 {
   assert(1==2);
   complex<double> val = evaluate(system);
@@ -142,7 +142,7 @@ PEPSClass::logevaluate(SystemClass &system,int &sign)
 
 
 complex<double> 
-PEPSClass::evaluateRatio_check(SystemClass &system, int swap1, int swap2)
+cPEPSClass::evaluateRatio_check(SystemClass &system, int swap1, int swap2)
 {
   assert(1==2);
 }

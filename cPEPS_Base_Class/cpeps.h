@@ -112,7 +112,7 @@ public:
 	double contractPEPS(int** phyC);  // contract cPEPS given a physical configuration
 	
 	// derivative method 
-	double diffPEPS(int** phyC);         // All derivative
+	void diffPEPS(int** phyC);         // All derivative
 
 	// print
 	void printTN(int** phyC);

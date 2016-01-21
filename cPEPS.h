@@ -77,9 +77,9 @@ public:
 	
 	// choose a starting configuration
     //	peps->setNearProductState();
-    peps->setProductState();
+    // peps->setProductState();
 	// peps->setNearUniform();
-	// peps->setUniform();
+	peps->setUniform();
 
     NumParams=peps->numParams;
   }
@@ -106,7 +106,7 @@ public:
 			  pT   = idx / (xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
 			  idx -= pT * (xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
 			  pF   = idx / (peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
-			  idx -= pF * (*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  idx -= pF * (peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
 			  break;
 		  }
 	  }
@@ -136,7 +136,7 @@ public:
 			  pT   = idx / (xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
 			  idx -= pT * (xBD*xBD*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
 			  pF   = idx / (peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
-			  idx -= pF * (*peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
+			  idx -= pF * (peps->TN[x].Dim[j]*peps->TN[x].Dim[j+1]);
 			  break;
 		  }
 	  }

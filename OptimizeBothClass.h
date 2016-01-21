@@ -15,6 +15,7 @@ using namespace std;
 #include "Hamiltonian.h"
 #include "CPS.h"
 #include "PEPS.h"
+#include "cPEPS.h"
 #include "TripletWF.h"
 #include "DerivClass.h"
 #include "ProjGutz.h"
@@ -170,9 +171,10 @@ public:
       }
       else if (wf_type_string=="PEPS"){
 	cerr<<"ADDING PEPS"<<endl;
-	PEPSClass *t_PEPS=new PEPSClass();
+	cPEPSClass *t_PEPS=new cPEPSClass();
 
-	int L,D,W,chi;
+	int L,Dx,Dy,W,chi;
+	double tol;
 
 	int check=0;
 	while (myInput.OpenSection("WaveFunction",check)){
@@ -180,16 +182,18 @@ public:
 	  cerr<<"Found the "<<check<<" wavefunction called"<<waveFunction<<endl;
 
 	  if (waveFunction=="PEPS"){
-	    D=myInput.toInteger(myInput.GetVariable("D"));
+	    Dx=myInput.toInteger(myInput.GetVariable("Dx"));
+	    Dy=myInput.toInteger(myInput.GetVariable("Dy"));
 	    chi=myInput.toInteger(myInput.GetVariable("chi"));
 	    L=myInput.toInteger(myInput.GetVariable("L"));
 	    W=myInput.toInteger(myInput.GetVariable("W"));
+	    tol=myInput.toDouble(myInput.GetVariable("tol"));
 	  }
 	  myInput.CloseSection();
 	  check++;
 	}
 	
-	t_PEPS->Init(System,L,W,D,chi);
+	t_PEPS->Init(System,L,W,4,Dx,Dy,chi,tol);
       	wf_list.push_back(t_PEPS);
       }
 

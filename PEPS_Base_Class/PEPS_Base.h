@@ -4,8 +4,9 @@
 // #include <Eigen/Dense>
 // using namespace Eigen;
 //#include "lapack_wrapper_v2.h"
-#define Mxd Eigen::MatrixXd
-
+//#define Mxd Eigen::MatrixXd
+using Eigen::MatrixXd;
+typedef MatrixXd Mxd;
 class PEPS_Base{
 	public:
 	

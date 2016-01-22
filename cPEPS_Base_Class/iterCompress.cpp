@@ -158,7 +158,7 @@ void iterCompress(bool is_Random, int maxIter, double tol, int nbD, MPO& H, bool
 {
 	if(print_info) std::cout<<"\tIterative compression... ("<<H.bD<<" --> "<<nbD<<")"<<std::endl;
 	int L = H.Len;
-	H.RC();
+	// H.RC();
 	double norm = H.norm;
 	if(norm==0)
 	{
@@ -166,7 +166,6 @@ void iterCompress(bool is_Random, int maxIter, double tol, int nbD, MPO& H, bool
 	}else
 	{
 		MPO Hc(H.Len,H.pD,nbD);
-		Hc.copyMPO(H);
 		////////////////////////////////////////////
 		if(is_Random)
 		{
@@ -174,6 +173,7 @@ void iterCompress(bool is_Random, int maxIter, double tol, int nbD, MPO& H, bool
 			Hc.RC();
 		}else
 		{
+			Hc.copyMPO(H);
 			Hc.compressL(nbD);
 		}
 		////////////////////////////////////////////
@@ -202,9 +202,9 @@ void iterCompress(bool is_Random, int maxIter, double tol, int nbD, MPO& H, bool
 				updateSite(H,Hc,CLM,CRM,site,direc,dt);
 				updateEnv(H,Hc,CLM,CRM,site,direc,dt);
 			}
-			if(std::abs(dt)<tol) break;
+			// if(std::abs(dt)<tol) break;
 		}
-		if(print_info) std::cout<<"\tCompression error = "<<dt<<std::endl;
+		// if(print_info) std::cout<<"\tCompression error = "<<dt<<std::endl;
 		// std::cout<<std::endl;
 		////////////////////////////////////////////
 		delete [] CRM;
@@ -212,10 +212,10 @@ void iterCompress(bool is_Random, int maxIter, double tol, int nbD, MPO& H, bool
 		////////////////////////////////////////////
 		H.copyMPO(Hc);
 		H.norm = norm;
-		for(int i = 0; i < H.pD*H.pD; ++i)
-		{
-			H.M[0][i] *= norm;
-		}
+		// for(int i = 0; i < H.pD*H.pD; ++i)
+		// {
+		// 	H.M[0][i] *= norm;
+		// }
 	}
 }
 

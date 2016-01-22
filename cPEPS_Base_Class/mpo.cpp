@@ -516,8 +516,8 @@ void MPO::RC()
 		}
 		TM.transposeInPlace();
 		rQR(TM,Q);
+		R.noalias() = TM.transpose()*Q;
 		Q.transposeInPlace();
-		R.noalias() = TM.transpose()*Q.transpose();
 		for(tid=0; tid<pD*pD; tid++)
 		// #pragma omp parallel num_threads(pD) private(tid)
 		{
@@ -667,6 +667,7 @@ void MPO::compressL(int nbD)
 	bD = *std::max_element(Dim,Dim+Len+1);
 	if(bD>nbD)
 	{
+		// std::cout<<"Hello"<<std::endl;
 		RC();
 		int tid;
 		int row, col;
@@ -685,7 +686,9 @@ void MPO::compressL(int nbD)
 				// tid = omp_get_thread_num();
 				TM.block(tid*row,0,row,col)=M[i][tid];
 			}
+			// std::cout<<"In SVD"<<std::endl;
 			rSVD(TM,pD*pD*bD,sv,U,V,nbD,svd_error);
+			// std::cout<<"Out SVD"<<std::endl;
 			for(tid = 0; tid < pD*pD; tid++)
 			{
 				// tid = omp_get_thread_num();

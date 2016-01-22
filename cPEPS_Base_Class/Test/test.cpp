@@ -16,13 +16,13 @@ using namespace std;
 
 int main (int argc, char const *argv[])
 {
-	int xL = 2;
-	int yL = 2;
-	int pD = 2;
+	int xL = 5;
+	int yL = 5;
+	int pD = 4;
 	int xD = 4;
 	int yD = 4;
-	int maxD = 12;
-	double tol = 1E-10;
+	int maxD = 60;
+	double tol = 1E-6;
 	
 	int** phyC = new int* [xL];
 	for(int i = 0; i < xL; ++i)
@@ -40,12 +40,12 @@ int main (int argc, char const *argv[])
 	// }
 	// cout<<cp.TN[0].T[0][0][0]<<endl;
 	// cout<<cp.TN[0].T[1][0][0]<<endl;
-	cout<<cp.TN[0].T[0][0][0] * cp.TN[0].T[1][0][0]<<endl;
+	// cout<<cp.TN[0].T[0][0][0] * cp.TN[0].T[1][0][0]<<endl;
 	
 	// cout<<cp.TN[1].T[0][0][0]<<endl;
 	// cout<<cp.TN[1].T[1][0][0]<<endl;
-	cout<<cp.TN[1].T[0][0][0] * cp.TN[1].T[1][0][0]<<endl;
-	cout<<(cp.TN[0].T[0][0][0] * cp.TN[0].T[1][0][0]) * (cp.TN[1].T[0][0][0] * cp.TN[1].T[1][0][0])<<endl;
+	// cout<<cp.TN[1].T[0][0][0] * cp.TN[1].T[1][0][0]<<endl;
+	// cout<<(cp.TN[0].T[0][0][0] * cp.TN[0].T[1][0][0]) * (cp.TN[1].T[0][0][0] * cp.TN[1].T[1][0][0])<<endl;
 	// cp.setUniform();
 	// cp.setNearUniform();
 	// cp.setProductState();
@@ -57,6 +57,6 @@ int main (int argc, char const *argv[])
 	cout<<"Contraction of the PEPS = "<<ct<<endl;
 	cp.diffPEPS(phyC);
 	cout<<"diff done!"<<endl;
-	cp.printDiffTN();
+	// cp.printDiffTN();
 	return 0;
 }

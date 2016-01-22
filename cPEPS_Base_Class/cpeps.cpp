@@ -323,7 +323,7 @@ cPEPS::cPEPS(int xlen, int ylen, int phy, int xd, int yd, int maxBD, double tl):
 	tMPO = new MPO [xL];
 	for(int i = 0; i < xL; ++i)
 	{
-		tMPO[i].setShellMPO(yL,xBD,yBD);
+		tMPO[i].setMPO(yL,xBD,yBD);
 	}
 	
 	initted = true;
@@ -369,7 +369,7 @@ void cPEPS::setcPEPS(int xlen, int ylen, int phy, int xd, int yd, int maxBD, dou
 		tMPO = new MPO [xL];
 		for(int i = 0; i < xL; ++i)
 		{
-			tMPO[i].setShellMPO(yL,xBD,yBD);
+			tMPO[i].setMPO(yL,xBD,yBD);
 		}
 	
 		initted = true;
@@ -388,15 +388,13 @@ void cPEPS::buildMPO(int** phyC)
 	{
 		for(int y = 0; y < yL; ++y)
 		{
-			tMPO[x].M[y] = TN[x].T[y][phyC[x][y]];
+			for(int i = 0; i < xBD*xBD; ++i)
+			{
+				tMPO[x].M[y][i] = TN[x].T[y][phyC[x][y]][i];
+			}
 		}
 		tMPO[x].norm = 1;
-		tMPO[x].RC();
-		for(int i = 0; i < xBD*xBD; ++i)
-		{
-			tMPO[x].M[0][i] *= tMPO[x].norm;
-		}
-		// std::cout<<"Norm of MPO "<<x<<" = "<<tMPO[x].norm<<std::endl;
+		// Don't gauge the matrix
 	}
 	// for(int i = 0; i < tMPO[0].Len; ++i)
 	// {

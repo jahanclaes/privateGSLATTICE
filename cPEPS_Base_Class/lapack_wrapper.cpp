@@ -35,7 +35,7 @@ void rQR(const Mxd& MT, Mxd& Q){
 	K = std::min(M,N);
 
 	double * TAU = new double [K];
-	int lwork = std::max(M,N)*std::max(M,N);//The dimension of the array WORK.
+	int lwork = std::max(M,N)*std::min(M,N);//The dimension of the array WORK.
 	double * work = new double [lwork];
 	int INFO;
 	///////////////////////////////////

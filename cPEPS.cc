@@ -58,9 +58,9 @@ cPEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int
   ///////////////////////////////
   for(int i=0; i<xL; i++) delete [] PhyCfg[i];
   delete [] PhyCfg;
-  for(int i=start; i<stop; i++) 
-    CheckDerivs(system,derivs,i);
-  exit(1);
+  //  for(int i=start; i<stop; i++) 
+  //    CheckDerivs(system,derivs,i);
+  //  exit(1);
   return;
 }
 

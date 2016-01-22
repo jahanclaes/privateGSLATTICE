@@ -82,6 +82,11 @@ public:
         peps->setNearUniform();
 	//	    peps->setUniform();
 
+    //	peps->setNearProductState();
+    // peps->setProductState();
+	// peps->setNearUniform();
+	//	peps->setUniform();
+
     NumParams=peps->numParams;
   }
   

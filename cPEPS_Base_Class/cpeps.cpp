@@ -8,9 +8,14 @@
 //#ifndef My_cPEPS_CLASS
 //#define My_cPEPS_CLASS
 
+
 // typedef Eigen::MatrixXd Mxd;
 #include "cpeps.h"
 using namespace std;
+
+
+typedef Eigen::MatrixXd Mxd;
+
 
 TensorList::TensorList()
 {	
@@ -318,8 +323,7 @@ cPEPS::cPEPS(int xlen, int ylen, int phy, int xd, int yd, int maxBD, double tl):
 	tMPO = new MPO [xL];
 	for(int i = 0; i < xL; ++i)
 	{
-		tMPO[i].setMPO(yL,xBD,yBD,0);
-		tMPO[i].setZero(yBD);
+		tMPO[i].setShellMPO(yL,xBD,yBD);
 	}
 	
 	initted = true;
@@ -365,8 +369,7 @@ void cPEPS::setcPEPS(int xlen, int ylen, int phy, int xd, int yd, int maxBD, dou
 		tMPO = new MPO [xL];
 		for(int i = 0; i < xL; ++i)
 		{
-			tMPO[i].setMPO(yL,xBD,yBD,0);
-			tMPO[i].setZero(yBD);
+			tMPO[i].setShellMPO(yL,xBD,yBD);
 		}
 	
 		initted = true;
@@ -385,12 +388,14 @@ void cPEPS::buildMPO(int** phyC)
 	{
 		for(int y = 0; y < yL; ++y)
 		{
-			for(int i = 0; i < xBD*xBD; ++i)
-			{
-				tMPO[x].M[y][i] = TN[x].T[y][phyC[x][y]][i];
-			}
+			tMPO[x].M[y] = TN[x].T[y][phyC[x][y]];
 		}
+		tMPO[x].norm = 1;
 		tMPO[x].RC();
+		for(int i = 0; i < xBD*xBD; ++i)
+		{
+			tMPO[x].M[0][i] *= tMPO[x].norm;
+		}
 		// std::cout<<"Norm of MPO "<<x<<" = "<<tMPO[x].norm<<std::endl;
 	}
 	// for(int i = 0; i < tMPO[0].Len; ++i)
@@ -418,14 +423,14 @@ double cPEPS::contractPEPS(int** phyC)
 	// {
 	// 	for(int j = 0; j < H.pD*H.pD; ++j)
 	// 	{
-	// 		std::cout<<tMPO[0].M[i][j].norm()<<std::endl;
+	// 		std::cout<<tMPO[0].M[i][j]<<std::endl;
 	// 	}
 	// }
 	// std::cout<<H.norm<<std::endl;
 	return H.trace();
 }
 
-double cPEPS::diffPEPS(int** phyC)
+void cPEPS::diffPEPS(int** phyC)
 {
 	buildMPO(phyC);
 	MPO* LEnv = new MPO [xL];
@@ -704,15 +709,16 @@ void cPEPS::printTN(int** phyC)
 	{
 		for(int y = 0; y < yL; ++y)
 		{
-			for(int i = 0; i < xBD; ++i)
-			{
-				for(int j = 0; j < xBD; ++j)
-				{
-					std::cout<<TN[x].T[y][phyC[x][y]][i*xBD+j]<<std::endl;
-				}
-			}
+			// for(int i = 0; i < xBD; ++i)
+			// {
+			// 	for(int j = 0; j < xBD; ++j)
+			// 	{
+			// 		std::cout<<TN[x].T[y][phyC[x][y]][i*xBD+j]<<std::endl<<std::endl;
+			// 	}
+			// }
+			std::cout<<TN[x].T[y][phyC[x][y]][0]<<std::endl<<std::endl;
 		}
-		std::cout<<std::endl;
+		std::cout<<std::endl<<std::endl;
 	}
 }
 
@@ -722,15 +728,16 @@ void cPEPS::printDiffTN()
 	{
 		for(int y = 0; y < yL; ++y)
 		{
-			for(int i = 0; i < xBD; ++i)
-			{
-				for(int j = 0; j < xBD; ++j)
-				{
-					std::cout<<dTN[x].T[y][i*xBD+j]<<std::endl;
-				}
-			}
+			// for(int i = 0; i < xBD; ++i)
+			// {
+			// 	for(int j = 0; j < xBD; ++j)
+			// 	{
+			// 		std::cout<<dTN[x].T[y][i*xBD+j]<<std::endl<<std::endl;
+			// 	}
+			// }
+			std::cout<<dTN[x].T[y][0]<<std::endl<<std::endl;
 		}
-		std::cout<<std::endl;
+		std::cout<<std::endl<<std::endl;
 	}
 }
 

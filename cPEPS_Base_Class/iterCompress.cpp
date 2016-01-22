@@ -165,7 +165,7 @@ void iterCompress(bool is_Random, int maxIter, double tol, int nbD, MPO& H, bool
 		H.setZero(2);
 	}else
 	{
-		MPO Hc(H.Len,H.pD,nbD,0);
+		MPO Hc(H.Len,H.pD,nbD);
 		Hc.copyMPO(H);
 		////////////////////////////////////////////
 		if(is_Random)

@@ -60,7 +60,7 @@ cPEPSClass::AllDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int
   delete [] PhyCfg;
   for(int i=start; i<stop; i++) 
     CheckDerivs(system,derivs,i);
-
+  exit(1);
   return;
 }
 
@@ -79,7 +79,10 @@ double
 cPEPSClass::CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int derivInt)
 {
   //  cerr<<"Testing "<<derivInt<<endl;
+  double delta=1e-10;
+  double nothing=evaluate(system).real();
   double currParam=GetParam_real(derivInt);
+
 //   for (double myStep=-0.01;myStep<0.01;myStep+=0.001){
 //     double step_energy=0.0;
 //     double countSteps=0.0;
@@ -87,19 +90,19 @@ cPEPSClass::CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,i
 //     cerr<<myStep<<" "<<evaluate_noInverse(system)<<endl;
 //   }
 
-  SetParam_real(derivInt,currParam+0.001);
+  SetParam_real(derivInt,currParam+delta);
   double up=evaluate(system).real();
-  SetParam_real(derivInt,currParam-0.001);
+  SetParam_real(derivInt,currParam-delta);
   double down=evaluate(system).real();
 
   SetParam_real(derivInt,currParam);
   double curr=evaluate(system).real();
 
   //uncomment next line if you want it to print
-  //  cerr<<"Derivative of "<<derivInt<<" "<<derivs(derivInt)<<" "<<(up-down)/(0.002*curr)<<endl;
-  derivs(derivInt)=(up-down)/(0.002*curr);
+  cerr<<"Derivative of "<<derivInt<<" "<<derivs(derivInt)<<" "<<(up-down)/(2*delta*curr)<<endl;
+  derivs(derivInt)=(up-down)/(2*delta*curr);
   //  cerr<<"Done Testing "<<derivInt<<endl;
-  return  (up-down)/(0.002*curr);
+  return  (up-down)/(2*delta*curr);
 
 
 

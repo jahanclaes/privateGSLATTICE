@@ -27,19 +27,18 @@ public:
 	Mxd ** M;
 	SpM ** H;
 	int *  Dim;
-	int *  M_IDs;
 	
 	double norm;
-	double J1;
-	double J2;
-	double ens;
 	
 	bool if_init;
+	bool if_shell;
+	
 	MPO ();
-	MPO (int l, int pd, int bd, double EnergyShifted);
+	MPO (int l, int pd, int bd);
 	~ MPO ();
 
-	void setMPO(int l, int pd, int bd, double EnergyShifted);
+	void setMPO(int l, int pd, int bd);
+	void setShellMPO(int l, int pd, int bd);
 	void clearMPO();	
 	void copyMPO(const MPO& other);
 	void addMPO(double coeff, const MPO& other);

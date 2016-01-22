@@ -9,22 +9,16 @@ typedef Eigen::MatrixXd Mxd;
 MPO::MPO()
 {
 	norm = 1;
-	if_init = false;
+	if_init  = false;
+	if_shell = false;
 }
 
-MPO::MPO(int l, int pd, int bd, double EnergyShifted)
+MPO::MPO(int l, int pd, int bd)
 {
 	Len = l;
 	pD = pd;
 	bD = bd;
-	ens = EnergyShifted;
 	norm = 1;
-	
-	M_IDs = new int [Len]();
-	for(int i = 0; i < Len; ++i)
-	{
-		M_IDs[i] = i;
-	}
 	
 	Dim = new int [Len+1]();
 	Dim[0] = 1;
@@ -55,21 +49,15 @@ MPO::MPO(int l, int pd, int bd, double EnergyShifted)
 	}
 	
 	if_init = true;
+	if_shell = false;
 }
 
-void MPO::setMPO(int l, int pd, int bd, double EnergyShifted)
+void MPO::setMPO(int l, int pd, int bd)
 {
 	Len = l;
 	pD = pd;
 	bD = bd;
-	ens = EnergyShifted;
 	norm = 1;
-	
-	M_IDs = new int [Len]();
-	for(int i = 0; i < Len; ++i)
-	{
-		M_IDs[i] = i;
-	}
 	
 	Dim = new int [Len+1]();
 	
@@ -101,6 +89,46 @@ void MPO::setMPO(int l, int pd, int bd, double EnergyShifted)
 	}
 	
 	if_init = true;
+	if_shell = false;
+}
+
+void MPO::setShellMPO(int l, int pd, int bd)
+{
+	Len = l;
+	pD = pd;
+	bD = bd;
+	norm = 1;
+	
+	Dim = new int [Len+1]();
+	
+	Dim[0] = 1;
+	for(int i = 1; i < Len; ++i)
+	{
+		int pw = std::min(i,Len-i);
+		Dim[i] = std::pow(pD*pD,pw);
+		if(Dim[i]<0||log2(Dim[i])<pw)
+		{
+			Dim[i] = bD;
+		}else
+		{
+			Dim[i] = std::min(Dim[i],bD);
+		}
+	}
+	Dim[Len] = 1;
+	
+	// Shell MPO does not allocate the matrices,
+	// but rather uses marices already allocated.
+	// User is responsible for mataining the correct size of the matrices.
+	M = new Mxd * [Len];
+	
+	H = new SpM * [Len];
+	for(int i = 0; i < Len; i++)
+	{
+		H[i] = new SpM [pD*pD];
+	}
+	
+	if_init = true;
+	if_shell = true;
 }
 
 MPO::~MPO()
@@ -109,13 +137,12 @@ MPO::~MPO()
 	{
 		for(int i = 0; i < Len; ++i)
 		{
-			delete [] M[i];
+			if(!if_shell) delete [] M[i];
 			delete [] H[i];
 		}
 		delete [] M;
 		delete [] H;
 		delete [] Dim;
-		delete [] M_IDs;
 		if_init = false;
 	}
 }
@@ -126,13 +153,12 @@ void MPO::clearMPO()
 	{
 		for(int i = 0; i < Len; ++i)
 		{
-			delete [] M[i];
+			if(!if_shell) delete [] M[i];
 			delete [] H[i];
 		}
 		delete [] M;
 		delete [] H;
 		delete [] Dim;
-		delete [] M_IDs;
 		if_init = false;
 	}
 }
@@ -145,9 +171,7 @@ void MPO::copyMPO(const MPO& other)
 	norm = other.norm;
 	
 	if(!if_init)
-	{
-		M_IDs = new int [Len]();
-		
+	{	
 		Dim = new int [Len+1]();
 		
 		M = new Mxd * [Len];
@@ -163,11 +187,6 @@ void MPO::copyMPO(const MPO& other)
 		}
 		
 		if_init = true;
-	}
-	
-	for(int i = 0; i < Len; ++i)
-	{
-		M_IDs[i] = other.M_IDs[i];
 	}
 	
 	for(int i = 0; i < Len+1; ++i)

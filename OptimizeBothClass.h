@@ -566,6 +566,10 @@ void BroadcastParams(CommunicatorClass &myComm)
      currStart=currStart+Psi.NumParams;
      }
    }
+   for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+     WaveFunctionClass &Psi =**wf_iter;
+     Psi.RebuildParams();
+   }   
    EvaluateAll();
    if (myComm.MyProc()==0)
      cerr<<"Variance: "<<VarDeriv.ComputeVariance()<<endl; 

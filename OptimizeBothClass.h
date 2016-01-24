@@ -385,17 +385,16 @@ public:
     }
     for (int step=0;step<System.x.size();step++){ 
       //      cerr<<"On step "<<step<<endl;
+
+      int spin = (Random.randInt(2) == 0 ? -1: 1);
       int site=Random.randInt(System.x.size());
-      while (System.x(site)==0)
-	site=Random.randInt(System.x.size());
-      int spin=System.x(site);
-      if (System.x(site)==2) 
-	spin=(Random.randInt(2) == 0 ? -1: 1);
-      
+      while ( (System.x(site)!=spin && System.x(site)!=2))
+        site=Random.randInt(System.x.size());
+
       int end_site=Random.randInt(System.x.size());
-      while (end_site == site || System.x(end_site)==2 || System.x(end_site)==spin){
-	end_site=Random.randInt(System.x.size());
-      }
+      while ( (System.x(end_site)==spin || System.x(end_site)==2))
+        end_site=Random.randInt(System.x.size());
+
       System.Move(site,end_site,spin);
       for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
 	(*wf_iter)->Move(site,end_site,spin);

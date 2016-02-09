@@ -523,6 +523,35 @@ void BroadcastParams(CommunicatorClass &myComm)
    infile.close();
    
  }
+
+ 
+ void GetGradient(CommunicatorClass &myComm)
+ {
+   vector<complex<double> > gradient(NumberOfParams);
+   for (int i=0;i<gradient.size();i++){
+     gradient[i]=0.0;
+   }
+   
+   int currStart=0;
+   if (opt==TIMEEVOLUTION)
+     VarDeriv.GetSInverse();
+   for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+     WaveFunctionClass &Psi =**wf_iter;
+     for (int i=0;i<Psi.NumParams;i++){
+       complex<double> myDeriv;
+       if (opt==TIMEEVOLUTION)
+	 myDeriv=VarDeriv.ComputeDerivSR(currStart+i);
+       else 
+	 myDeriv=VarDeriv.ComputeDerivp(currStart+i);
+       if (opt==SR && myDeriv!=0.0)
+	 myDeriv=myDeriv/abs(myDeriv);
+       gradient[currStart+i]=myDeriv;
+     }
+     currStart=currStart+Psi.NumParams;
+   }
+ }
+ 
+
  
  void TakeStep(CommunicatorClass &myComm)
  {
@@ -577,6 +606,8 @@ void BroadcastParams(CommunicatorClass &myComm)
    
    
  }
+
+
  void EvaluateAll()
  {
    //HACK!

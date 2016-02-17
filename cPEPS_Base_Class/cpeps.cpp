@@ -167,6 +167,84 @@ void TensorList::setZero()
 	}
 }
 
+void TensorList::boostBD(int dxBD, int dyBD)
+{
+	if(!initted)
+	{
+		std::cout<<"Tensors' dimensions are not set yet!"<<std::endl;
+		abort();
+	}
+	
+	int* newDim = new int [yL+1]();
+	int newxBD = xBD + dxBD;
+	int newyBD = yBD + dyBD;
+	
+	newDim[0] = 1;
+	for(int i = 1; i < yL; ++i)
+	{
+		int pw = std::min(i,yL-i);
+		newDim[i] = std::pow(newxBD*newxBD,pw);
+		if(newDim[i]<0||log2(newDim[i])<pw)
+		{
+			newDim[i] = newyBD;
+		}else
+		{
+			newDim[i] = std::min(newDim[i],newyBD);
+		}
+	}
+	newDim[yL] = 1;
+	
+	Mxd*** newT = new Mxd** [yL];
+	for(int i = 0; i < yL; ++i)
+	{
+		newT[i] = new Mxd* [pD];
+		for(int j = 0; j < pD; ++j)
+		{
+			newT[i][j] = new Mxd [newxBD*newxBD];
+			for(int k = 0; k < newxBD*newxBD; ++k)
+			{
+				newT[i][j][k].setRandom(newDim[i],newDim[i+1]);
+				newT[i][j][k] *=0.0001;
+			}
+		}
+	}
+	
+	for(int i = 0; i < yL; ++i)
+	{
+		for(int j = 0; j < pD; ++j)
+		{
+			for(int k = 0; k < xBD*xBD; ++k)
+			{
+				int p1 = k/xBD;
+				int p2 = k%xBD;
+				newT[i][j][p1*newxBD+p2].block(0,0,Dim[i],Dim[i+1]) += T[i][j][k];
+			}
+		}
+	}
+	
+	delete [] Dim;
+	Dim = &newDim[0];
+	
+	for(int i = 0; i < yL; ++i)
+	{
+		for(int j = 0; j < pD; ++j)
+		{
+			delete [] T[i][j];
+			T[i][j] = &newT[i][j][0];
+		}
+	}
+	
+	xBD = newxBD;
+	yBD = newyBD;
+	
+	numParams = 0;
+	for(int i = 0; i < yL; ++i)
+	{
+		numParams += Dim[i] * Dim[i+1];
+	}
+	numParams *= (pD*xBD*xBD);
+}
+
 ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////
 
@@ -288,6 +366,74 @@ void dTensorList::setZero()
 			T[i][k].setZero(Dim[i],Dim[i+1]);
 		}
 	}
+}
+
+void dTensorList::boostBD(int dxBD, int dyBD)
+{
+	if(!initted)
+	{
+		std::cout<<"Tensors' dimensions are not set yet!"<<std::endl;
+		abort();
+	}
+	
+	int* newDim = new int [yL+1]();
+	int newxBD = xBD + dxBD;
+	int newyBD = yBD + dyBD;
+	
+	newDim[0] = 1;
+	for(int i = 1; i < yL; ++i)
+	{
+		int pw = std::min(i,yL-i);
+		newDim[i] = std::pow(newxBD*newxBD,pw);
+		if(newDim[i]<0||log2(newDim[i])<pw)
+		{
+			newDim[i] = newyBD;
+		}else
+		{
+			newDim[i] = std::min(newDim[i],newyBD);
+		}
+	}
+	newDim[yL] = 1;
+	
+	Mxd** newT = new Mxd* [yL];
+	for(int i = 0; i < yL; ++i)
+	{
+		newT[i] = new Mxd [newxBD*newxBD];
+		for(int k = 0; k < newxBD*newxBD; ++k)
+		{
+			newT[i][k].setRandom(newDim[i],newDim[i+1]);
+			newT[i][k] *=0.0001;
+		}
+	}
+	
+	for(int i = 0; i < yL; ++i)
+	{
+		for(int k = 0; k < xBD*xBD; ++k)
+		{
+			int p1 = k/xBD;
+			int p2 = k%xBD;
+			newT[i][p1*newxBD+p2].block(0,0,Dim[i],Dim[i+1]) += T[i][k];
+		}
+	}
+	
+	delete [] Dim;
+	Dim = &newDim[0];
+	
+	for(int i = 0; i < yL; ++i)
+	{
+		delete [] T[i];
+		T[i] = &newT[i][0];
+	}
+	
+	xBD = newxBD;
+	yBD = newyBD;
+	
+	numParams = 0;
+	for(int i = 0; i < yL; ++i)
+	{
+		numParams += Dim[i] * Dim[i+1];
+	}
+	numParams *= (xBD*xBD);
 }
 
 ////////////////////////////////////////////////////
@@ -734,7 +880,23 @@ void cPEPS::printDiffTN()
 }
 
 
-
+void cPEPS::boostBD(int dxBD, int dyBD)
+{
+	std::cout<<"Remember to use SetParam_real() first, then call boostBD().\nOtherwise the paramters will be set to wrong position."<<std::endl;
+	numParams = 0;
+	for(int i = 0; i < xL; ++i)
+	{
+		TN[i].boostBD(dxBD,dyBD);
+		numParams += TN[i].numParams;
+		dTN[i].boostBD(dxBD,dyBD);
+	}
+	xBD += dxBD;
+	yBD += dyBD;
+	for(int i = 0; i < xL; ++i)
+	{
+		tMPO[i].setMPO(yL,xBD,yBD);
+	}
+}
 
 
 #endif

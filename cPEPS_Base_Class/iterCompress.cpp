@@ -51,29 +51,32 @@ void buildR(MPO& H, MPO& Hc, Mxd* CR)
 void updateSite(MPO& H, MPO& Hc, Mxd* CL, Mxd* CR, int& site, char& direc, double& dt)
 {
 	// cout<<"updateSite"<<endl;
-	double tp = 0;
+	// double tp = 0;
+	Mxd T;
 	for(int i = 0; i < H.pD*H.pD; i++)
 	{
-		Mxd T;
+		// Mxd T;
 		if(site==0)
 		{
-			T = Hc.M[site][i];
-			Hc.M[site][i] = H.M[site][i] * CR[site+1].transpose();
-			tp += (T.transpose()*Hc.M[site][i]).trace();
+			// T = Hc.M[site][i];
+			Hc.M[site][i].noalias() = H.M[site][i] * CR[site+1].transpose();
+			// tp += (T.transpose()*Hc.M[site][i]).trace();
 		}else if(site==H.Len-1)
 		{
-			T = Hc.M[site][i];
-			Hc.M[site][i] = CL[site-1] * H.M[site][i];
-			tp += (T.transpose()*Hc.M[site][i]).trace();
+			// T = Hc.M[site][i];
+			Hc.M[site][i].noalias() = CL[site-1] * H.M[site][i];
+			// tp += (T.transpose()*Hc.M[site][i]).trace();
 		}else
 		{
-			T = Hc.M[site][i];
-			Hc.M[site][i] = CL[site-1] * H.M[site][i] * CR[site+1].transpose();
-			tp += (T.transpose()*Hc.M[site][i]).trace();
+			// T = Hc.M[site][i];
+			T.noalias() = H.M[site][i] * CR[site+1].transpose();
+			Hc.M[site][i].noalias() = CL[site-1] * T;
+			// Hc.M[site][i] = CL[site-1] * H.M[site][i] * CR[site+1].transpose();
+			// tp += (T.transpose()*Hc.M[site][i]).trace();
 		}
 	}
 	
-	dt = 1-tp;
+	// dt = 1-tp;
 	
 	if(direc=='R')
 		Hc.moveRight(site);
@@ -94,7 +97,7 @@ void updateEnv(MPO& H, MPO& Hc, Mxd* CL, Mxd* CR, int& site, char& direc, double
 		CL[0].setZero(c1,c2);
 		for(int i = 0; i < pD*pD; i++)
 		{
-			CL[0] += Hc.M[0][i].transpose() * H.M[0][i];
+			CL[0].noalias() += Hc.M[0][i].transpose() * H.M[0][i];
 		}
 	}else if(site==L-1)
 	{
@@ -104,7 +107,7 @@ void updateEnv(MPO& H, MPO& Hc, Mxd* CL, Mxd* CR, int& site, char& direc, double
 		CR[L-1].setZero(r1,r2);
 		for(int i = 0; i < pD*pD; i++)
 		{
-			CR[L-1] += Hc.M[L-1][i] * H.M[L-1][i].transpose();
+			CR[L-1].noalias() += Hc.M[L-1][i] * H.M[L-1][i].transpose();
 		}
 	}else
 	{
@@ -117,10 +120,10 @@ void updateEnv(MPO& H, MPO& Hc, Mxd* CL, Mxd* CR, int& site, char& direc, double
 		if(direc=='L')
 		{
 			CR[site].setZero(r1,r2);
-			for(int j = 0; j < pD*pD; j++)
-			{
-				TM1[j].setZero(c1,r2);
-			}
+			// for(int j = 0; j < pD*pD; j++)
+			// {
+			// 	TM1[j].setZero(c1,r2);
+			// }
 			// #pragma omp parallel num_threads(4) private(tid)
 			for(int tid = 0; tid < pD*pD; tid++)
 			{
@@ -129,15 +132,15 @@ void updateEnv(MPO& H, MPO& Hc, Mxd* CL, Mxd* CR, int& site, char& direc, double
 			}
 			for(int j = 0; j < pD*pD; j++)
 			{
-				CR[site] += Hc.M[site][j] * TM1[j];
+				CR[site].noalias() += Hc.M[site][j] * TM1[j];
 			}
 		}else
 		{
 			CL[site].setZero(c1,c2);
-			for(int j = 0; j < pD*pD; j++)
-			{
-				TM1[j].setZero(r1,c2);
-			}
+			// for(int j = 0; j < pD*pD; j++)
+			// {
+			// 	TM1[j].setZero(r1,c2);
+			// }
 			// #pragma omp parallel num_threads(4) private(tid)
 			for(int tid = 0; tid < pD*pD; tid++)
 			{
@@ -146,7 +149,7 @@ void updateEnv(MPO& H, MPO& Hc, Mxd* CL, Mxd* CR, int& site, char& direc, double
 			}
 			for(int j = 0; j < pD*pD; j++)
 			{
-				CL[site] += Hc.M[site][j].transpose() * TM1[j];
+				CL[site].noalias() += Hc.M[site][j].transpose() * TM1[j];
 			}
 		}
 		

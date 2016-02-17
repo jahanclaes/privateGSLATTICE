@@ -21,7 +21,7 @@ int main (int argc, char const *argv[])
 	int pD = 4;
 	int xD = 4;
 	int yD = 4;
-	int maxD = 60;
+	int maxD = 80;
 	double tol = 1E-6;
 	
 	int** phyC = new int* [xL];
@@ -54,6 +54,15 @@ int main (int argc, char const *argv[])
 	cp.buildMPO(phyC);
 	// cp.printTN(phyC);
 	double ct = cp.contractPEPS(phyC);
+	cout<<"Contraction of the PEPS = "<<ct<<endl;
+	cp.diffPEPS(phyC);
+	cout<<"diff done!"<<endl;
+	///////////////////////////////////////////////////////////////
+	cp.boostBD(1,1);
+	cout<<"Number of parameters per config = "<<cp.numParams<<endl;
+	cp.buildMPO(phyC);
+	// cp.printTN(phyC);
+	ct = cp.contractPEPS(phyC);
 	cout<<"Contraction of the PEPS = "<<ct<<endl;
 	cp.diffPEPS(phyC);
 	cout<<"diff done!"<<endl;

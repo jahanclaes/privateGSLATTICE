@@ -35,6 +35,8 @@ public:
 	void setRandom();
 	void setZero();
 	
+	void boostBD(int dxBD, int dyBD);
+	
 	// Data
 	Mxd*** T; // (1) y-direction site label; (2) true physical index; (3) x-direction index label (pseudo physical);
 	int* Dim;
@@ -58,6 +60,8 @@ public:
 	// set methods
 	void setdTensorList(int& xs, int& ylen, int& xd, int& yd);
 	void setZero();
+	
+	void boostBD(int dxBD, int dyBD);
 	
 	// Data
 	Mxd** T; // (1) y-direction site label; (2) x-direction index label (pseudo physical);
@@ -84,6 +88,8 @@ public:
 	void setNearUniform();
 	void setProductState();
 	void setNearProductState();
+	
+	void boostBD(int dxBD, int dyBD);
 	
 	bool initted;
 	

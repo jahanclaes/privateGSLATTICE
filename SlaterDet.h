@@ -37,6 +37,15 @@ public:
   SharedEigsClass &SharedEigs;
   //  PairingFunctionAllBin &PairingFunction; 
 
+  void RebuildParams()
+  {
+
+    //    Eigen::ColPivHouseholderQR<Eigen::MatrixXcd>  QR(SharedEigs.eigs.transpose());
+    Eigen::HouseholderQR<Eigen::MatrixXcd>  QR(SharedEigs.eigs.transpose());
+    //k    SharedEigs.eigs=QR.matrixQ().transpose();
+    SharedEigs.eigs=QR.householderQ().transpose();
+  } 
+
   void Copy(WaveFunctionClass* wf)
   {
     SlaterDetPsiClass &b(*(SlaterDetPsiClass*)wf);

@@ -5,12 +5,17 @@
 // Bond dimension of the tensor along x-direction stays unchanged
 // Bond dimension of the tensor along y-direction changes due to MPO-MPO multiplication
 
-#ifndef My_cPEPS_CLASS
-#define My_cPEPS_CLASS
+//#ifndef My_cPEPS_CLASS
+//#define My_cPEPS_CLASS
 
+
+// typedef Eigen::MatrixXd Mxd;
 #include "cpeps.h"
+using namespace std;
+
 
 typedef Eigen::MatrixXd Mxd;
+
 
 TensorList::TensorList()
 {	
@@ -555,7 +560,8 @@ double cPEPS::contractPEPS(int** phyC)
 	{
 		applyMPO(tMPO[x],H,0,'T','I');
 		// std::cout<<"BD of MPO at step "<<x<<" = "<<H.bD<<std::endl;
-		if(H.bD>max_yBD) iterCompress(true, 6, tol, max_yBD, H, true);
+		///		if(H.bD>max_yBD) iterCompress(true, 6, tol, max_yBD, H, true);
+		if(H.bD>max_yBD) iterCompress(true, 6, tol, max_yBD, H, false);
 	}
 	// for(int i = 0; i < H.Len; ++i)
 	// {
@@ -582,7 +588,7 @@ void cPEPS::diffPEPS(int** phyC)
 	{
 		applyMPO(tMPO[x],HR,0,'T','I');
 		// std::cout<<"BD of MPO at step "<<x<<" = "<<HR.bD<<std::endl;
-		if(HR.bD>max_yBD) iterCompress(true, 6, tol, max_yBD, HR, true);
+		if(HR.bD>max_yBD) iterCompress(true, 6, tol, max_yBD, HR, false);
 		REnv[x].copyMPO(HR);
 	}
 	// Build envioroment MPOs
@@ -593,7 +599,7 @@ void cPEPS::diffPEPS(int** phyC)
 	{
 		applyMPO(tMPO[x],HL,0,'B','I');
 		// std::cout<<"BD of MPO at step "<<x<<" = "<<HL.bD<<std::endl;
-		if(HL.bD>max_yBD) iterCompress(true, 6, tol, max_yBD, HL, true);
+		if(HL.bD>max_yBD) iterCompress(true, 6, tol, max_yBD, HL, false);
 		LEnv[x].copyMPO(HL);
 	}
 
@@ -611,7 +617,7 @@ void cPEPS::diffPEPS(int** phyC)
 			H.copyMPO(REnv[x+1]);
 			applyMPO(LEnv[x-1],H,0,'B','I');
 			// std::cout<<"BD of MPO at step "<<x<<" = "<<H.bD<<std::endl;
-			if(H.bD>max_yBD) iterCompress(true, 6, tol, max_yBD, H, true);
+			if(H.bD>max_yBD) iterCompress(true, 6, tol, max_yBD, H, false);
 		}
 		
 		// Build top and botttom environments
@@ -899,4 +905,4 @@ void cPEPS::boostBD(int dxBD, int dyBD)
 }
 
 
-#endif
+//#endif

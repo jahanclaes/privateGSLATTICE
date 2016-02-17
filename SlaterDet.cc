@@ -16,8 +16,13 @@ SlaterDetPsiClass::Init(SystemClass &system,int t_mySpin)
   //  NeedFrequentReset=false;
   SharedEigs.Init(system);
   cerr<<"Starting Init"<<endl;
-  NumSpinUp=system.x.size()/2;
-  mat.Init(NumSpinUp);
+  //  NumSpinUp=system.x.size()/2;
+  NumSpinUp=0;
+  for (int i=0;i<system.x.size();i++){
+    NumSpinUp += ((system.x(i)==1 || system.x(i)==2) ? 1: 0);
+  }
+
+  mat.Init(NumSpinUp,system.x.size());
   //  u.resize(NumSpinUp);  
   //  up.resize(NumSpinUp);
   cerr<<"RVB BINS"<<endl;
@@ -534,7 +539,11 @@ SlaterDetPsiClass::evaluate_noInverse(SystemClass &system)
 complex<double>
 SlaterDetPsiClass::evaluate(SystemClass &system)
 {
+  
   complex<double> myAns=evaluate_noInverse(system);
+  //  RebuildParams();
+  //  complex<double> checkAns=evaluate_noInverse(system);
+  //  cerr<<"Evaluation of "<<myAns<<" "<<checkAns<<endl;
   mat.CalcAndSaveInverse();
   return myAns;
 }

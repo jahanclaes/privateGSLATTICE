@@ -18,8 +18,8 @@
 #include <Eigen/Dense>
 
 #include "utility.h"
-
-typedef Eigen::MatrixXd Mxd;
+using Eigen::MatrixXd;
+typedef MatrixXd Mxd;
 
 
 // Storage for cPEPS's tensors

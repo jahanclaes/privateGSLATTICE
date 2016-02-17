@@ -90,3 +90,8 @@ complex<double> WaveFunctionClass::evaluateRatio(SystemClass &system,int start, 
   assert(1==2);
 
 }
+
+void WaveFunctionClass::RebuildParams()
+{
+
+}

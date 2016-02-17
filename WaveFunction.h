@@ -10,6 +10,7 @@ public:
   string Name;
   int NumParams;
   bool NeedFrequentReset;
+  virtual void RebuildParams();
   virtual void Init(SystemClass &system);
   virtual void AllDerivs(SystemClass &system, Array<complex<double>,1> &derivs,int start,int stop);
   virtual double GetParam(int i);

@@ -145,7 +145,6 @@ class VMCDriverClass
       //      }
     }
   }
-
   void RunSingleOpt(ifstream &infile)
   {
     std::map<string,string> input;

@@ -15,6 +15,7 @@ using namespace std;
 #include "Hamiltonian.h"
 #include "CPS.h"
 #include "PEPS.h"
+#include "cPEPS.h"
 #include "TripletWF.h"
 #include "DerivClass.h"
 #include "ProjGutz.h"
@@ -170,9 +171,10 @@ public:
       }
       else if (wf_type_string=="PEPS"){
 	cerr<<"ADDING PEPS"<<endl;
-	PEPSClass *t_PEPS=new PEPSClass();
+	cPEPSClass *t_PEPS=new cPEPSClass();
 
-	int L,D,W,chi;
+	int L,Dx,Dy,W,chi;
+	double tol;
 
 	int check=0;
 	while (myInput.OpenSection("WaveFunction",check)){
@@ -180,16 +182,18 @@ public:
 	  cerr<<"Found the "<<check<<" wavefunction called"<<waveFunction<<endl;
 
 	  if (waveFunction=="PEPS"){
-	    D=myInput.toInteger(myInput.GetVariable("D"));
+	    Dx=myInput.toInteger(myInput.GetVariable("Dx"));
+	    Dy=myInput.toInteger(myInput.GetVariable("Dy"));
 	    chi=myInput.toInteger(myInput.GetVariable("chi"));
 	    L=myInput.toInteger(myInput.GetVariable("L"));
 	    W=myInput.toInteger(myInput.GetVariable("W"));
+	    tol=myInput.toDouble(myInput.GetVariable("tol"));
 	  }
 	  myInput.CloseSection();
 	  check++;
 	}
 	
-	t_PEPS->Init(System,L,W,D,chi);
+	t_PEPS->Init(System,L,W,4,Dx,Dy,chi,tol);
       	wf_list.push_back(t_PEPS);
       }
 
@@ -381,17 +385,16 @@ public:
     }
     for (int step=0;step<System.x.size();step++){ 
       //      cerr<<"On step "<<step<<endl;
+
+      int spin = (Random.randInt(2) == 0 ? -1: 1);
       int site=Random.randInt(System.x.size());
-      while (System.x(site)==0)
-	site=Random.randInt(System.x.size());
-      int spin=System.x(site);
-      if (System.x(site)==2) 
-	spin=(Random.randInt(2) == 0 ? -1: 1);
-      
+      while ( (System.x(site)!=spin && System.x(site)!=2))
+        site=Random.randInt(System.x.size());
+
       int end_site=Random.randInt(System.x.size());
-      while (end_site == site || System.x(end_site)==2 || System.x(end_site)==spin){
-	end_site=Random.randInt(System.x.size());
-      }
+      while ( (System.x(end_site)==spin || System.x(end_site)==2))
+        end_site=Random.randInt(System.x.size());
+
       System.Move(site,end_site,spin);
       for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
 	(*wf_iter)->Move(site,end_site,spin);
@@ -520,6 +523,35 @@ void BroadcastParams(CommunicatorClass &myComm)
    infile.close();
    
  }
+
+ 
+ void GetGradient(CommunicatorClass &myComm)
+ {
+   vector<complex<double> > gradient(NumberOfParams);
+   for (int i=0;i<gradient.size();i++){
+     gradient[i]=0.0;
+   }
+   
+   int currStart=0;
+   if (opt==TIMEEVOLUTION)
+     VarDeriv.GetSInverse();
+   for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+     WaveFunctionClass &Psi =**wf_iter;
+     for (int i=0;i<Psi.NumParams;i++){
+       complex<double> myDeriv;
+       if (opt==TIMEEVOLUTION)
+	 myDeriv=VarDeriv.ComputeDerivSR(currStart+i);
+       else 
+	 myDeriv=VarDeriv.ComputeDerivp(currStart+i);
+       if (opt==SR && myDeriv!=0.0)
+	 myDeriv=myDeriv/abs(myDeriv);
+       gradient[currStart+i]=myDeriv;
+     }
+     currStart=currStart+Psi.NumParams;
+   }
+ }
+ 
+
  
  void TakeStep(CommunicatorClass &myComm)
  {
@@ -562,6 +594,10 @@ void BroadcastParams(CommunicatorClass &myComm)
      currStart=currStart+Psi.NumParams;
      }
    }
+   for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+     WaveFunctionClass &Psi =**wf_iter;
+     Psi.RebuildParams();
+   }   
    EvaluateAll();
    if (myComm.MyProc()==0)
      cerr<<"Variance: "<<VarDeriv.ComputeVariance()<<endl; 
@@ -570,6 +606,8 @@ void BroadcastParams(CommunicatorClass &myComm)
    
    
  }
+
+
  void EvaluateAll()
  {
    //HACK!

@@ -53,8 +53,9 @@ public:
   void RealDerivs(SystemClass &system, Array<complex<double>,1> &derivs)  ;
 
 
-  void  CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int start, int stop);
-    
+  //  void  CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int start, int stop);
+  double CheckDerivs(SystemClass &system, Array<complex<double>,1>  &derivs,int derivInt);
+
   void Init(SystemClass &system, int xlen, int ylen, int phy, int xd, int yd, int maxd, double err_tol)
   {
     Name="cPEPS";
@@ -73,13 +74,18 @@ public:
 	max_yBD = maxd;
 	tol     = err_tol;
 
-    peps = new cPEPS(xL,yL,pD,xBD,yBD,max_yBD,tol);
+	peps = new cPEPS(xL,yL,pD,xBD,yBD,max_yBD,tol);
 	
 	// choose a starting configuration
+	//	peps->setNearProductState();
+    //    peps->setProductState();
+        peps->setNearUniform();
+	//	    peps->setUniform();
+
     //	peps->setNearProductState();
     // peps->setProductState();
 	// peps->setNearUniform();
-	peps->setUniform();
+	//	peps->setUniform();
 
     NumParams=peps->numParams;
   }

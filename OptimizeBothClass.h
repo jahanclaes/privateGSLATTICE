@@ -36,6 +36,10 @@ public:
   SystemClass System;
   RandomClass &Random;
   list<WaveFunctionClass*> wf_list;  
+
+
+  //  vector<list<WaveFunctionClass*> > wf_list_;  
+
   list<HamiltonianClass*> Ham;
   Array<complex<double >,1> ParamsOld;
   Array<complex<double>,1> derivs;
@@ -428,6 +432,133 @@ public:
     return (double)numAccepted/(double)numAttempted;
     //
   }
+
+  double VMC_correlated(bool equilibrate)
+  {
+    cerr<<"Started VMC"<<endl;
+    double numAttempt=0;
+    double numAccept=0;
+    if (equilibrate){
+      for (int sweeps=0;sweeps<VMC_equilSweeps;sweeps++){
+	Sweep_hop();
+      }
+    }
+
+
+    vector<list<WaveFunctionClass*> > wf_list_corr;      
+    wf_list_corr.resize(3);
+    for (int i=0;i<3;i++){
+      for (list<WaveFunctionClass*>::iterator iter=wf_list.begin();iter!=wf_list.end();iter++){
+	wf_list_corr[i].push_back((*iter)->clone());
+      iter++;
+      }
+    }
+    
+    vector<double> energy_terms(Ham.size(),0);
+    double energy=0.0;
+    vector<double> energy_corr(wf_list_corr.size(),0.0);
+    int NumCounts=0;
+    for (int sweeps=0;sweeps<VMC_SampleSweeps;sweeps++){
+      numAccept+=Sweep_hop_correlated(wf_list_corr);
+      numAttempt+=1;
+      NumCounts++;
+      int i=0;
+      for (list<HamiltonianClass*>::iterator iter=Ham.begin();iter!=Ham.end();iter++){
+	double te=(*iter)->Energy(System,wf_list);
+	energy_terms[i]+=te;
+	i++;
+	energy+=te;
+	for (int j=0;j<energy_corr.size();j++){
+	  energy_corr[j]+=(*iter)->Energy(System,wf_list_corr[j]);
+	}
+	
+
+      }
+    }
+    int NumParams=(*(wf_list.begin()))->NumParams;
+
+    double oldEnergy=energy/(double)NumCounts;
+    if ((1==1)) { 
+      cerr<<"VMCENERGY: "<<energy/(double)NumCounts<<" "<<endl;
+      cerr<<"J1 J2: "<<((*(Ham.begin()))->term1)/(double)NumCounts<<" "<<((*(Ham.begin()))->term2)/(double)NumCounts<<endl;
+      (*(Ham.begin()))->term1=0; (*(Ham.begin()))->term2=0;
+
+      cerr<<"ENERGY TERMS: ";
+      for (int i=0;i<energy_terms.size();i++)
+	cerr<<energy_terms[i]/(double)NumCounts<<" ";
+      cerr<<endl;
+
+      cerr<<"ACCEPT: "<<numAccept/numAttempt<<endl;
+      energy=0.0;
+      NumCounts=0;
+    }
+    cerr<<"Ended VMC"<<endl;
+    return oldEnergy;
+    
+
+
+  }
+ 
+  double Sweep_hop_correlated(vector<list<WaveFunctionClass*> > wf_list_corr)
+  {
+/*     int numAccepted=0; */
+/*     int numAttempted=0; */
+    
+    
+/*     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){ */
+/*       if ((*wf_iter)->NeedFrequentReset){ */
+/* 	complex<double> ans=(*wf_iter)->evaluate(System); */
+/*       } */
+/*     } */
+/*     for (int step=0;step<System.x.size();step++){  */
+/*       //      cerr<<"On step "<<step<<endl; */
+
+/*       int spin = (Random.randInt(2) == 0 ? -1: 1); */
+/*       int site=Random.randInt(System.x.size()); */
+/*       while ( (System.x(site)!=spin && System.x(site)!=2)) */
+/*         site=Random.randInt(System.x.size()); */
+
+/*       int end_site=Random.randInt(System.x.size()); */
+/*       while ( (System.x(end_site)==spin || System.x(end_site)==2)) */
+/*         end_site=Random.randInt(System.x.size()); */
+
+/*       System.Move(site,end_site,spin); */
+/*       for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++) */
+/* 	(*wf_iter)->Move(site,end_site,spin); */
+/*       complex<double> quick_ratio=1.0; */
+/*       for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){ */
+/* 	complex<double> myRatioIs=(*wf_iter)->evaluateRatio(System,site,end_site,spin); */
+/* 	quick_ratio*=myRatioIs; */
+/*       } */
+/*       //      cerr<<"My ratio is "<<quick_ratio.real()<<endl; */
+/*       double ranNum=Random.ranf(); */
+/*       numAttempted++; */
+/*       if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){  */
+/* 	numAccepted++; */
+/* 	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++) */
+/* 	  (*wf_iter)->UpdateDets(System,site,end_site,spin); */
+	
+/* 	//accept */
+	
+/*       } */
+/*       else { */
+/* 	System.Move(end_site,site,spin); */
+/* 	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++) */
+/* 	  (*wf_iter)->Move(end_site,site,spin); */
+	
+/*  	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++) */
+/* 	  (*wf_iter)->Reject(System,site,end_site,spin); */
+	
+/*       } */
+/*     } */
+/*     //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl; */
+/*     return (double)numAccepted/(double)numAttempted; */
+    //
+  }
+
+
+
+
   void MatchParams(OptimizeBothClass &vmc)
   {
   vector<complex<double> > myParams; 
@@ -525,9 +656,11 @@ void BroadcastParams(CommunicatorClass &myComm)
  }
 
  
- void GetGradient(CommunicatorClass &myComm)
+ void GetGradient(CommunicatorClass &myComm,
+		  vector<complex<double> > &gradient)
  {
-   vector<complex<double> > gradient(NumberOfParams);
+   gradient.resize(NumberOfParams);
+
    for (int i=0;i<gradient.size();i++){
      gradient[i]=0.0;
    }
@@ -550,10 +683,16 @@ void BroadcastParams(CommunicatorClass &myComm)
      currStart=currStart+Psi.NumParams;
    }
  }
- 
-
- 
  void TakeStep(CommunicatorClass &myComm)
+ {
+   vector<complex<double> > gradient;
+   GetGradient(myComm,gradient);
+   
+   
+
+ }
+ 
+ void TakeStep_old(CommunicatorClass &myComm)
  {
    int currStart=0;
    if (opt==TIMEEVOLUTION)

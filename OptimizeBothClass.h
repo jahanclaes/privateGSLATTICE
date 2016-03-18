@@ -683,7 +683,7 @@ void BroadcastParams(CommunicatorClass &myComm)
      currStart=currStart+Psi.NumParams;
    }
  }
- void TakeStep(CommunicatorClass &myComm)
+ void TakeStep_old(CommunicatorClass &myComm)
  {
    vector<complex<double> > gradient;
    GetGradient(myComm,gradient);
@@ -692,7 +692,7 @@ void BroadcastParams(CommunicatorClass &myComm)
 
  }
  
- void TakeStep_old(CommunicatorClass &myComm)
+ void TakeStep(CommunicatorClass &myComm)
  {
    int currStart=0;
    if (opt==TIMEEVOLUTION)

@@ -100,3 +100,13 @@ WaveFunctionClass* WaveFunctionClass::clone()
 {
   assert(1==2);
 }
+
+void WaveFunctionClass::MakeProductState(vector<int> &myState)
+{
+  assert(1==2);
+}
+
+void WaveFunctionClass::MakeUniformState()
+{
+  assert(1==2);
+}

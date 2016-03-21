@@ -20,6 +20,9 @@ class JastrowClass : public WaveFunctionClass
   complex<double> evaluateRatio(SystemClass &system,int start, int stop, int spin);
   complex<double> evaluateRatio_check(SystemClass &system, int start,int stop,int spin);
 
+
+  void MakeUniformState();
+
   void Swap(int i, int j);
   void Move(int site, int end_site, int s);
   void Reject(SystemClass &system,int site,int end_site,int spin);

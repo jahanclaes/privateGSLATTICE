@@ -5,6 +5,12 @@
 #include "SystemClass.h"
 #include "WaveFunction.h" 
 #include "Jastrow.h"
+void JastrowClass::MakeUniformState()
+{
+  for (int i=0;i<vij.size();i++){
+    vij(i)=0.0;
+  }
+}
 
 void JastrowClass::Init(SystemClass &system)
 {

@@ -227,6 +227,146 @@ double MeasureStaggered(OptimizeBothClass &vmc)
   return sl_local*sl_local; 
 }
 
+ void ReadWaveFunction(InputClass &myInput,
+		       list<pair<string,SharedWaveFunctionDataClass* > > wf_list)
+ {
+   int check=0;
+   while (myInput.OpenSection("WaveFunction",check)){
+     string waveFunction=myInput.GetVariable("name");
+     cerr<<"Found the "<<check<<" wavefunction called"<<waveFunction<<endl;
+     if (waveFunction=="PEPS"){
+       wf_list.push_back(make_pair("PEPS",new PairingFunctionMany()));
+       
+     }
+     else if  (waveFunction=="CPS"){
+       wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));	
+     }
+     else if (waveFunction=="RVB"){
+       wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
+     }
+     else if (waveFunction=="BACKFLOW")
+       wf_list.push_back(make_pair("BACKFLOW",new PairingFunctionAllBin()));
+     else if (waveFunction=="JASTROW"){
+       wf_list.push_back(make_pair("JASTROW",new PairingFunctionAllBin()));
+     }
+     else if (waveFunction=="SLATERDET"){
+       wf_list.push_back(make_pair("SLATERDETUP",new SharedEigsClass()));
+       wf_list.push_back(make_pair("SLATERDETDOWN",new SharedEigsClass()));
+     }
+     else{
+       cerr<<"Could not find wavefunction: "<<waveFunction <<endl;
+       exit(1);
+     }
+     myInput.CloseSection();
+     check++;
+   }
+
+ }
+
+ void RunFiniteT_new(InputClass &myInput)
+ {
+   CommunicatorClass myComm; 
+   cerr<<"My processor is "<<myComm.MyProc()<<endl; 
+   RandomClass Random(myComm); 
+   Random.Init(); 
+   vector<OptimizeBothClass*> VMC_vec; 
+   OptimizeBothClass VMC_combine(Random); 
+   list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
+   ReadWaveFunction(myInput,wf_list);
+
+   VMC_combine.Init(wf_list,myInput);
+   VMC_combine.opt_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
+   VMC_combine.opt_SampleSweeps=myInput.toInteger(myInput.GetVariable("SampleSweeps"));
+   int NumWalkers=myInput.toInteger(myInput.GetVariable("NumWalkers"));
+   cerr<<"Number of Walkers: "<<NumWalkers<<endl;
+   cerr<<"Equil Sweeps: "<<VMC_combine.opt_equilSweeps<<endl;
+   cerr<<"Sample Sweeps: "<<VMC_combine.opt_SampleSweeps<<endl;
+   VMC_vec.resize(NumWalkers); 
+   cerr<<"Running VMC"<<endl; 
+
+
+   //Initializing must be done in serial since
+   //everyone is setting up the pairing function
+   for (int i=0;i<NumWalkers;i++){ 
+     VMC_vec[i]=new OptimizeBothClass(Random); 
+     VMC_vec[i]->Init(wf_list,myInput); 
+     VMC_vec[i]->opt_equilSweeps=VMC_combine.opt_equilSweeps;
+     VMC_vec[i]->opt_SampleSweeps=VMC_combine.opt_SampleSweeps;
+   }
+   //    VMC_combine.GetParams("params.dat"); 
+   VMC_combine.EvaluateAll();
+#pragma omp parallel for 
+   for (int i=0;i<NumWalkers;i++){ 
+     cerr<<"On walker "<<i<<endl; 
+     VMC_vec[i]->EvaluateAll(); 
+     VMC_vec[i]->VMC(true); 
+   } 
+   ofstream energyFile;
+   energyFile.open("Energy.dat");
+   
+   ///INITIALIZATION UP TO HERE SHOULD BE SAME FOR FINITE TEMPERATURE!
+   for (int markovSteps=0;markovSteps<1000;markovSteps++){
+     int numSteps=10;
+     for (int step=0;step<numSteps;step++){ 
+       if (myComm.MyProc()==0)
+	 cerr<<"Step number: "<<step<<endl; 
+#pragma omp parallel for 
+       for (int i=0;i<NumWalkers;i++) { 
+	 VMC_vec[i]->Optimize(); 
+       } 
+       VMC_combine.Combine(VMC_vec);
+       VMC_combine.VarDeriv.ParallelCombine(myComm); 
+       if (myComm.MyProc()==0){ 
+	 VMC_combine.TakeStep(myComm); 
+       } 
+       VMC_combine.BroadcastParams(myComm); 
+       
+       if (myComm.MyProc()==0){
+	 string fileName="params.dat.";
+	 ostringstream ss;
+	 ss<<fileName<<(step+1);
+	 VMC_combine.SaveParams(ss.str()); 
+	 complex<double> theEnergy=VMC_combine.VarDeriv.ComputeEnergy();
+	 complex<double> theVariance=VMC_combine.VarDeriv.ComputeVariance();
+	 energyFile<<step<<" "<<theEnergy.real()<<" "<<theEnergy.imag()<<" "<<theVariance.real()<<" "<<theVariance.imag()<<endl;
+       }
+       VMC_combine.VarDeriv.Clear(); 
+       for (int i=0;i<NumWalkers;i++)  
+	 VMC_vec[i]->VarDeriv.Clear(); 
+#pragma omp parallel for 
+       for (int i=0;i<NumWalkers;i++)  
+	 VMC_vec[i]->EvaluateAll(); 
+       //I don't think VMC_Combine needs to evaluate all but I'm a bit worried?
+     }
+
+     VMC_vec[0]->VMC(true); 
+     cerr<<"The particles are at ";
+     for (int i=0;i<VMC_vec[0]->System.x.size();i++)
+       cerr<<VMC_vec[0]->System.x(i)<<" ";
+     cerr<<endl;
+
+       //       cerr<<"The "<<i<<" particle is at "<<VMC_vec[0]->System.x(i)<<endl;
+     //Measure something here!
+
+
+     
+     
+     VMC_vec[0]->BroadcastParams(myComm); 
+     ///WONt BROADCAST RIGHT!!!! BUG:
+     for (int i=0;i<NumWalkers;i++) {
+       for (int j=0;j<VMC_vec[0]->System.x.size();j++)
+       	 VMC_vec[i]->System.x(j)=VMC_vec[0]->System.x(j);
+       VMC_vec[i]->EvaluateAll(); 
+       VMC_vec[i]->VMC(true); 
+     }
+     //I don't think VMC_Combine needs to evaluate all but I'm a bit worried?
+     }
+     
+     energyFile.close(); 
+     exit(1);
+
+
+ }
 
 
   void RunFiniteT(ifstream &infile)

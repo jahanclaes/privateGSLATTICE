@@ -8,6 +8,18 @@
 /////spin 0 -> first index
 ////spin 1 -> second index
 
+void SlaterDetPsiClass::MakeProductState(vector<int> &myState)
+{
+  int countElectrons=0;
+  SharedEigs.SetZero();
+  for (int i=0;i<myState.size();i++){
+    if (myState[i]==mySpin){
+      SharedEigs.eigs(countElectrons,i)=1.0;
+      countElectrons++;
+    }
+  }
+}
+
 void 
 SlaterDetPsiClass::Init(SystemClass &system,int t_mySpin)
 {

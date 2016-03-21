@@ -43,6 +43,9 @@ public:
 
 
   virtual void SetParams(double delta3,SystemClass &system);
+  
+  virtual void MakeProductState(vector<int> &myState);
+  virtual void MakeUniformState();
 };
 
 #endif

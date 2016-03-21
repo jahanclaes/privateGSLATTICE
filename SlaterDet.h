@@ -31,6 +31,10 @@ public:
   bool rebuild;
   int mySpin;
   //  int NumElectrons;
+  void MakeProductState(vector<int> &myState);
+
+
+
 
 
 

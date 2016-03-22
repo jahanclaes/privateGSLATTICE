@@ -21,6 +21,10 @@ class SmartEigen
   Eigen::MatrixXcd MInverse_saved;
   Eigen::MatrixXcd M_saved;
 
+  Eigen::MatrixXcd U_r1c1;
+  Eigen::MatrixXcd V_r1c1;
+  Eigen::MatrixXcd Det_UV;
+  Eigen::MatrixXcd MInverseU;
   
 
   //  blitz::Array<complex<double> ,2> M;
@@ -64,6 +68,12 @@ class SmartEigen
   void CalcAndSaveInverse();
   complex<double>  ColRatio(int colIndex,Eigen::VectorXcd &col);
   complex<double>  RowRatio(int colIndex,Eigen::VectorXcd &col);
+
+  complex<double> Ratio_ncol_nrowp(vector<int> &colIndices, 
+				   vector<int> &rowIndices,
+				   Eigen::MatrixXcd &newCols,
+				   Eigen::MatrixXcd &newRows);
+
   complex<double>  UpdateColAndInverse(int colIndex,Eigen::VectorXcd &col);
   complex<double>  UpdateRowAndInverse(int colIndex,Eigen::VectorXcd &col);
   void InverseUpdate(vector<int> &colIndices, vector<int> &rowIndices, 

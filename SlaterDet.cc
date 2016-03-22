@@ -705,9 +705,9 @@ SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   }
 
   complex<double> test_ratio=mat.Ratio_ncol_nrowp(colIndices,rowIndices,newCols,newRows);
-  //  complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
-//    complex<double> diff=test_ratio-check_ratio;
-//    cerr<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
+  complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
+  complex<double> diff=test_ratio-check_ratio;
+  cerr<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
       //HACK!      assert((diff*conj(diff)).real()<1e-10);
   //  cerr<<"test ratio is "<<test_ratio<<" "<<endl; //evaluateRatio_check(system,swap1,swap2)<<endl;
 
@@ -718,6 +718,14 @@ SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   return test_ratio;
   //return check_ratio;
 }
+
+std::complex<double> 
+SlaterDetPsiClass::evaluateRatio_check(SystemClass &system, int swap1, int swap2)
+{
+  
+}
+
+
 
 double 
 SlaterDetPsiClass::Sign(SystemClass &system)

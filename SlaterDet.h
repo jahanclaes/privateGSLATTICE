@@ -118,7 +118,7 @@ public:
       assert(1==2);
     }
   
-  std::complex<double> evaluateRatio_check(SystemClass &system, int a, int b)
+  std::complex<double> evaluateRatio_check(SystemClass &system, int swap1, int swap2)
     {
       assert(1==2);
     }

@@ -214,8 +214,8 @@ void SystemClass::Stagger()
   //  x(x.size()-5)=0;
   //  x(x.size()-4)=0;
   //  x(x.size()-3)=0;
-  x(x.size()-2)=0;
-  x(x.size()-1)=0;
+  //  x(x.size()-2)=0;
+  //  x(x.size()-1)=0;
   //  for (int i=1;i<x.size();i++){
   //    x(i)=x(i-1)*-1+1;
   //  }

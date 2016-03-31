@@ -236,20 +236,29 @@ complex<double> SmartEigen::Ratio_ncol_nrowp(vector<int> &colIndices,
   int n=colIndices.size();
   if (n==0)
     return 1.0;
+
   U_r1c1=Eigen::MatrixXcd::Zero(2*n,size);
   V_r1c1=Eigen::MatrixXcd::Zero(size,2*n);
   Det_UV.resize(2*n,2*n);
   //  MInverseU.resize(2*n,size);
+  cerr<<"PRE: "<<rowIndices[0]<<" "<<colIndices[0]<<endl;
   for (int i=0;i<n;i++){
-    V_r1c1.row(2*i+1)=newRows.row(i)-M.col(rowIndices[i]);
-    V_r1c1.row(2*i)(rowIndices[i])=1.0;
-    U_r1c1.col(2*i)=newCols.row(i)-M.row(colIndices[i]);
-    U_r1c1.col(2*i+1)(colIndices[i])=1.0;
+    V_r1c1.col(2*i+1)=newRows.row(i)-M.col(rowIndices[i]).transpose();
+    ///    V_r1c1.col(2*i+1)=newRows.row(i)-M.col(colIndices[i]).transpose();
+    V_r1c1.col(2*i)(colIndices[i])=1.0;
+
+    U_r1c1.row(2*i)=newCols.col(i)-M.row(colIndices[i]).transpose();
+    ///    U_r1c1.row(2*i)=newCols.col(i)-M.row(rowIndices[i]).transpose();
+    U_r1c1.row(2*i+1)(rowIndices[i])=1.0;
   }
-  //  MInverseU=U_r1c1*MInverse;
-  //  Det_UV=MInverseU*V_r1c1;
+
+  cerr<<"U new is currently "<<U_r1c1<<endl;
+  cerr<<endl;
+  cerr<<"V new is currently "<<V_r1c1<<endl;
+  cerr<<"POST: "<<endl;
   Det_UV.noalias()=U_r1c1*MInverse*V_r1c1;
   Det_UV=Det_UV+Eigen::MatrixXcd::Identity(Det_UV.rows(),Det_UV.cols());
+  cerr<<"DONE "<<Det_UV.rows()<<" "<<Det_UV.cols()<<endl;
   return Det_UV.determinant();
 }
 
@@ -261,7 +270,7 @@ complex<double> SmartEigen::Ratio_ncol_nrowp(vector<int> &colIndices,
 			 vector<blitz::Array<complex<double> ,1> > &newCols,
 			 vector<blitz::Array<complex<double> ,1> > &newRows)
   {
-    
+    assert(1==2);
 
 
 /*     //    cerr<<"DETPOS SIZE IS "<<DetPos.size()<<endl; */

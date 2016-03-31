@@ -654,7 +654,6 @@ SlaterDetPsiClass::evaluateRatio_check(SystemClass &system, int site, int end_si
 complex<double> 
 SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 {
-
   
   assert(1==2);
   int maxSwap=max(swap1,swap2);
@@ -665,9 +664,7 @@ SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   else
     mySign=1;
 
-  //  mat.SaveInverse();
-  ///let's define spin up as swap1
-  if (system.x(swap1)!=0){
+  if (system.x(swap1)!=1){
     swap(swap1,swap2);
   }
 
@@ -722,7 +719,15 @@ SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 std::complex<double> 
 SlaterDetPsiClass::evaluateRatio_check(SystemClass &system, int swap1, int swap2)
 {
-  
+  SmartEigen mat_check;
+  mat_check.Init(mat.M.rows());
+  system.Swap(swap1,swap2);
+  FillDet(system,mat_check);
+  complex<double> pre=mat_check.Det();
+  system.Swap(swap1,swap2);
+  FillDet(system,mat_check);
+  complex<double> post=mat_check.Det();
+  return post/pre;
 }
 
 

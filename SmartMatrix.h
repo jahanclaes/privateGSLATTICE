@@ -233,6 +233,7 @@ class SmartMatrix
 			 vector<Array<complex<double> ,1> > &newCols,
 			 vector<Array<complex<double> ,1> > &newRows)
   {
+    cerr<<"In the old version "<<endl;
     //    cerr<<"DETPOS SIZE IS "<<DetPos.size()<<endl;
     //    Array<complex<double> ,2> &U(U_r1c1);
     //    Array<complex<double> ,2> &V(V_r1c1);
@@ -278,6 +279,10 @@ class SmartMatrix
        for (int j=0;j<rowIndices.size();j++) 
  	U_r1c1(2*i,rowIndices[j])=0.0; 
 
+     cerr<<"U is currently "<<U_r1c1<<endl;
+     cerr<<endl;
+     cerr<<"V old is currently "<<V_r1c1<<endl;
+     cerr<<endl;
     MatrixOps::product(U_r1c1,MInverse,MInverseU); 
     MatrixOps::product(MInverseU,V_r1c1,Det_UV); 
     for (int i=0;i<Det_UV.extent(0);i++)

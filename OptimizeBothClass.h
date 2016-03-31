@@ -207,7 +207,7 @@ public:
       else if (wf_type_string=="RVB"){
 	cerr<<"ADDING RVB"<<endl;
 	//	RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
-	RVBpPsiClass *RVB=new RVBpPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
+	RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
 	RVB->Init(System);
 	wf_list.push_back(RVB); 
       }
@@ -895,7 +895,7 @@ void BroadcastParams(CommunicatorClass &myComm)
     if (equilibrate){
       for (int sweeps=0;sweeps<VMC_equilSweeps;sweeps++){
 	//	cerr<<"Doing step "<<sweeps<<endl;
-	Sweep_hop();
+	Sweep();
       }
     }
     vector<double> energy_terms(Ham.size(),0);
@@ -903,7 +903,7 @@ void BroadcastParams(CommunicatorClass &myComm)
     int NumCounts=0;
     for (int sweeps=0;sweeps<VMC_SampleSweeps;sweeps++){
       //      cerr<<"Doing step "<<sweeps<<endl;
-      numAccept+=Sweep_hop();
+      numAccept+=Sweep();
       numAttempt+=1;
       NumCounts++;
       int i=0;

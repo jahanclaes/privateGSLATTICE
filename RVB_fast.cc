@@ -2,6 +2,7 @@
 #include "MatrixOps.h"
 // #include "FT.h"
 #include "SmartMatrix.h"
+#include "SmartEigen.h"
 #include <algorithm>
 
 /////spin 0 -> first index
@@ -15,6 +16,7 @@ RVBFastPsiClass::Init(SystemClass &system)
   cerr<<"Starting Init"<<endl;
   NumSpinUp=system.x.size()/2;
   mat.Init(NumSpinUp);
+  matp.Init(NumSpinUp);
   u.resize(NumSpinUp);  
   up.resize(NumSpinUp);
   cerr<<"RVB BINS"<<endl;
@@ -356,6 +358,7 @@ complex<double>
 RVBFastPsiClass::evaluate_noInverse(SystemClass &system)
 {
   FillDet(system,mat);
+  FillDet(system,matp);
   return mat.Det();
 }
 
@@ -365,6 +368,7 @@ RVBFastPsiClass::evaluate(SystemClass &system)
 {
   complex<double> myAns=evaluate_noInverse(system);
   mat.CalcAndSaveInverse();
+  matp.CalcAndSaveInverse();
   return myAns;
 }
 
@@ -379,6 +383,13 @@ void
 RVBFastPsiClass::UpdateDets(SystemClass &system,int swap1, int swap2)
 {
   mat.InverseUpdate(colIndices,rowIndices,newCols,newRows);  
+//   for (int i=0;i<mat.M.extent(0);i++){
+//     for (int j=0;j<mat.M.extent(1);j++){
+//       matp.M(i,j)=mat.M(i,j);
+//       matp.MInverse(i,j)=mat.MInverse(i,j);
+//     }
+//   }
+  matp.InverseUpdate(colIndices,rowIndices,newColsp,newRowsp);
 }
 
 
@@ -386,7 +397,7 @@ RVBFastPsiClass::UpdateDets(SystemClass &system,int swap1, int swap2)
 complex<double> 
 RVBFastPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 {
-
+  cerr<<"In evaluate ratio"<<endl;
   int maxSwap=max(swap1,swap2);
   int minSwap=min(swap1,swap2);
   int mySign=1;
@@ -407,19 +418,23 @@ RVBFastPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   newCols[0].resize(u.size());
   newRows[0].resize(u.size());
 
+  newRowsp.resize(1,u.size());
+  newColsp.resize(u.size(),1);
+
   colIndices.resize(1);
   colIndices[0]=mat.DetPos(swap1);
 
 
   rowIndices.resize(1);
   rowIndices[0]=mat.DetPos(swap2);
-
+  cerr<<"GRR"<<endl;
   //swap1 has been set to be the spin up value
   //loop over the spin down particles
   for (int j=0;j<system.x.size();j++){
     if (system.x(j)==1){
       //      u(mat.DetPos(j))=Phi(swap1,j,system);
       newCols[0](mat.DetPos(j))=Phi(swap1,j,system);
+      newColsp(mat.DetPos(j),0)=Phi(swap1,j,system);
     }
 
   //swap2 has been set to be the spin down value
@@ -428,13 +443,15 @@ RVBFastPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
     else if (system.x(j)==-1){
       //      up(mat.DetPos(i))=Phi(i,swap2,system);
       newRows[0](mat.DetPos(j))=Phi(j,swap2,system);
+      newRowsp(0,mat.DetPos(j))=Phi(j,swap2,system);
     }
   }
-
+  cerr<<"HERE"<<endl;
   complex<double> test_ratio=mat.Ratio_ncol_nrowp(colIndices,rowIndices,newCols,newRows);
+  complex<double> test2_ratio=matp.Ratio_ncol_nrowp(colIndices,rowIndices,newColsp,newRowsp);
   complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
   complex<double> diff=test_ratio-check_ratio;
-  cerr<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
+  cerr<<"CHECKING: "<<diff<<" "<<check_ratio<<" "<<test_ratio<<" "<<test2_ratio<<endl;
       //HACK!      assert((diff*conj(diff)).real()<1e-10);
   //  cerr<<"test ratio is "<<test_ratio<<" "<<endl; //evaluateRatio_check(system,swap1,swap2)<<endl;
 
@@ -442,6 +459,7 @@ RVBFastPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   //  cerr<<"CURRENT RATIO IS "<<test_ratio<<endl;
   test_ratio.real()=-1*test_ratio.real(); //*mySign;
   test_ratio.imag()=-1*test_ratio.imag(); //*mySign;
+  cerr<<"out evaluate ratio"<<endl;
   return test_ratio;
   //return check_ratio;
 }
@@ -470,53 +488,6 @@ RVBFastPsiClass::Sign(SystemClass &system)
       return -1;
 }
 
-//assumes swap1 and swap2 are of different spin
-complex<double> 
-RVBFastPsiClass::evaluateRatio_energy(SystemClass &system,int swap1, int swap2)
-{
-  assert(1==2);
-  //  cerr<<"Evaluate ratio energy"<<endl;
-  //  mat.SaveInverse();
-  ///let's define spin up as swap1
-  if (system.x(swap1)!=0){
-    swap(swap1,swap2);
-  }
-
-  //evaluate the new spin up column
-  newCols.resize(1);
-  newRows.resize(1);
-  newCols[0].resize(u.size());
-  newRows[0].resize(u.size());
-  colIndices.resize(1);
-  colIndices[0]=mat.DetPos(swap1);
-  rowIndices.resize(1);
-  rowIndices[0]=mat.DetPos(swap2);
-  //loop over the spin down particles
-  for (int j=0;j<system.x.size();j++){
-    if (system.x(j)==1){
-      //      u(mat.DetPos(j))=Phi(swap1,j,system);
-      newCols[0](mat.DetPos(j))=Phi(swap1,j,system);
-    }
-
-  //swap2 has been set to be the spin down value
-  //loops over the spin up particles
-  //  for (int i=0;i<system.x.size();i++)
-    else if (system.x(j)==0){
-      //      up(mat.DetPos(i))=Phi(i,swap2,system);
-      newRows[0](mat.DetPos(j))=Phi(j,swap2,system);
-    }
-  }
-  complex<double> test_ratio=mat.Ratio_ncol_nrowp(colIndices,rowIndices,newCols,newRows);
-  //    complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
-  //    complex<double> diff=test_ratio-check_ratio;
-  //    cerr<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
-    //  assert((diff*conj(diff)).real()<1e-10);
-  //  cerr<<"test ratio is "<<test_ratio<<" "<<endl; //evaluateRatio_check(system,swap1,swap2)<<endl;
-
-  rebuild=false;
-  return -test_ratio;
-}
-
 
 
 void 
@@ -534,6 +505,30 @@ RVBFastPsiClass::FillDet(SystemClass &system,SmartMatrix &myMat)
 	  myMat.M(upDet,downDet)=Phi(i,j,system);
 	  myMat.DetPos(i)=upDet;
 	  myMat.DetPos(j)=downDet;
+	}
+      }
+    }
+  }
+}
+
+
+void 
+RVBFastPsiClass::FillDet(SystemClass &system,SmartEigen &myMat)
+{
+  int upDet=-1;
+  int downDet=-1;
+  for (int i=0;i<system.x.size();i++){
+    if (system.x(i)==-1){
+      upDet++;
+      downDet=-1;
+      for (int j=0;j<system.x.size();j++){
+	if (system.x(j)==1){
+	  downDet++;
+	  myMat.M(upDet,downDet)=Phi(i,j,system);
+	  myMat.DetPos[i]=upDet;
+	  myMat.DetPos[j]=downDet;
+	  myMat.UpPos[i]=upDet;
+	  myMat.DownPos[j]=downDet;
 	}
       }
     }

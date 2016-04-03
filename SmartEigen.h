@@ -79,6 +79,11 @@ class SmartEigen
   void InverseUpdate(vector<int> &colIndices, vector<int> &rowIndices, 
 		     vector<blitz::Array<complex<double> ,1> > &newCols,
 		     vector<blitz::Array<complex<double> ,1> > &newRows);
+
+  void InverseUpdate(vector<int> &colIndices, vector<int> &rowIndices, 
+		     Eigen::MatrixXcd &newCols,
+		     Eigen::MatrixXcd &newRows);
+
   complex<double>  Ratio_ncol_nrowp(vector<int> &colIndices, vector<int> &rowIndices, 
 				    vector<blitz::Array<complex<double> ,1> > &newCols,
 				    vector<blitz::Array<complex<double> ,1> > &newRows);

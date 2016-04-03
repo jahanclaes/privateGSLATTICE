@@ -576,6 +576,7 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
     ratio.imag()*=countParity;
 
     //    cerr<<"Ratios B are: "<<ratio<<" "<<ratio_check<<endl;
+
     return ratio;// _check;
   }
 }
@@ -646,7 +647,7 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 
   //  mat.SaveInverse();
   ///let's define spin up as swap1
-  if (system.x(swap1)!=1){
+  if (system.x(swap1)!=-1){
     swap(swap1,swap2);
   }
 
@@ -790,11 +791,11 @@ RVBpPsiClass::FillDet(SystemClass &system,SmartEigen &myMat)
   int upDet=-1;
   int downDet=-1;
   for (int i=0;i<system.x.size();i++){
-    if ( (system.x(i)==1) || (system.x(i)==2) ){
+    if ( (system.x(i)==1) || (system.x(i)==2) ){ 
       upDet++;
       downDet=-1;
       for (int j=0;j<system.x.size();j++){
-	if ((system.x(j)==-1) || (system.x(j)==2) ){
+	if ((system.x(j)==-1) || (system.x(j)==2) ){ 
 	  downDet++;
 	  //	  cerr<<"GRR GRR"<<upDet<<" "<<downDet<<endl;
 	  myMat.M(upDet,downDet)=Phi(i,j,system);
@@ -834,7 +835,7 @@ RVBpPsiClass::FillDet(SystemClass &system,SmartMatrix &myMat)
       upDet++;
       downDet=-1;
       for (int j=0;j<system.x.size();j++){
-	if ((system.x(j)==-1) || (system.x(j)==2) ){
+	if ((system.x(j)==-1) || (system.x(j)==2) ){ 
 	  downDet++;
 	  //	  cerr<<"GRR GRR"<<upDet<<" "<<downDet<<endl;
 	  myMat.M(upDet,downDet)=Phi(i,j,system);

@@ -227,6 +227,75 @@ void SmartEigen::Init(int size,int size2)
 /*     ///    CheckInverse(); */
   }
 
+  void SmartEigen::InverseUpdate(vector<int> &colIndices, vector<int> &rowIndices, 
+				   Eigen::MatrixXcd &newCols,
+				   Eigen::MatrixXcd &newRows)
+  {
+    int size=M.rows();
+    int n=colIndices.size();
+     if (n==0) 
+       assert(1==2);
+
+     U_r1c1=Eigen::MatrixXcd::Zero(2*n,size);
+     V_r1c1=Eigen::MatrixXcd::Zero(size,2*n);
+     //     Det_UV.resize(2*n,2*n); 
+     //     MInverseU.resize(2*n,size); 
+     //     MInverseV.resize(size,2*n); 
+     //     MInverseV_DetInverse.resize(size,2*n); 
+     
+     for (int i=0;i<n;i++){ 
+       V_r1c1.col(2*i+1)=newRows.row(i).transpose()-M.col(rowIndices[i]);
+       V_r1c1.col(2*i)(colIndices[i])=1.0;
+       U_r1c1.row(2*i)=newCols.col(i).transpose()-M.row(colIndices[i]);
+       ///    U_r1c1.row(2*i)=newCols.col(i)-M.row(rowIndices[i]).transpose();
+       U_r1c1.row(2*i+1)(rowIndices[i])=1.0;
+     }
+
+ 
+     MInverseU=U_r1c1*MInverse;
+     Det_UV=MInverseU*V_r1c1;
+     Det_UV=Det_UV+Eigen::MatrixXcd::Identity(Det_UV.rows(),Det_UV.cols());
+     Det_UV=Det_UV.inverse();
+
+     //    MInverseV=MInverse*V_r1c1;
+     //     MInverseV_DetInverse=MInverse*V_r1c1*Det_UV;
+     //VU=MInverse*V_r1c1*Det_UV*MInverseU;
+     //     MInverse=MInverse-VU;
+     MInverse=MInverse-MInverse*V_r1c1*Det_UV*MInverseU;
+     for (int i=0;i<colIndices.size();i++)
+       M.row(colIndices[i])=newCols.col(i).transpose();
+
+     for (int i=0;i<rowIndices.size();i++)
+       M.col(rowIndices[i])=newRows.row(i).transpose();
+ 
+/*     MatrixOps::product(MInverse,V_r1c1,MInverseV); */
+/*     //    MatrixOps::MatrixMultiply(U_r1c1,MInverse,MInverseU);  */
+/*     MatrixOps::product(U_r1c1,MInverse,MInverseU);  */
+/*     //    MatrixOps::MatrixMultiply(MInverseU,V_r1c1,Det_UV);  */
+/*     MatrixOps::product(MInverseU,V_r1c1,Det_UV);  */
+/*     for (int i=0;i<Det_UV.extent(0);i++) */
+/*       Det_UV(i,i)=Det_UV(i,i)+1.0;  */
+/*     Det_UV=MatrixOps::Inverse(Det_UV); */
+
+/*     //    MatrixOps::MatrixMultiply(MInverseV,Det_UV,MInverseV_DetInverse); */
+/*     MatrixOps::product(MInverseV,Det_UV,MInverseV_DetInverse); */
+/*     //    MatrixOps::MatrixMultiply(MInverseV_DetInverse,MInverseU,VU); */
+/*     MatrixOps::product(MInverseV_DetInverse,MInverseU,VU); */
+/*     MInverse=MInverse-VU; */
+/*     for (int i=0;i<colIndices.size();i++){ */
+/*       int colIndex=colIndices[i]; */
+/*       M(colIndex,Range::all())=newCols[i](Range::all()); */
+/*     } */
+
+/*     for (int i=0;i<rowIndices.size();i++){ */
+/*       int colIndex=rowIndices[i]; */
+/*       M(Range::all(),colIndex)=newRows[i](Range::all()); */
+/*     } */
+/*     //    cerr<<"CHECKING INVERSE:"<<endl; */
+/*     ///    CheckInverse(); */
+  }
+
+
 complex<double> SmartEigen::Ratio_ncol_nrowp(vector<int> &colIndices, 
 					     vector<int> &rowIndices,
 					     Eigen::MatrixXcd &newCols,
@@ -241,13 +310,12 @@ complex<double> SmartEigen::Ratio_ncol_nrowp(vector<int> &colIndices,
   V_r1c1=Eigen::MatrixXcd::Zero(size,2*n);
   Det_UV.resize(2*n,2*n);
   //  MInverseU.resize(2*n,size);
-  cerr<<"PRE: "<<rowIndices[0]<<" "<<colIndices[0]<<endl;
+  cerr<<V_r1c1.col(0).size()<<" "<<newCols.col(0).size()<<" "<<M.col(0).size()<<endl;
   for (int i=0;i<n;i++){
-    V_r1c1.col(2*i+1)=newRows.row(i)-M.col(rowIndices[i]).transpose();
+    V_r1c1.col(2*i+1)=newRows.row(i).transpose()-M.col(rowIndices[i]);
     ///    V_r1c1.col(2*i+1)=newRows.row(i)-M.col(colIndices[i]).transpose();
     V_r1c1.col(2*i)(colIndices[i])=1.0;
-
-    U_r1c1.row(2*i)=newCols.col(i)-M.row(colIndices[i]).transpose();
+    U_r1c1.row(2*i)=newCols.col(i).transpose()-M.row(colIndices[i]);
     ///    U_r1c1.row(2*i)=newCols.col(i)-M.row(rowIndices[i]).transpose();
     U_r1c1.row(2*i+1)(rowIndices[i])=1.0;
   }

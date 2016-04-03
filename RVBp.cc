@@ -482,9 +482,16 @@ void RVBpPsiClass::Reject(SystemClass &system,int site,int end_site,int spin)
 void 
 RVBpPsiClass::UpdateDets(SystemClass &system,int swap1, int swap2)
 {
-  mat.InverseUpdate(colIndices,rowIndices,newCols,newRows);  
 
   matp.InverseUpdate(colIndices,rowIndices,newCols,newRows);  
+   for (int i=0;i<matp.M.extent(0);i++){
+     for (int j=0;j<matp.M.extent(1);j++){
+       mat.M(i,j)=matp.M(i,j);
+       mat.MInverse(i,j)=matp.MInverse(i,j);
+     }
+   }
+
+  //  mat.InverseUpdate(colIndices,rowIndices,newColsp,newRowsp);  
 }
 
 void 
@@ -673,7 +680,7 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   //swap1 has been set to be the spin up value
   //loop over the spin down particles
   for (int j=0;j<system.x.size();j++){
-    if (system.x(j)==1){
+    if (system.x(j)==-1){ 
       //      u(mat.DetPos(j))=Phi(swap1,j,system);
       newCols[0](matp.DetPos(j))=Phi(swap1,j,system);
       newColsp(matp.DetPos(j),0)=Phi(swap1,j,system);
@@ -682,7 +689,7 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   //swap2 has been set to be the spin down value
   //loops over the spin up particles
   //  for (int i=0;i<system.x.size();i++)
-    else if (system.x(j)==-1){
+    else if (system.x(j)==1){
       //      up(mat.DetPos(i))=Phi(i,swap2,system);
       newRows[0](matp.DetPos(j))=Phi(j,swap2,system);
       newRowsp(0,matp.DetPos(j))=Phi(j,swap2,system);
@@ -791,7 +798,7 @@ RVBpPsiClass::FillDet(SystemClass &system,SmartEigen &myMat)
   int upDet=-1;
   int downDet=-1;
   for (int i=0;i<system.x.size();i++){
-    if ( (system.x(i)==1) || (system.x(i)==2) ){ 
+    if ( (system.x(i)==1) || (system.x(i)==2) ){  
       upDet++;
       downDet=-1;
       for (int j=0;j<system.x.size();j++){

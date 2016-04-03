@@ -207,7 +207,7 @@ public:
       else if (wf_type_string=="RVB"){
 	cerr<<"ADDING RVB"<<endl;
 	//	RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
-	RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
+	RVBpPsiClass *RVB=new RVBpPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
 	RVB->Init(System);
 	wf_list.push_back(RVB); 
       }

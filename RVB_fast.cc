@@ -397,7 +397,7 @@ RVBFastPsiClass::UpdateDets(SystemClass &system,int swap1, int swap2)
 complex<double> 
 RVBFastPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 {
-  cerr<<"In evaluate ratio"<<endl;
+
   int maxSwap=max(swap1,swap2);
   int minSwap=min(swap1,swap2);
   int mySign=1;
@@ -427,7 +427,7 @@ RVBFastPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 
   rowIndices.resize(1);
   rowIndices[0]=mat.DetPos(swap2);
-  cerr<<"GRR"<<endl;
+
   //swap1 has been set to be the spin up value
   //loop over the spin down particles
   for (int j=0;j<system.x.size();j++){
@@ -446,7 +446,7 @@ RVBFastPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
       newRowsp(0,mat.DetPos(j))=Phi(j,swap2,system);
     }
   }
-  cerr<<"HERE"<<endl;
+
   complex<double> test_ratio=mat.Ratio_ncol_nrowp(colIndices,rowIndices,newCols,newRows);
   complex<double> test2_ratio=matp.Ratio_ncol_nrowp(colIndices,rowIndices,newColsp,newRowsp);
   complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
@@ -459,7 +459,7 @@ RVBFastPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   //  cerr<<"CURRENT RATIO IS "<<test_ratio<<endl;
   test_ratio.real()=-1*test_ratio.real(); //*mySign;
   test_ratio.imag()=-1*test_ratio.imag(); //*mySign;
-  cerr<<"out evaluate ratio"<<endl;
+
   return test_ratio;
   //return check_ratio;
 }

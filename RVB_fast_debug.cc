@@ -72,7 +72,7 @@ RVBFastPsiClass::evaluateRatio_check(SystemClass &system, int swap1, int swap2)
   system.Swap(swap1,swap2);
   FillDet(system,mat_check);
   complex<double> post=mat_check.Det();
-  cerr<<"Check ratio: "<<post<<" "<<pre<<" "<<post/pre<<endl;
+  //  cerr<<"Check ratio: "<<post<<" "<<pre<<" "<<post/pre<<endl;
   return post/pre;
 }
  

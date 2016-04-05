@@ -602,42 +602,27 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 
   colIndices.resize(1);
   //  colIndices[0]=mat.DownPos[swap1];
-  colIndices[0]=mat.DetPos[swap1];
-  assert(mat.DetPos[swap1]==mat.UpPos[swap1]);
-  //  cerr<<"UP: "<<mat.DownPos[swap1]<<endl;
-
+  colIndices[0]=mat.UpPos[swap1];
+  //  assert(mat.DetPos[swap1]==mat.UpPos[swap1]);
   rowIndices.resize(1);
-  //  rowIndices[0]=mat.UpPos[swap2];
-  rowIndices[0]=mat.DetPos[swap2];
-  assert(mat.DetPos[swap2]==mat.DownPos[swap2]);
-  //  cerr<<"UP: "<<mat.UpPos[swap2]<<endl;
-  //  cerr<<"UP: "<<mat.DownPos[swap2]<<endl;
+  rowIndices[0]=mat.DownPos[swap2];
+  //  assert(mat.DetPos[swap2]==mat.DownPos[swap2]);
 
   //swap1 has been set to be the spin up value
   //loop over the spin down particles
   for (int j=0;j<system.x.size();j++){
     if (system.x(j)==1){ 
-      //      u(mat.DetPos(j))=Phi(swap1,j,system);
-      //      newCols[0](mat.DetPos[j])=Phi(swap1,j,system);
-      //      cerr<<"A "<<j<<" "<<mat.DownPos[j]<<endl;
-      //      newColsp(mat.DownPos[j],0)=Phi(swap1,j,system);
       newColsp(mat.DetPos[j],0)=Phi(swap1,j,system);
     }
-
   //swap2 has been set to be the spin down value
   //loops over the spin up particles
-  //  for (int i=0;i<system.x.size();i++)
     else if (system.x(j)==-1){
-      //      up(mat.DetPos(i))=Phi(i,swap2,system);
-      //      newRows[0](mat.DetPos[j])=Phi(j,swap2,system);
-      //      cerr<<"B "<<j<<" "<<mat.UpPos[j]<<endl;
-      //      newRowsp(0,mat.UpPos[j])=Phi(j,swap2,system);
       newRowsp(0,mat.DetPos[j])=Phi(j,swap2,system);
     }
   }
 
   complex<double> test_ratio=mat.Ratio_ncol_nrowp(colIndices,rowIndices,newColsp,newRowsp);
-  complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
+
   int countParity=0;
   int myMin=min(swap1,swap2);
   int myMax=max(swap1,swap2);
@@ -646,20 +631,14 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
       countParity++;
 
 
-  //  double parity=system.CountElectrons(minSwap,maxSwap,1)+system.CountElectrons(minSwap,maxSwap,-1);
   test_ratio*= (( (countParity % 2)==0)  ? 1 :-1);
+
+  complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
   complex<double> diff=test_ratio-check_ratio;
   cerr<<"CHECKING: "<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
-  //  assert(abs(diff)<1e-10);
-      //HACK!      assert((diff*conj(diff)).real()<1e-10);
-  //  cerr<<"test ratio is "<<test_ratio<<" "<<endl; //evaluateRatio_check(system,swap1,swap2)<<endl;
 
   rebuild=false;
-  //  cerr<<"CURRENT RATIO IS "<<test_ratio<<endl;
-  //  test_ratio.real()=-1*test_ratio.real(); //*mySign;
-  //  test_ratio.imag()=-1*test_ratio.imag(); //*mySign;
   return test_ratio;
-  //return check_ratio;
 }
 
 double 

@@ -9,7 +9,7 @@
 #include "input.h"
 #include "PEPS_Base_Class/lapack_wrapper_v2.h"
 #include "PEPS_Base_Class/PEPS_Base.h"
-#include "PEPS_Base_Class/PEPS_Base.cpp"
+#include "PEPS_Base_Class/PEPS_Base.cc"
 
 
 

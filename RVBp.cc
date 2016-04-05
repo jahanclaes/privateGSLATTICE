@@ -242,20 +242,7 @@ RVBpPsiClass::Swap(int i, int j)
 {
   swap(mat.UpPos[i],mat.UpPos[j]);
   swap(mat.DownPos[i],mat.DownPos[j]);
-
   swap(mat.DetPos[i],mat.DetPos[j]);
-  cerr<<"UP :";
-  for (int ii=0;ii<mat.UpPos.size();ii++){
-    cerr<<mat.UpPos[ii]<<" ";
-  }
-  cerr<<endl;
-
-  cerr<<"Down :";
-  for (int ii=0;ii<mat.DownPos.size();ii++){
-    cerr<<mat.DownPos[ii]<<" ";
-  }
-  cerr<<endl;
-
 }
 
 
@@ -663,6 +650,7 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   test_ratio*= (( (countParity % 2)==0)  ? 1 :-1);
   complex<double> diff=test_ratio-check_ratio;
   cerr<<"CHECKING: "<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
+  //  assert(abs(diff)<1e-10);
       //HACK!      assert((diff*conj(diff)).real()<1e-10);
   //  cerr<<"test ratio is "<<test_ratio<<" "<<endl; //evaluateRatio_check(system,swap1,swap2)<<endl;
 

@@ -245,13 +245,15 @@ void SmartEigen::Init(int size,int size2)
        U_r1c1.row(2*i)=newCols.col(i).transpose()-M.row(colIndices[i]);
        U_r1c1.row(2*i+1)(rowIndices[i])=1.0;
      }
-
+     Eigen::MatrixXcd MInverseV=MInverse*V_r1c1;
      MInverseU=U_r1c1*MInverse;
      Det_UV=MInverseU*V_r1c1;
      Det_UV=Det_UV+Eigen::MatrixXcd::Identity(Det_UV.rows(),Det_UV.cols());
-     Det_UV=Det_UV.inverse();
+     Eigen::MatrixXcd Det_UVp=Det_UV.inverse();
 
-     MInverse=MInverse-MInverse*V_r1c1*Det_UV*MInverseU;
+     //     MInverse=MInverse-MInverse*V_r1c1*Det_UVp*MInverseU;
+     MatrixXcd VU=(MInverseV*Det_UVp)*MInverseU;
+     MInverse=MInverse-VU;
      for (int i=0;i<colIndices.size();i++)
        M.row(colIndices[i])=newCols.col(i).transpose();
 

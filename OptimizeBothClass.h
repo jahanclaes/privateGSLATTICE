@@ -207,9 +207,19 @@ public:
       else if (wf_type_string=="RVB"){
 	cerr<<"ADDING RVB"<<endl;
 	//	RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
-	RVBpPsiClass *RVB=new RVBpPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
-	RVB->Init(System);
-	wf_list.push_back(RVB); 
+	{
+	  RVBpPsiClass *RVB=new RVBpPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
+	  RVB->Init(System);
+	  wf_list.push_back(RVB); 
+	}
+
+	{
+	  //	  RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
+	  //	  RVB->Init(System);
+	  //	  wf_list.push_back(RVB); 
+	}
+
+
       }
       else if (wf_type_string=="JASTROW"){
 	cerr<<"ADDING JASTROW"<<endl;
@@ -331,6 +341,7 @@ public:
 
   double Sweep()
   {
+    cerr<<"Start sweep "<<endl;
     int numAccepted=0;
     int numAttempted=0;
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
@@ -373,6 +384,7 @@ public:
       }
     }
     //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
+    cerr<<"end sweep "<<endl;
     return (double)numAccepted/(double)numAttempted;
     //
   }

@@ -10,7 +10,6 @@
 #include "SystemClass.h"
 #include "WaveFunction.h"
 #include "SmartEigen.h"
-#include "SmartMatrix.h"
 #include "PairingFunctionAllBin.h"
 
 
@@ -18,7 +17,6 @@ class RVBpPsiClass  : public WaveFunctionClass
 {
 public:
   SmartEigen mat;
-  SmartMatrix matp;
   bool ReadParams;
   bool ReadPairingFunction;
   //  RVBpPsiClass::
@@ -36,7 +34,6 @@ public:
   vector<Array<complex<double>  ,1> > newRows;
   Eigen::MatrixXcd newColsp;
   Eigen::MatrixXcd newRowsp;
-
   vector<int> colIndices;
   vector<int> rowIndices;
   void Copy(WaveFunctionClass* wf)
@@ -79,7 +76,6 @@ public:
   complex<double>Phi(int i,int j,SystemClass &system);
 
   void FillDet(SystemClass &system, SmartEigen &myMat);
-  void FillDet(SystemClass &system, SmartMatrix &myMat);
   complex<double> evaluate(SystemClass &system);
   complex<double> evaluate_noInverse(SystemClass &system);
   complex<double> evaluateRatio(SystemClass &system,int swap1, int swap2);
@@ -97,14 +93,12 @@ public:
   void UpdateDets(SystemClass &system,int site, int end_site,int spin);
 
   Eigen::VectorXcd col; 
-  Array<complex<double> ,1> colp; 
   complex<double> logevaluate(SystemClass &system,int &sign)
     {
       assert(1==2);
     }
   
-  std::complex<double> evaluateRatio_check(SystemClass &system, int swap1, int swap2);
-  
+  std::complex<double> evaluateRatio_check(SystemClass &system, int a, int b);
 
 
 

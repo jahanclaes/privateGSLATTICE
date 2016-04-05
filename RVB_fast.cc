@@ -236,6 +236,13 @@ void
 RVBFastPsiClass::Swap(int i, int j)
 {
   swap(mat.DetPos(i),mat.DetPos(j));
+  cerr<<"DET :";
+  for (int ii=0;ii<mat.DetPos.size();ii++){
+    cerr<<mat.DetPos(ii)<<" ";
+  }
+  cerr<<endl;
+
+
 }
 
 
@@ -382,14 +389,55 @@ RVBFastPsiClass::Reject(SystemClass &system,int swap1,int swap2)
 void 
 RVBFastPsiClass::UpdateDets(SystemClass &system,int swap1, int swap2)
 {
-  mat.InverseUpdate(colIndices,rowIndices,newCols,newRows);  
 //   for (int i=0;i<mat.M.extent(0);i++){
 //     for (int j=0;j<mat.M.extent(1);j++){
 //       matp.M(i,j)=mat.M(i,j);
 //       matp.MInverse(i,j)=mat.MInverse(i,j);
 //     }
 //   }
+
+  for (int i=0;i<matp.M.rows();i++){
+    for (int j=0;j<matp.M.cols();j++){
+      if (!(abs((matp.MInverse(i,j)-mat.MInverse(i,j)))<1e-5))
+	cerr<<"BEFORE: "<<i<<" "<<j<<" "<<matp.MInverse(i,j)<<" "<<mat.MInverse(i,j)<<endl;
+      //      assert(abs((matp.MInverse(i,j)-mat.MInverse(i,j))/mat.MInverse(i,j))<1e-5);
+    }
+  }
+
+
+  mat.InverseUpdate(colIndices,rowIndices,newCols,newRows);  
   matp.InverseUpdate(colIndices,rowIndices,newColsp,newRowsp);
+  for (int i=0;i<matp.M.rows();i++){
+    for (int j=0;j<matp.M.cols();j++){
+      assert(abs(matp.M(i,j)-mat.M(i,j))<1e-5);
+    }
+  }
+
+  for (int i=0;i<matp.M.rows();i++){
+    for (int j=0;j<matp.M.cols();j++){
+      if (!(abs((matp.MInverse(i,j)-mat.MInverse(i,j)))<1e-5)){
+
+	for (int i=0;i<newCols.size();i++){
+	  cerr<<newCols[i]<<" ";
+	}
+	cerr<<endl;
+	cerr<<endl;
+	cerr<<newColsp<<endl;
+	cerr<<endl;
+	for (int i=0;i<newRows.size();i++){
+	  cerr<<newRows[i]<<" ";
+	}
+	cerr<<endl;
+	cerr<<endl;
+	cerr<<newRowsp<<endl;
+	cerr<<endl;
+
+	cerr<<"AFTER: "<<i<<" "<<j<<" "<<matp.MInverse(i,j)<<" "<<mat.MInverse(i,j)<<endl;
+      }
+      //      assert(abs(matp.MInverse(i,j)-mat.MInverse(i,j))<1e-5);
+    }
+  }
+
 }
 
 
@@ -447,11 +495,13 @@ RVBFastPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
     }
   }
 
+  cerr<<"AAA: "<<colIndices[0]<<" "<<newColsp<<endl;
+
   complex<double> test_ratio=mat.Ratio_ncol_nrowp(colIndices,rowIndices,newCols,newRows);
   complex<double> test2_ratio=matp.Ratio_ncol_nrowp(colIndices,rowIndices,newColsp,newRowsp);
   complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
   complex<double> diff=test_ratio-check_ratio;
-  cerr<<"CHECKING: "<<diff<<" "<<check_ratio<<" "<<test_ratio<<" "<<test2_ratio<<endl;
+  cerr<<"CHECKING P: "<<diff<<" "<<check_ratio<<" "<<test_ratio<<" "<<test2_ratio<<" "<<matp.M.determinant()<<endl;
       //HACK!      assert((diff*conj(diff)).real()<1e-10);
   //  cerr<<"test ratio is "<<test_ratio<<" "<<endl; //evaluateRatio_check(system,swap1,swap2)<<endl;
 

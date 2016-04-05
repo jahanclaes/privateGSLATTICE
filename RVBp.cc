@@ -585,7 +585,7 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 
   //  mat.SaveInverse();
   ///let's define spin up as swap1
-  if (system.x(swap1)!=-1){
+  if (system.x(swap1)!=1){
     swap(swap1,swap2);
   }
 
@@ -611,12 +611,12 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   //swap1 has been set to be the spin up value
   //loop over the spin down particles
   for (int j=0;j<system.x.size();j++){
-    if (system.x(j)==1){ 
+    if (system.x(j)==-1){ 
       newColsp(mat.DetPos[j],0)=Phi(swap1,j,system);
     }
   //swap2 has been set to be the spin down value
   //loops over the spin up particles
-    else if (system.x(j)==-1){
+    else if (system.x(j)==1){
       newRowsp(0,mat.DetPos[j])=Phi(j,swap2,system);
     }
   }
@@ -728,11 +728,11 @@ RVBpPsiClass::FillDet(SystemClass &system,SmartEigen &myMat)
   int upDet=-1;
   int downDet=-1;
   for (int i=0;i<system.x.size();i++){
-    if ( (system.x(i)==-1) || (system.x(i)==2) ){ //HACK!
+    if ( (system.x(i)==1) || (system.x(i)==2) ){ //HACK!
       upDet++;
       downDet=-1;
       for (int j=0;j<system.x.size();j++){
-	if ((system.x(j)==1) || (system.x(j)==2) ){ //HACK!
+	if ((system.x(j)==-1) || (system.x(j)==2) ){ //HACK!
 	  downDet++;
 	  //	  cerr<<"GRR GRR"<<upDet<<" "<<downDet<<endl;
 	  myMat.M(upDet,downDet)=Phi(i,j,system);

@@ -341,7 +341,7 @@ public:
 
   double Sweep()
   {
-    cerr<<"Start sweep "<<endl;
+    //    cerr<<"Start sweep "<<endl;
     int numAccepted=0;
     int numAttempted=0;
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
@@ -384,7 +384,7 @@ public:
       }
     }
     //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
-    cerr<<"end sweep "<<endl;
+    //    cerr<<"end sweep "<<endl;
     return (double)numAccepted/(double)numAttempted;
     //
   }

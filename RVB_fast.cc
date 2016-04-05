@@ -417,15 +417,15 @@ RVBFastPsiClass::UpdateDets(SystemClass &system,int swap1, int swap2)
     for (int j=0;j<matp.M.cols();j++){
       if (!(abs((matp.MInverse(i,j)-mat.MInverse(i,j)))<1e-5)){
 
-	for (int i=0;i<newCols.size();i++){
-	  cerr<<newCols[i]<<" ";
+	for (int ii=0;ii<newCols.size();ii++){
+	  cerr<<newCols[ii]<<" ";
 	}
 	cerr<<endl;
 	cerr<<endl;
 	cerr<<newColsp<<endl;
 	cerr<<endl;
-	for (int i=0;i<newRows.size();i++){
-	  cerr<<newRows[i]<<" ";
+	for (int ii=0;ii<newRows.size();ii++){
+	  cerr<<newRows[ii]<<" ";
 	}
 	cerr<<endl;
 	cerr<<endl;

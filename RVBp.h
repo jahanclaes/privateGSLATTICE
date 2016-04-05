@@ -79,11 +79,11 @@ public:
   complex<double> evaluate(SystemClass &system);
   complex<double> evaluate_noInverse(SystemClass &system);
   complex<double> evaluateRatio(SystemClass &system,int swap1, int swap2);
-  complex<double> evaluateRatio_energy(SystemClass &system,int swap1, int swap2);
+
   complex<double>  evaluateRatio_check(SystemClass &system, int site, int end_site,
 				       int spin);
 
-  double Sign(SystemClass &system);
+
 
   void Reject(SystemClass &system,int site,int end_site,int spin);
   complex<double> evaluateRatio_swap(SystemClass &system, int swap1, int swap2);

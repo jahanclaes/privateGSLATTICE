@@ -139,48 +139,48 @@ void SystemClass::GenerateRList()
 void SystemClass::ReadNeighbors()
 {
   
-  ifstream infile;
-  infile.open("neighbors.txt");
-  int numNeighbors;
-  infile>>numNeighbors;
-  //    cerr<<"numNeighbors is "<<numNeighbors<<" "<<rList.size()<<endl;
-  neighbors.resize(rList.size(),numNeighbors);
-  int latticeSite;
-  int neighbor;
-  while (!infile.eof()){
-    infile>>latticeSite;
-    if (!infile.eof())
-      for (int i=0;i<numNeighbors;i++)
-	infile>>neighbors(latticeSite,i);
-  }
+  // ifstream infile;
+  // infile.open("neighbors.txt");
+  // int numNeighbors;
+  // infile>>numNeighbors;
+  // //    cerr<<"numNeighbors is "<<numNeighbors<<" "<<rList.size()<<endl;
+  // neighbors.resize(rList.size(),numNeighbors);
+  // int latticeSite;
+  // int neighbor;
+  // while (!infile.eof()){
+  //   infile>>latticeSite;
+  //   if (!infile.eof())
+  //     for (int i=0;i<numNeighbors;i++)
+  // 	infile>>neighbors(latticeSite,i);
+  // }
 }
 
 
 void SystemClass::SetupABSites()
 {
   assert(1==2);
-  ABSites.resize(rList.size());
-  ABSites(Range::all())=-1;
+  // ABSites.resize(rList.size());
+  // ABSites(Range::all())=-1;
    
-  //Figure out what the AB Sites are 
-  //for the bipartite lattice!
-  //Should be eventually moved into system!
-  ABSites(0)=0;
-  bool notDone=true;
-  while (notDone){
-    notDone=false;
-    for (int i=0;i<neighbors.extent(0);i++)
-      for (int j=0;j<neighbors.extent(1);j++){
-	if (ABSites(i)==0)
-	  ABSites(neighbors(i,j))=1;
-	else if (ABSites(i)==1)
-	  ABSites(neighbors(i,j))=0;
-	else if (ABSites(i)==-1)
-	  notDone=true;
-      }
-  }
-  for (int i=0;i<ABSites.size();i++)
-    cerr<<"ABSITES: "<<i<<" "<<ABSites(i)<<endl;
+  // //Figure out what the AB Sites are 
+  // //for the bipartite lattice!
+  // //Should be eventually moved into system!
+  // ABSites(0)=0;
+  // bool notDone=true;
+  // while (notDone){
+  //   notDone=false;
+  //   for (int i=0;i<neighbors.extent(0);i++)
+  //     for (int j=0;j<neighbors.extent(1);j++){
+  // 	if (ABSites(i)==0)
+  // 	  ABSites(neighbors(i,j))=1;
+  // 	else if (ABSites(i)==1)
+  // 	  ABSites(neighbors(i,j))=0;
+  // 	else if (ABSites(i)==-1)
+  // 	  notDone=true;
+  //     }
+  // }
+  // for (int i=0;i<ABSites.size();i++)
+  //   cerr<<"ABSITES: "<<i<<" "<<ABSites(i)<<endl;
 }
 
 

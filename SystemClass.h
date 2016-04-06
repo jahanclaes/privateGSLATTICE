@@ -8,10 +8,10 @@ class SystemClass
 {
  public:
   Array<int,1> x;
-  Array<int,1> ABSites;
+  //  Array<int,1> ABSites;
   void Init();
   double tau;
-  Array<int,2> neighbors;
+  //  Array<int,2> neighbors;
   vector<dVec> rList;
   vector<dVec> kList;
   int N1; int N2;

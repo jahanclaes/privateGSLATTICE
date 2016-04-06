@@ -54,7 +54,7 @@ void Heisenberg::Init(SystemClass &system)
   
 }
 
-
+   
 
 void Heisenberg::Init(SystemClass &system,string fileName)
 {
@@ -114,8 +114,9 @@ double Heisenberg::Energy(SystemClass &system,
       system.Swap(i,j);
       for (list<WaveFunctionClass*>::iterator wf=wf_list.begin();wf!=wf_list.end();wf++)
 	(*wf)->Swap(i,j);
+      int sign =  ((( ( system.CountElectrons(i,j,-1)+system.CountElectrons(i,j,1)) % 2) == 0)  ? -1: 1);
       //HACK!      cerr<<"My quick ratio is "<<quick_ratio<<endl;
-      total_Jx=total_Jx+2.0 * quick_ratio * Jx;
+      total_Jx=total_Jx+2.0 * quick_ratio * Jx*sign;
     }
   }
   //The total energy eventually needs to be real so let's just some

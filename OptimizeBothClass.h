@@ -273,31 +273,68 @@ public:
     cerr<<"Initializing the hamiltonian"<<endl;
     Ham.clear();
 
-    int i=1;
-
-
-    std::stringstream ss;
-    ss << "Hubbard"<<i;
-    string check=ss.str();
-    
-    cerr<<"Checking Hamiltonian "<<check<<" and getting "<<myInput.IsVariable(check)<<endl;
-    //    while (input.count(check)!=0){
-    while (myInput.IsVariable(check)){
-      Hubbard *H_temp=new Hubbard(check);
-      H_temp->Init(System,myInput.GetVariable(check));
-      std::stringstream ssJ;
-      ssJ<<"Hubbard"<<i<<"_U";
-      assert(myInput.IsVariable(ssJ.str()));
-      H_temp->Set_U(myInput.toDouble(myInput.GetVariable(ssJ.str())));
-      //      H_temp->Set_J(atof(input[ssJ.str()].c_str()));
-      cerr<<"The U that is set for "<<check<<" is "<<H_temp->U<<endl;
-      Ham.push_back(H_temp);
-      std::stringstream ss;
-      i++;
-      ss << "Hubbard"<<i;
-      check=ss.str();
-      cerr<<"Checking: "<<myInput.IsVariable(check)<<endl;
+    int check=0;
+    while (myInput.OpenSection("Hamiltonian",check)){
+      string hamiltonian_Name=myInput.GetVariable("name");
+      cerr<<"Found the "<<check<<" hamiltonian called "<<hamiltonian_Name<<endl;
+      if (hamiltonian_Name=="Hubbard"){
+	std::stringstream ss; 
+	ss << "Hubbard"<<check; 
+	string check=ss.str(); 
+	Hubbard *H_temp=new Hubbard(check);
+	H_temp->Init(System,myInput.GetVariable("bondFile"));
+	//	std::stringstreamz ssJ;
+	//	ssJ<<"Hubbard"<<i<<"_U";
+	//	assert(myInput.IsVariable(ssJ.str()));
+	assert(myInput.IsVariable("U"));
+	//	H_temp->Set_U(myInput.toDouble(myInput.GetVariable(ssJ.str())));
+	H_temp->Set_U(myInput.toDouble(myInput.GetVariable("U")));
+	//      H_temp->Set_J(atof(input[ssJ.str()].c_str()));
+	cerr<<"The U that is set for "<<check<<" is "<<H_temp->U<<endl;
+	Ham.push_back(H_temp);
+      } 
+      else if (hamiltonian_Name=="Heisenberg"){
+	std::stringstream ss; 
+	ss << "Heisenberg"<<check; 
+	string check=ss.str(); 
+	Heisenberg *H_temp=new Heisenberg(check);
+	H_temp->Init(System,myInput.GetVariable("bondFile"));
+	H_temp->Set_J(myInput.toDouble(myInput.GetVariable("J")));
+	Ham.push_back(H_temp);
+      }
+      myInput.CloseSection();
+      check++;
     }
+
+
+    /* int i=1; */
+
+
+    /* std::stringstream ss; */
+    /* ss << "Hubbard"<<i; */
+    /* string check=ss.str(); */
+    
+    /* cerr<<"Checking Hamiltonian "<<check<<" and getting "<<myInput.IsVariable(check)<<endl; */
+    /* //    while (input.count(check)!=0){ */
+    /* while (myInput.IsVariable(check)){ */
+    /*   Hubbard *H_temp=new Hubbard(check); */
+    /*   H_temp->Init(System,myInput.GetVariable(check)); */
+    /*   std::stringstream ssJ; */
+    /*   ssJ<<"Hubbard"<<i<<"_U"; */
+    /*   assert(myInput.IsVariable(ssJ.str())); */
+    /*   H_temp->Set_U(myInput.toDouble(myInput.GetVariable(ssJ.str()))); */
+    /*   //      H_temp->Set_J(atof(input[ssJ.str()].c_str())); */
+    /*   cerr<<"The U that is set for "<<check<<" is "<<H_temp->U<<endl; */
+    /*   Ham.push_back(H_temp); */
+    /*   std::stringstream ss; */
+    /*   i++; */
+    /*   ss << "Hubbard"<<i; */
+    /*   check=ss.str(); */
+    /*   cerr<<"Checking: "<<myInput.IsVariable(check)<<endl; */
+    /* } */
+
+
+
     assert(myInput.IsVariable("OptType"));
     if (myInput.GetVariable("OptType")=="GRADIENT"){
       opt=GRADIENT;

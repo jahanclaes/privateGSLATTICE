@@ -31,14 +31,18 @@ class VMCDriverClass
 
     ReadWaveFunction(myInput,wf_list);
 
+
     OptimizeBothClass VMC(Random);
     VMC.Init(wf_list,myInput);
     VMC.VMC_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
     VMC.VMC_SampleSweeps=myInput.toInteger(myInput.GetVariable("SampleSweeps"));
 
     /////    VMC.GetParams("params.dat"); 
-
-
+    string mySweep=myInput.GetVariable("MoveType");
+    if (mySweep=="HOP")
+      VMC.sweep=HOP;
+    else if (mySweep=="EXCHANGE")
+      VMC.sweep=EXCHANGE;
     ///GETTING PARAMETERS
     if (myInput.IsVariable("ReadParams")){
       bool toRead=myInput.toBool(myInput.GetVariable("ReadParams"));

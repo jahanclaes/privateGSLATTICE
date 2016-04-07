@@ -30,6 +30,7 @@ using namespace std;
 
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 
+enum SweepType {HOP, EXCHANGE};
 
 class OptimizeBothClass
 {
@@ -37,8 +38,8 @@ public:
   SystemClass System;
   RandomClass &Random;
   list<WaveFunctionClass*> wf_list;  
-
-
+  
+  SweepType sweep;
   //  vector<list<WaveFunctionClass*> > wf_list_;  
 
   list<HamiltonianClass*> Ham;
@@ -429,6 +430,8 @@ public:
 
   double Sweep_hop()
   {
+    if (sweep==EXCHANGE)
+      return Sweep();
       //    cerr<<endl;
     int numAccepted=0;
     int numAttempted=0;
@@ -945,7 +948,7 @@ void BroadcastParams(CommunicatorClass &myComm)
     if (equilibrate){
       for (int sweeps=0;sweeps<VMC_equilSweeps;sweeps++){
 	//	cerr<<"Doing step "<<sweeps<<endl;
-	Sweep();
+	Sweep_hop();
       }
     }
     vector<double> energy_terms(Ham.size(),0);
@@ -953,7 +956,7 @@ void BroadcastParams(CommunicatorClass &myComm)
     int NumCounts=0;
     for (int sweeps=0;sweeps<VMC_SampleSweeps;sweeps++){
       //      cerr<<"Doing step "<<sweeps<<endl;
-      numAccept+=Sweep();
+      numAccept+=Sweep_hop();
       numAttempt+=1;
       NumCounts++;
       int i=0;

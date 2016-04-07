@@ -24,4 +24,4 @@ $(EXEC): $(OBJECTS)
 
 # To remove generated files
 clean:
-	rm -f *.o cPEPS_Base_Class/*.o PEPS_Base_Class/*.o Communication/*.o
+	rm -f $(EXEC) *.o cPEPS_Base_Class/*.o PEPS_Base_Class/*.o Communication/*.o

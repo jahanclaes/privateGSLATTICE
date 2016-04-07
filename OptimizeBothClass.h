@@ -30,6 +30,7 @@ using namespace std;
 
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 
+
 class OptimizeBothClass
 {
 public:

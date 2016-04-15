@@ -428,6 +428,12 @@ public:
     //
   }
 
+  double Sweep_kondo()
+  {
+    
+
+  }
+
   double Sweep_hop()
   {
     if (sweep==EXCHANGE)

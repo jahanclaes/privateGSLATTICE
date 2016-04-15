@@ -190,12 +190,19 @@ void SystemClass::Init()
   x.resize(rList.size());
   cerr<<"Reading neighbors"<<endl;
   ReadNeighbors();
-  cerr<<"Reading k list"<<endl;
-  GenerateKList();
+  ////  cerr<<"Reading k list"<<endl;
+  ////  GenerateKList();
+  
   //  SetupABSites();
   tau=0.1;
   cerr<<"Staggering"<<endl;
   Stagger(); //HACK FOR HONEYCOMB!
+  int numUp=CountElectrons(-1,x.size(),1);
+  for (int i=0;i<numUp;i++){
+    dVec garbage;
+    kList.push_back(garbage);
+  }
+  cerr<<"SIZE OF K LIST IS "<<kList.size()<<endl;
   cerr<<"SystemClass init done"<<endl;
 }
 

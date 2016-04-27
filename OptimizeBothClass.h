@@ -27,6 +27,8 @@ using namespace std;
 #include "BackFlow.h"
 #include "SlaterDet.h"
 #include "Jastrow.h"
+#include "HopMove.h"
+#include "kondoHelp.h"
 
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 
@@ -430,66 +432,185 @@ public:
     //
   }
 
-  void EvaluateWF(list<WaveFunctionClass*> &wf_list)
+  complex<double> EvaluateWF_ifNeedReset(list<WaveFunctionClass*> &wf_list)
   {
-    
-  }
-  double Sweep_kondo()
-  {
-    int numAccepted=0;
-    int numAttempted=0;
-    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+    complex<double> ans=1.0;
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
       if ((*wf_iter)->NeedFrequentReset){
-	complex<double> ans=(*wf_iter)->evaluate(System);
+	ans*=(*wf_iter)->evaluate(System);
       }
     }
+    return ans;
+  }
+
+  HopMove ChooseHop(vector<int> &positions,SystemClass &system)
+  {
+    int spin = (Random.randInt(2)==0 ? -1: 1);
+    int site;
+    do { 
+      site=positions[Random.randInt(positions.size())];
+    } while ((system.x(site)!=spin) || (system.x(site)!=2)) ;
+    
+    int end_site;
+    do {
+      end_site=positions[Random.randInt(positions.size())];
+    } while ((system.x(site)==spin) || (system.x(site)==2));
+    //    HopMove move(site,end_site,spin);
+    return HopMove(site,end_site,spin);
+  }
+  void MakeMove(HopMove hop, SystemClass &system, list<WaveFunctionClass*> &wf)
+  {
+    System.Move(hop.start,hop.end,hop.spin);
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->Move(hop.start,hop.end,hop.spin);
+    }
+  }
+
+  complex<double> Ratio(HopMove &hop, SystemClass &system, list<WaveFunctionClass*> &wf)
+  {
+    complex<double> quick_ratio;
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      complex<double> myRatioIs=(*wf_iter)->evaluateRatio(System,hop.start,hop.end,hop.spin);
+      quick_ratio*=myRatioIs;
+    }
+    return quick_ratio;
+  }
+
+  void Accept(HopMove &hop, SystemClass &system, list<WaveFunctionClass*> &wf_list)
+  {
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->UpdateDets(System,hop.start,hop.end,hop.spin);
+    }
+  }
+  
+  void Reject(HopMove &hop, SystemClass &system, list<WaveFunctionClass*> &wf_list)
+  {
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->Reject(System,hop.start,hop.end,hop.spin);
+    }
+  }
+
+  HopMove ReverseHop(HopMove &hop){
+    return HopMove(hop.end,hop.start,hop.spin);
+  }
+
+  double Sweep_kondo_hop()
+  {
+    KondoHelp kondo_help;
+    int numAccepted=0;
+    int numAttempted=0;
+    EvaluateWF_ifNeedReset(wf_list);
+    HopMove hop_move;
     for (int step=0;step<System.x.size();step++){ 
-      //      cerr<<"On step "<<step<<endl;
-
-      int spin = (Random.randInt(2) == 0 ? -1: 1);
-      int site=Random.randInt(System.x.size());
-      while ( (System.x(site)!=spin && System.x(site)!=2))
-        site=Random.randInt(System.x.size());
-
-      int end_site=Random.randInt(System.x.size());
-      while ( (System.x(end_site)==spin || System.x(end_site)==2))
-        end_site=Random.randInt(System.x.size());
-
-      System.Move(site,end_site,spin);
-      for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
-	(*wf_iter)->Move(site,end_site,spin);
-      complex<double> quick_ratio=1.0;
-      for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
-	complex<double> myRatioIs=(*wf_iter)->evaluateRatio(System,site,end_site,spin);
-	quick_ratio*=myRatioIs;
-      }
-      //      cerr<<"My ratio is "<<quick_ratio.real()<<endl;
+      if (Random.randInt(2) ==0)
+	hop_move=ChooseHop(kondo_help.layer1Sites,System);
+      else 
+	hop_move=ChooseHop(kondo_help.layer2Sites,System);
+      MakeMove(hop_move,System,wf_list);
+      complex<double> quick_ratio=Ratio(hop_move,System,wf_list);
       double ranNum=Random.ranf();
       numAttempted++;
       if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
 	numAccepted++;
-	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
-	  (*wf_iter)->UpdateDets(System,site,end_site,spin);
-	
+	Accept(hop_move,System,wf_list);
 	//accept
-	
       }
       else {
-	System.Move(end_site,site,spin);
-	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
-	  (*wf_iter)->Move(end_site,site,spin);
-	
- 	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
-	  (*wf_iter)->Reject(System,site,end_site,spin);
-	
+	MakeMove(ReverseHop(hop_move),System,wf_list);
+	Reject(hop_move,System,wf_list);
       }
     }
     //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
     return (double)numAccepted/(double)numAttempted;
     //
-    
-
   }
+  bool LegalExchange(ExchangeMove &e,SystemClass &system)
+  {
+    (e.site1 != e.site2) &&
+      ( 
+      ( (system.x(e.site1)==1) && (system.x(e.site2)==-1)) || 
+      ( (system.x(e.site1)==-1) && (system.x(e.site2)==1)) ||
+      ( (system.x(e.site1)==1) && (system.x(e.site2)==2) ) ||
+      ( (system.x(e.site1)==-1) && (system.x(e.site2)==2) ) ||
+      ( (system.x(e.site1)==2) && (system.x(e.site2)==1) ) ||
+      ( (system.x(e.site1)==2) && (system.x(e.site2)==-1) )
+	);
+  }
+
+  ExchangeMove ChooseExchange(vector<pair<int, int > > &bonds)
+  {
+    
+    ExchangeMove e;
+    do {
+      int bondIndex=Random.randInt(bonds.size());
+      e.site1=bonds[bondIndex].first;
+      e.site2=bonds[bondIndex].second;
+    } while (!(LegalExchange(e,System)));
+    e.spin1=System.x(e.site1);
+    e.spin2=System.x(e.site2);
+    return e;
+  }
+  
+  void MakeMove(ExchangeMove &e, SystemClass &system,list<WaveFunctionClass*> &wf_list)
+  {
+    System.Swap(e.site1,e.site2);
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->Swap(e.site1,e.site2);
+    }
+  }
+  
+  complex<double> Ratio(ExchangeMove &e, SystemClass &system, list<WaveFunctionClass*> &wf_list)
+  {
+    complex<double> quick_ratio=1.0;
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      quick_ratio*=(*wf_iter)->evaluateRatio(system,e.site1,e.site2);
+    }
+    return quick_ratio;
+  }
+  void Accept(ExchangeMove &e, SystemClass &system, list<WaveFunctionClass*> &wf_list)
+  {
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->UpdateDets(system,e.site1,e.site2);
+    }
+  }
+
+  void Reject(ExchangeMove &e, SystemClass &system, list<WaveFunctionClass*> &wf_list)
+  {
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->Reject(system,e.site1,e.site2);
+    }
+  }
+    
+  
+  double Sweep_kondo_exchange()
+  {
+    KondoHelp kondo_help;
+    int numAccepted=0;
+    int numAttempted=0;
+    EvaluateWF_ifNeedReset(wf_list);
+    ExchangeMove exchange;
+    for (int step=0;step<System.x.size();step++){ 
+      ExchangeMove exchange_move=ChooseExchange(kondo_help.heisenbergBonds);
+      MakeMove(exchange_move,System,wf_list);
+      complex<double> quick_ratio=Ratio(exchange_move,System,wf_list);
+      double ranNum=Random.ranf();
+      numAttempted++;
+      if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
+	numAccepted++;
+	Accept(exchange_move,System,wf_list);
+	//accept
+      }
+      else {
+	MakeMove(exchange_move,System,wf_list);
+	Reject(exchange_move,System,wf_list);
+      }
+    }
+    //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
+    return (double)numAccepted/(double)numAttempted;
+    //
+  }
+
+
 
   double Sweep_hop()
   {

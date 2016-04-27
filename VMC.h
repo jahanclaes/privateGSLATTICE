@@ -59,10 +59,6 @@ class VMCDriverClass
     VMC.EvaluateAll();
 
     //    VMC.SaveParams("params.dat");
-<<<<<<< HEAD
-
-=======
->>>>>>> master
     int step=0;
     VMC.VMC(true);
     while (1==1){

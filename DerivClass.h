@@ -179,6 +179,9 @@ public:
     }
   complex<double> ComputeDerivp(int param)
     {
+      assert(param<El_times_Psi_alpha_over_Psip.size());
+      assert(param<Psi_alpha_over_Psip.size());
+
       return 2.0 * (El_times_Psi_alpha_over_Psip[param].real()/NumTimes - (Psi_alpha_over_Psip[param].real()/NumTimes)*(E_avgp.real()/NumTimes));
 
     }

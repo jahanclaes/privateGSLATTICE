@@ -438,7 +438,7 @@ void dTensorList::boostBD(int dxBD, int dyBD)
 	{
 		numParams += Dim[i] * Dim[i+1];
 	}
-	numParams *= (xBD*xBD);
+	numParams *= (xBD*xBD);//BRYAN HACK
 }
 
 ////////////////////////////////////////////////////

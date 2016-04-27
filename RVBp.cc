@@ -64,10 +64,13 @@ RVBpPsiClass::Init(SystemClass &system)
 	  bin=PairingFunction.FindBin(i,j);
 	  assert(bin<PairingFunction.f0.size());
 	assert(!infile.eof());
-	infile>>PairingFunction.f0[bin].real();
+	double real; infile>>real;;
+	PairingFunction.f0[bin].real(real);
+	
 	PairingFunction.f0[bin].real(); //=PairingFunction.f0[bin].real()/100.0;
 	assert(!infile.eof());
-	infile>>PairingFunction.f0[bin].imag();
+	double imag; infile>>imag;
+	PairingFunction.f0[bin].imag(imag);
 	PairingFunction.f0[bin].imag(); //=PairingFunction.f0[bin].imag()/100.0;
       }
 	cerr<<i<<" "<<j<<" "<<PairingFunction.f0[bin]<<" "<<bin<<endl;
@@ -143,12 +146,12 @@ double RVBpPsiClass::GetParam_imag(int i)
 
 void RVBpPsiClass::SetParam_real(int i, double param)
 {
-  PairingFunction.f0[i].real()=param;
+  PairingFunction.f0[i].real(param);
 
 }
 void RVBpPsiClass::SetParam_imag(int i, double param)
 {
-  PairingFunction.f0[i].imag()=param;
+  PairingFunction.f0[i].imag(param);
 
 }
 
@@ -337,16 +340,20 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
   if (spin==1){
     complex<double> ratio= mat.RowRatio(mat.UpPos[stop],col);
     //    complex<double> ratio_check=evaluateRatio_check(system,start,stop,spin);
-    ratio.real()*=countParity;
-    ratio.imag()*=countParity;
+    ratio.real(ratio.real()*countParity);
+    ratio.imag(ratio.imag()*countParity);
+    //    ratio.real()*=countParity;
+    //    ratio.imag()*=countParity;
     return ratio; //_check;
   }
   else{
 
     complex<double> ratio= mat.ColRatio(mat.DownPos[stop],col);
     //    complex<double> ratio_check=evaluateRatio_check(system,start,stop,spin);
-    ratio.real()*=countParity;
-    ratio.imag()*=countParity;
+    ratio.real(ratio.real()*countParity);
+    ratio.imag(ratio.imag()*countParity);
+    //    ratio.real()*=countParity;
+    //    ratio.imag()*=countParity;
     //    cerr<<"Ratios B are: "<<ratio<<" "<<ratio_check<<endl;
     return ratio;// _check;
   }

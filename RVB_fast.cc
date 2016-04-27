@@ -205,10 +205,15 @@ RVBFastPsiClass::Init(SystemClass &system)
 	bin=PairingFunction.FindBin(i,j);
 	assert(bin<PairingFunction.f0.size());
 	assert(!infile.eof());
-	infile>>PairingFunction.f0[bin].real();
+	double real; 
+	infile>>real;
+	PairingFunction.f0[bin].real(real);
 	PairingFunction.f0[bin].real(); //=PairingFunction.f0[bin].real()/100.0;
 	assert(!infile.eof());
-	infile>>PairingFunction.f0[bin].imag();
+	double imag;
+	infile>>imag;
+	PairingFunction.f0[bin].imag(imag);
+	//	infile>>PairingFunction.f0[bin].imag();
 	PairingFunction.f0[bin].imag(); //=PairingFunction.f0[bin].imag()/100.0;
       }
       cerr<<i<<" "<<j<<" "<<PairingFunction.f0[bin]<<" "<<bin<<endl;
@@ -282,12 +287,12 @@ double RVBFastPsiClass::GetParam_imag(int i)
 
 void RVBFastPsiClass::SetParam_real(int i, double param)
 {
-  PairingFunction.f0[i].real()=param;
+  PairingFunction.f0[i].real(param);
 
 }
 void RVBFastPsiClass::SetParam_imag(int i, double param)
 {
-  PairingFunction.f0[i].imag()=param;
+  PairingFunction.f0[i].imag(param);
 
 }
 
@@ -507,8 +512,8 @@ RVBFastPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 
   rebuild=false;
   //  cerr<<"CURRENT RATIO IS "<<test_ratio<<endl;
-  test_ratio.real()=-1*test_ratio.real(); //*mySign;
-  test_ratio.imag()=-1*test_ratio.imag(); //*mySign;
+  test_ratio.real(-1*test_ratio.real()); //*mySign;
+  test_ratio.imag(-1*test_ratio.imag()); //*mySign;
 
   return test_ratio;
   //return check_ratio;

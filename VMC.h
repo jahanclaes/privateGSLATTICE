@@ -14,6 +14,7 @@
 #include "exact.h"
 #include "Timer.h"
 #include "SharedEigs.h"
+#include "kondoHelp.h"
 class VMCDriverClass
 {
  public:

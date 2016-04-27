@@ -99,7 +99,8 @@ void JastrowClass::AllDerivs(SystemClass &system, Array<complex<double>,1>
   for(i = start; i < stop; i++)
   {
     rij = reduced_index(i-start);
-    derivs(i).real() = 0.;
+    derivs(i).real(0);
+    //    derivs(i).real() = 0.;
 
     for(j = 0; j < system.x.size(); j++)
     {
@@ -110,7 +111,8 @@ void JastrowClass::AllDerivs(SystemClass &system, Array<complex<double>,1>
         if(GetReducedIndex(system,j,k) == rij)
         {
           wk = abs(system.x(k)) - 1;
-          derivs(i).real() += (double) (wj * wk);
+	  //    derivs(i).real() += (double) (wj * wk);
+	  derivs(i).real((double) (wj * wk)+derivs(i).real());
         }
       }
     }

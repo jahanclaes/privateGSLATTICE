@@ -214,9 +214,14 @@ void SystemClass::Stagger()
   //  assert(1==2);
   //  RandomClass Random;
   x(0)=1;
-  for (int i=1;i<x.size();i++){
-    x(i)=x(i-1)*-1;
-  }
+  //  for (int i=1;i<x.size();i++){
+  //    x(i)=x(i-1)*-1;
+  //  }
+  x(0)=2;
+  x(1)=2;
+  x(2)=1;
+  x(3)=-1;
+
   //  x(x.size()-6)=0;
   //  x(x.size()-5)=0;
   //  x(x.size()-4)=0;

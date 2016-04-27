@@ -209,7 +209,7 @@ complex<double> Hubbard::GetEnergyRatio(int site, int end_site, int spin,
   //  cerr<<"My sign is "<<sign<<endl;
   quick_ratio.real(quick_ratio.real()*sign); // *=sign;
   quick_ratio.imag(quick_ratio.imag()*sign); //*=sign;
-  return quick_ratio*-1.0;
+  return quick_ratio*-1.0*t;
 }
 
 double Hubbard::Energy(SystemClass &system, 
@@ -325,8 +325,11 @@ complex<double> Hopping::GetEnergyRatio(int site, int end_site, int spin,
     (*wf)->Move(end_site,site,spin);
 
   int sign =  ( (system.CountElectrons(site,end_site,spin) % 2) == 0 )  ? 1: -1;
-  quick_ratio.real()*=sign;
-  quick_ratio.imag()*=sign;
+  quick_ratio.real(quick_ratio.real()*sign); // *=sign;
+  quick_ratio.imag(quick_ratio.imag()*sign); //*=sign;
+
+  //  quick_ratio.real()*=sign;
+  //  quick_ratio.imag()*=sign;
   return quick_ratio;
 }
 

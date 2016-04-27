@@ -289,8 +289,10 @@ public:
 	//	ssJ<<"Hubbard"<<i<<"_U";
 	//	assert(myInput.IsVariable(ssJ.str()));
 	assert(myInput.IsVariable("U"));
+	assert(myInput.IsVariable("t"));
 	//	H_temp->Set_U(myInput.toDouble(myInput.GetVariable(ssJ.str())));
 	H_temp->Set_U(myInput.toDouble(myInput.GetVariable("U")));
+	H_temp->t=myInput.toDouble(myInput.GetVariable("t")); //Set_U(myInput.toDouble(myInput.GetVariable("U")));
 	//      H_temp->Set_J(atof(input[ssJ.str()].c_str()));
 	cerr<<"The U that is set for "<<check<<" is "<<H_temp->U<<endl;
 	Ham.push_back(H_temp);
@@ -428,8 +430,63 @@ public:
     //
   }
 
+  void EvaluateWF(list<WaveFunctionClass*> &wf_list)
+  {
+    
+  }
   double Sweep_kondo()
   {
+    int numAccepted=0;
+    int numAttempted=0;
+    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      if ((*wf_iter)->NeedFrequentReset){
+	complex<double> ans=(*wf_iter)->evaluate(System);
+      }
+    }
+    for (int step=0;step<System.x.size();step++){ 
+      //      cerr<<"On step "<<step<<endl;
+
+      int spin = (Random.randInt(2) == 0 ? -1: 1);
+      int site=Random.randInt(System.x.size());
+      while ( (System.x(site)!=spin && System.x(site)!=2))
+        site=Random.randInt(System.x.size());
+
+      int end_site=Random.randInt(System.x.size());
+      while ( (System.x(end_site)==spin || System.x(end_site)==2))
+        end_site=Random.randInt(System.x.size());
+
+      System.Move(site,end_site,spin);
+      for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+	(*wf_iter)->Move(site,end_site,spin);
+      complex<double> quick_ratio=1.0;
+      for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+	complex<double> myRatioIs=(*wf_iter)->evaluateRatio(System,site,end_site,spin);
+	quick_ratio*=myRatioIs;
+      }
+      //      cerr<<"My ratio is "<<quick_ratio.real()<<endl;
+      double ranNum=Random.ranf();
+      numAttempted++;
+      if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
+	numAccepted++;
+	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+	  (*wf_iter)->UpdateDets(System,site,end_site,spin);
+	
+	//accept
+	
+      }
+      else {
+	System.Move(end_site,site,spin);
+	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+	  (*wf_iter)->Move(end_site,site,spin);
+	
+ 	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+	  (*wf_iter)->Reject(System,site,end_site,spin);
+	
+      }
+    }
+    //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
+    return (double)numAccepted/(double)numAttempted;
+    //
     
 
   }
@@ -840,8 +897,8 @@ void BroadcastParams(CommunicatorClass &myComm)
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
       WaveFunctionClass &Psi =**wf_iter;
       for (int i=0;i<Psi.NumParams;i++){
-	ParamsOld(currStart+i).real()=Psi.GetParam_real(i);
-	ParamsOld(currStart+i).imag()=Psi.GetParam_imag(i);
+	ParamsOld(currStart+i).real(Psi.GetParam_real(i));
+	ParamsOld(currStart+i).imag(Psi.GetParam_imag(i));
       }
       currStart=currStart+Psi.NumParams;
     }

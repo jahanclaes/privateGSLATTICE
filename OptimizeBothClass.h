@@ -200,6 +200,7 @@ public:
 	}
 	
 	t_PEPS->Init(System,L,W,4,Dx,Dy,chi,tol);
+
       	wf_list.push_back(t_PEPS);
       }
 
@@ -378,7 +379,23 @@ public:
     ParamsOld.resize(NumberOfParams);
     cerr<<"Done with init"<<endl;
   }
-
+   //Have to have doS set correctly to call the reset
+   void ResetParams()
+   {
+     cerr<<"Resetting the parameters"<<endl;
+     NumberOfParams=0;
+     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+       cerr<<"THE NUMBER OF PARAMS IS "<<(*wf_iter)->NumParams<<endl;
+       NumberOfParams+=(*wf_iter)->NumParams;
+     }
+     VarDeriv.Init(NumberOfParams,VarDeriv.doS);
+     derivs.resize(NumberOfParams);
+     VarDeriv.Clear();
+     derivs=0;
+     ParamsOld.resize(NumberOfParams);
+     cerr<<"Done with reset"<<endl;
+   }
+   
 
   double Sweep()
   {
@@ -817,23 +834,27 @@ void BroadcastParams(CommunicatorClass &myComm)
    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
      WaveFunctionClass &Psi =**wf_iter;
      if (myComm.MyProc()==0){
-       cerr<<"NEW WAVEFUNCTION"<<endl;
      for (int i=0;i<Psi.NumParams;i++){
        complex<double> myDeriv;
        if (opt==TIMEEVOLUTION)
 	 myDeriv=VarDeriv.ComputeDerivSR(currStart+i);
        else 
 	 myDeriv=VarDeriv.ComputeDerivp(currStart+i);
-       //       if (myDeriv.real()!=0)
+       if (myDeriv.real()!=0)
+	 cerr<<"My parameter deriv is "<<i<< " of "<<Psi.NumParams<<" "<<myDeriv<<" "<<(myDeriv.real())/abs(myDeriv.real())<<" "<<Psi.GetParam_real(i)<<endl;
+       else 
+	 cerr<<"My parameter deriv is "<<i<< " of "<<Psi.NumParams<<" "<<myDeriv<<endl;
        //	 cerr<<"My parameter deriv is "<<myDeriv<<" "<<(myDeriv.real())/abs(myDeriv.real())<<" "<<Psi.GetParam_real(i)<<endl;
-       cerr<<"My parameter deriv is "<<i<< " "<<myDeriv<<" "<<(myDeriv.real())/abs(myDeriv.real())<<" "<<Psi.GetParam_real(i)<<endl;
+
        if (opt==GRADIENT || opt==TIMEEVOLUTION){
 	 Psi.SetParam_real(i,Psi.GetParam_real(i)+-StepSize*(myDeriv.real())); //Han-Yi Chou
 	 //	 if (i==0)
 	 //	   Psi.SetParam_real(i, Psi.GetParam_real(i)+0.2);
        }
-       else if (opt==SR && myDeriv.real()!=0)
-	 Psi.SetParam_real(i,Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf());
+       else if (opt==SR && myDeriv.real()!=0){
+	 double newParam=Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf();
+	 Psi.SetParam_real(i,newParam); //Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf());
+       }
        else if (myDeriv.real()==0){
        }
        else 

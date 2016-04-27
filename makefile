@@ -3,7 +3,9 @@ CC = mpiicpc
 # Optimization level (-xhost only works for intel compilers)
 CC_OPT = -O3 -xhost
 # Compilation flags (Adding -std=c++11 will cause trouble for intel compiler)
+
 CC_FLAGS = -DUSE_MPI -openmp -pthread -mkl=parallel -std=c++11
+
 # Include directories
 CC_INC = -I/media/bkcgroup/CoolStuff/Install/include/
 # Linking directories
@@ -24,4 +26,6 @@ $(EXEC): $(OBJECTS)
 
 # To remove generated files
 clean:
+
 	rm -f $(EXEC) *.o cPEPS_Base_Class/*.o PEPS_Base_Class/*.o Communication/*.o
+

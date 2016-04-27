@@ -56,12 +56,13 @@ class VMCDriverClass
 
 
 
-    cerr<<"POST INIT"<<endl;
     VMC.EvaluateAll();
-    cerr<<"POST evaluate all"<<endl;
 
     //    VMC.SaveParams("params.dat");
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
     int step=0;
     VMC.VMC(true);
     while (1==1){
@@ -395,11 +396,14 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     }
     //DONE GETTING PARAMETERS
 
-
-
-
-     VMC_combine.EvaluateAll();
-
+    //    (((cPEPSClass*)(*(VMC_combine.wf_list.begin())))->boostBD(1,1)); 
+    //     VMC_combine.ResetParams(); 
+    //     for (int i=0;i<NumWalkers;i++){ 
+    //       (((cPEPSClass*)(*(VMC_vec[i]->wf_list.begin())))->boostBD(1,1)); 
+    //       VMC_vec[i]->ResetParams(); 
+    //     } 
+     //     VMC_combine.SaveParams("params.dat.boosted");  
+    VMC_combine.EvaluateAll();
 #pragma omp parallel for 
      for (int i=0;i<NumWalkers;i++){ 
        cerr<<"On walker "<<i<<endl; 

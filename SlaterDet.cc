@@ -334,7 +334,7 @@ void SlaterDetPsiClass::SetParam_real(int i, double param)
   int numSites=SharedEigs.eigs.cols();
   int orb=i/numSites;
   int site=i % numSites;
-  SharedEigs.eigs(orb,site).real()=param;
+  SharedEigs.eigs(orb,site).real(param);
 
 }
 void SlaterDetPsiClass::SetParam_imag(int i, double param)
@@ -343,7 +343,7 @@ void SlaterDetPsiClass::SetParam_imag(int i, double param)
   int numSites=SharedEigs.eigs.cols();
   int orb=i/numSites;
   int site=i % numSites;
-  SharedEigs.eigs(orb,site).imag()=param;
+  SharedEigs.eigs(orb,site).imag(param);
 
 }
 
@@ -710,8 +710,8 @@ SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 
   rebuild=false;
   //  cerr<<"CURRENT RATIO IS "<<test_ratio<<endl;
-  test_ratio.real()=-1*test_ratio.real(); //*mySign;
-  test_ratio.imag()=-1*test_ratio.imag(); //*mySign;
+  test_ratio.real(-1*test_ratio.real()); //*mySign;
+  test_ratio.imag(-1*test_ratio.imag()); //*mySign;
   return test_ratio;
   //return check_ratio;
 }

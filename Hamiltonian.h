@@ -75,6 +75,7 @@ class Hubbard : public HamiltonianClass
   }
 
   double U;
+  double t;
   double Energy(SystemClass &system,
 		list<WaveFunctionClass*> &wf_list);
   vector<pair<int,int> > bondList;

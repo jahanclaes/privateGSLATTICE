@@ -14,6 +14,7 @@
 #include "exact.h"
 #include "Timer.h"
 #include "SharedEigs.h"
+#include "kondoHelp.h"
 class VMCDriverClass
 {
  public:
@@ -43,6 +44,10 @@ class VMCDriverClass
       VMC.sweep=HOP;
     else if (mySweep=="EXCHANGE")
       VMC.sweep=EXCHANGE;
+    else if (mySweep=="KONDO"){
+      VMC.sweep=KONDO;
+      VMC.kondo_help.Read("layer1.dat","layer2.dat","bond.dat");
+    }
     ///GETTING PARAMETERS
     if (myInput.IsVariable("ReadParams")){
       bool toRead=myInput.toBool(myInput.GetVariable("ReadParams"));
@@ -55,12 +60,9 @@ class VMCDriverClass
 
 
 
-    cerr<<"POST INIT"<<endl;
     VMC.EvaluateAll();
-    cerr<<"POST evaluate all"<<endl;
 
     //    VMC.SaveParams("params.dat");
-
     int step=0;
     VMC.VMC(true);
     while (1==1){
@@ -350,6 +352,8 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
     ReadWaveFunction(myInput,wf_list);
 
+
+
     VMC_combine.Init(wf_list,myInput);
     
     VMC_combine.opt_equilSweeps=myInput.toInteger(myInput.GetVariable("EquilSweeps"));
@@ -363,6 +367,20 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     cerr<<"Equil Sweeps: "<<VMC_combine.opt_equilSweeps<<endl;
     cerr<<"Sample Sweeps: "<<VMC_combine.opt_SampleSweeps<<endl;
 
+
+
+    string mySweep=myInput.GetVariable("MoveType");
+    if (mySweep=="HOP")
+      VMC_combine.sweep=HOP;
+    else if (mySweep=="EXCHANGE")
+      VMC_combine.sweep=EXCHANGE;
+    else if (mySweep=="KONDO"){
+      VMC_combine.sweep=KONDO;
+      VMC_combine.kondo_help.Read("layer1.dat","layer2.dat","bond.dat");
+    }
+
+
+
     VMC_vec.resize(NumWalkers); 
     cerr<<"Running VMC"<<endl; 
     //Initializing must be done in serial since
@@ -375,7 +393,11 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 
        VMC_vec[i]->VMC_equilSweeps=VMC_combine.VMC_equilSweeps;
        VMC_vec[i]->VMC_SampleSweeps=VMC_combine.VMC_SampleSweeps;
-
+       VMC_vec[i]->sweep=VMC_combine.sweep;
+       if (VMC_vec[i]->sweep==KONDO){
+	 cerr<<"READING KONDO"<<endl;
+	 VMC_vec[i]->kondo_help.Read("layer1.dat","layer2.dat","bond.dat");
+       }
 
     }
 
@@ -394,11 +416,14 @@ double MeasureStaggered(OptimizeBothClass &vmc)
     }
     //DONE GETTING PARAMETERS
 
-
-
-
-     VMC_combine.EvaluateAll();
-
+    //    (((cPEPSClass*)(*(VMC_combine.wf_list.begin())))->boostBD(1,1)); 
+    //     VMC_combine.ResetParams(); 
+    //     for (int i=0;i<NumWalkers;i++){ 
+    //       (((cPEPSClass*)(*(VMC_vec[i]->wf_list.begin())))->boostBD(1,1)); 
+    //       VMC_vec[i]->ResetParams(); 
+    //     } 
+     //     VMC_combine.SaveParams("params.dat.boosted");  
+    VMC_combine.EvaluateAll();
 #pragma omp parallel for 
      for (int i=0;i<NumWalkers;i++){ 
        cerr<<"On walker "<<i<<endl; 

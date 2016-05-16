@@ -34,6 +34,16 @@ public:
 
   complex<double> logevaluate(SystemClass &system,int &sign);
 
+  void boostBD(int dxBD, int dyBD)
+  {
+    cerr<<"MY CURRENT PARAMETERS IS "<<NumParams<<endl;
+    peps->boostBD(dxBD,dyBD);
+    xBD+=dxBD;
+    yBD+=dyBD;
+    NumParams=peps->numParams;
+    cerr<<"MY NEW PARAMETERS IS "<<NumParams<<endl;
+  }
+
   //currently only the size matters
   void Swap(int i, int j)
   {
@@ -92,6 +102,7 @@ public:
   
   double GetParam_real(int i)
   {
+
 	  //IMPLEMENT ME!
 	  assert(i>=0);
 	  
@@ -116,7 +127,7 @@ public:
 			  break;
 		  }
 	  }
-	  
+
 	  return peps->TN[x].T[y][pT][pF](idx);
   }
   

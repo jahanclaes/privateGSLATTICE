@@ -27,10 +27,12 @@ using namespace std;
 #include "BackFlow.h"
 #include "SlaterDet.h"
 #include "Jastrow.h"
+#include "HopMove.h"
+#include "kondoHelp.h"
 
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 
-enum SweepType {HOP, EXCHANGE};
+enum SweepType {HOP, EXCHANGE,KONDO};
 
 class OptimizeBothClass
 {
@@ -38,7 +40,7 @@ public:
   SystemClass System;
   RandomClass &Random;
   list<WaveFunctionClass*> wf_list;  
-  
+  KondoHelp kondo_help;  
   SweepType sweep;
   //  vector<list<WaveFunctionClass*> > wf_list_;  
 
@@ -157,8 +159,8 @@ public:
     sign=1;
 
     cerr<<"Initializing the system"<<endl;
-    System.Init();
-    System.Stagger();
+    System.Init(myInput);
+    //    System.Stagger();
     
 
     cerr<<"Initializing the wavefunction"<<endl;
@@ -200,6 +202,7 @@ public:
 	}
 	
 	t_PEPS->Init(System,L,W,4,Dx,Dy,chi,tol);
+
       	wf_list.push_back(t_PEPS);
       }
 
@@ -289,8 +292,10 @@ public:
 	//	ssJ<<"Hubbard"<<i<<"_U";
 	//	assert(myInput.IsVariable(ssJ.str()));
 	assert(myInput.IsVariable("U"));
+	assert(myInput.IsVariable("t"));
 	//	H_temp->Set_U(myInput.toDouble(myInput.GetVariable(ssJ.str())));
 	H_temp->Set_U(myInput.toDouble(myInput.GetVariable("U")));
+	H_temp->t=myInput.toDouble(myInput.GetVariable("t")); //Set_U(myInput.toDouble(myInput.GetVariable("U")));
 	//      H_temp->Set_J(atof(input[ssJ.str()].c_str()));
 	cerr<<"The U that is set for "<<check<<" is "<<H_temp->U<<endl;
 	Ham.push_back(H_temp);
@@ -376,7 +381,23 @@ public:
     ParamsOld.resize(NumberOfParams);
     cerr<<"Done with init"<<endl;
   }
-
+   //Have to have doS set correctly to call the reset
+   void ResetParams()
+   {
+     cerr<<"Resetting the parameters"<<endl;
+     NumberOfParams=0;
+     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+       cerr<<"THE NUMBER OF PARAMS IS "<<(*wf_iter)->NumParams<<endl;
+       NumberOfParams+=(*wf_iter)->NumParams;
+     }
+     VarDeriv.Init(NumberOfParams,VarDeriv.doS);
+     derivs.resize(NumberOfParams);
+     VarDeriv.Clear();
+     derivs=0;
+     ParamsOld.resize(NumberOfParams);
+     cerr<<"Done with reset"<<endl;
+   }
+   
 
   double Sweep()
   {
@@ -428,16 +449,216 @@ public:
     //
   }
 
-  double Sweep_kondo()
+  complex<double> EvaluateWF_ifNeedReset(list<WaveFunctionClass*> &wf_list)
+  {
+    complex<double> ans=1.0;
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      if ((*wf_iter)->NeedFrequentReset){
+	complex<double> val=(*wf_iter)->evaluate(System);
+	ans*=val;
+      }
+    }
+    return ans;
+  }
+
+  HopMove ChooseHop(vector<int> &positions,SystemClass &system)
+  {
+    int spin = (Random.randInt(2)==0 ? -1: 1);
+    int site;
+    do { 
+      site=positions[Random.randInt(positions.size())];
+    } while ((system.x(site)!=spin) && (system.x(site)!=2)) ;
+    int end_site;
+    do {
+      end_site=positions[Random.randInt(positions.size())];
+    } while ((system.x(end_site)==spin) || (system.x(end_site)==2));
+    //    HopMove move(site,end_site,spin);
+    return HopMove(site,end_site,spin);
+  }
+  void MakeMove(HopMove hop, SystemClass &system, list<WaveFunctionClass*> &wf)
+  {
+    System.Move(hop.start,hop.end,hop.spin);
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->Move(hop.start,hop.end,hop.spin);
+    }
+  }
+
+  complex<double> Ratio(HopMove &hop, SystemClass &system, list<WaveFunctionClass*> &wf)
+  {
+    complex<double> quick_ratio=1.0;
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      complex<double> myRatioIs=(*wf_iter)->evaluateRatio(System,hop.start,hop.end,hop.spin);
+      quick_ratio*=myRatioIs;
+    }
+    return quick_ratio;
+  }
+
+  void Accept(HopMove &hop, SystemClass &system, list<WaveFunctionClass*> &wf_list)
+  {
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->UpdateDets(System,hop.start,hop.end,hop.spin);
+    }
+  }
+  
+  void Reject(HopMove &hop, SystemClass &system, list<WaveFunctionClass*> &wf_list)
+  {
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->Reject(System,hop.start,hop.end,hop.spin);
+    }
+  }
+
+  HopMove ReverseHop(HopMove &hop){
+    return HopMove(hop.end,hop.start,hop.spin);
+  }
+
+  double Sweep_kondo_hop()
+  {
+    bool noHop=true;
+    for (int i=1;i<kondo_help.layer1Sites.size();i++)
+      if (System.x(kondo_help.layer1Sites[0])!=System.x(kondo_help.layer1Sites[i]))
+	noHop=false;
+    if (noHop)
+      return 0.0;
+    int numAccepted=0;
+    int numAttempted=0;
+    EvaluateWF_ifNeedReset(wf_list);
+    HopMove hop_move;
+    for (int step=0;step<System.x.size();step++){ 
+      hop_move=ChooseHop(kondo_help.layer1Sites,System);
+      //      if (Random.randInt(2) ==0)
+      //	hop_move=ChooseHop(kondo_help.layer1Sites,System);
+      //      else 
+      //	hop_move=ChooseHop(kondo_help.layer2Sites,System);
+      //      cerr<<"I am moving from "<<hop_move.start<<" to "<<hop_move.end<<" with "<<hop_move.spin<<endl;
+      MakeMove(hop_move,System,wf_list);
+      complex<double> quick_ratio=Ratio(hop_move,System,wf_list);
+      //      cerr<<"My ratio is "<<quick_ratio<<endl;
+      double ranNum=Random.ranf();
+      numAttempted++;
+      if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
+	numAccepted++;
+	Accept(hop_move,System,wf_list);
+
+	//accept
+      }
+      else {
+	MakeMove(ReverseHop(hop_move),System,wf_list);
+	Reject(hop_move,System,wf_list);
+
+      }
+    }
+    //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
+    return (double)numAccepted/(double)numAttempted;
+    //
+  }
+  bool LegalExchange(ExchangeMove &e,SystemClass &system)
+  {
+    return ((e.site1 != e.site2) &&
+      ( 
+      ( (system.x(e.site1)==1) && (system.x(e.site2)==-1)) || 
+      ( (system.x(e.site1)==-1) && (system.x(e.site2)==1)) 
+	)
+	    );
+  }
+
+  ExchangeMove ChooseExchange(vector<pair<int, int > > &bonds)
   {
     
-
+    ExchangeMove e;
+    //    do {
+      int bondIndex=Random.randInt(bonds.size());
+      e.site1=bonds[bondIndex].first;
+      e.site2=bonds[bondIndex].second;
+      //    } while (!(LegalExchange(e,System)));
+    e.spin1=System.x(e.site1);
+    e.spin2=System.x(e.site2);
+    return e;
   }
+  
+  void MakeMove(ExchangeMove &e, SystemClass &system,list<WaveFunctionClass*> &wf_list)
+  {
+    System.Swap(e.site1,e.site2);
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->Swap(e.site1,e.site2);
+    }
+  }
+  
+  complex<double> Ratio(ExchangeMove &e, SystemClass &system, list<WaveFunctionClass*> &wf_list)
+  {
+    complex<double> quick_ratio=1.0;
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      quick_ratio*=(*wf_iter)->evaluateRatio(system,e.site1,e.site2);
+    }
+    return quick_ratio;
+  }
+  void Accept(ExchangeMove &e, SystemClass &system, list<WaveFunctionClass*> &wf_list)
+  {
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->UpdateDets(system,e.site1,e.site2);
+    }
+  }
+
+  void Reject(ExchangeMove &e, SystemClass &system, list<WaveFunctionClass*> &wf_list)
+  {
+    for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+      (*wf_iter)->Reject(system,e.site1,e.site2);
+    }
+  }
+    
+  
+  double Sweep_kondo_exchange()
+  {
+
+
+    int numAccepted=0;
+    int numAttempted=0;
+    EvaluateWF_ifNeedReset(wf_list);
+    ExchangeMove exchange;
+
+    for (int step=0;step<System.x.size()*System.x.size();step++){ 
+      ExchangeMove exchange_move=ChooseExchange(kondo_help.heisenbergBonds);
+      if (LegalExchange(exchange_move,System)){
+	//	cerr<<"I am going to try "<<exchange_move.site1<<" to "<<exchange_move.site2<<" with spin "<<exchange_move.spin1<<" to "<<exchange_move.spin2<<endl;
+	MakeMove(exchange_move,System,wf_list);
+	complex<double> quick_ratio=Ratio(exchange_move,System,wf_list);
+	double ranNum=Random.ranf();
+	numAttempted++;
+	if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
+	  numAccepted++;
+	  Accept(exchange_move,System,wf_list);
+
+	  //accept
+	}
+	else {
+	  MakeMove(exchange_move,System,wf_list);
+	  Reject(exchange_move,System,wf_list);
+
+	}
+      }
+
+    }
+
+    //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
+
+    return (double)numAccepted/(double)numAttempted;
+    //
+  }
+
+
 
   double Sweep_hop()
   {
     if (sweep==EXCHANGE)
       return Sweep();
+    else if (sweep==KONDO){
+      double acceptProb_hop=Sweep_kondo_hop();
+      //      cerr<<"Hop prob is "<<acceptProb_hop<<endl;
+      double acceptProb_exchange=Sweep_kondo_exchange();
+      //      cerr<<"exchange prob is "<<acceptProb_exchange<<endl;
+      //      double acceptProb_exchange=0.0;
+
+      return (acceptProb_hop+acceptProb_exchange)/2.0;
+    }
       //    cerr<<endl;
     int numAccepted=0;
     int numAttempted=0;
@@ -760,24 +981,31 @@ void BroadcastParams(CommunicatorClass &myComm)
    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
      WaveFunctionClass &Psi =**wf_iter;
      if (myComm.MyProc()==0){
-       cerr<<"NEW WAVEFUNCTION"<<endl;
      for (int i=0;i<Psi.NumParams;i++){
        complex<double> myDeriv;
        if (opt==TIMEEVOLUTION)
 	 myDeriv=VarDeriv.ComputeDerivSR(currStart+i);
        else 
 	 myDeriv=VarDeriv.ComputeDerivp(currStart+i);
-       //       if (myDeriv.real()!=0)
+       if (myDeriv.real()!=0)
+	 cerr<<"My parameter deriv is "<<i<< " of "<<Psi.NumParams<<" "<<myDeriv<<" "<<(myDeriv.real())/abs(myDeriv.real())<<" "<<Psi.GetParam_real(i)<<endl;
+       else 
+	 cerr<<"My parameter deriv is "<<i<< " of "<<Psi.NumParams<<" "<<myDeriv<<endl;
        //	 cerr<<"My parameter deriv is "<<myDeriv<<" "<<(myDeriv.real())/abs(myDeriv.real())<<" "<<Psi.GetParam_real(i)<<endl;
-       cerr<<"My parameter deriv is "<<i<< " "<<myDeriv<<" "<<(myDeriv.real())/abs(myDeriv.real())<<" "<<Psi.GetParam_real(i)<<endl;
+
        if (opt==GRADIENT || opt==TIMEEVOLUTION){
 	 Psi.SetParam_real(i,Psi.GetParam_real(i)+-StepSize*(myDeriv.real())); //Han-Yi Chou
 	 //	 if (i==0)
 	 //	   Psi.SetParam_real(i, Psi.GetParam_real(i)+0.2);
        }
-       else if (opt==SR && myDeriv.real()!=0)
-	 Psi.SetParam_real(i,Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf());
+       else if (opt==SR && myDeriv.real()!=0){
+	 double newParam=Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf();
+	 Psi.SetParam_real(i,newParam); //Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf());
+       }
        else if (myDeriv.real()==0){
+	 double newParam=Psi.GetParam_real(i)+-StepSize*0.1*Random.ranf()* (Random.ranf()>0.5 ? -1: 1);
+	 Psi.SetParam_real(i,newParam); //Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf());
+
        }
        else 
 	 assert(1==2);
@@ -836,12 +1064,13 @@ void BroadcastParams(CommunicatorClass &myComm)
 
   void Optimize()
   {
+    cerr<<"IN optimize"<<endl;
     int currStart=0;
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
       WaveFunctionClass &Psi =**wf_iter;
       for (int i=0;i<Psi.NumParams;i++){
-	ParamsOld(currStart+i).real()=Psi.GetParam_real(i);
-	ParamsOld(currStart+i).imag()=Psi.GetParam_imag(i);
+	ParamsOld(currStart+i).real(Psi.GetParam_real(i));
+	ParamsOld(currStart+i).imag(Psi.GetParam_imag(i));
       }
       currStart=currStart+Psi.NumParams;
     }

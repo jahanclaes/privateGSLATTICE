@@ -44,9 +44,13 @@ class SharedEigsClass : public SharedWaveFunctionDataClass
 
     for (int i=0;i<system.kList.size();i++)
       for (int j=0;j<system.rList.size();j++){
-	infile>>eigs(i,j).real();
+	double r;
+	infile>>r;
+	eigs(i,j).real(r);
+	//	infile>>eigs(i,j).real();
 	//	infile>>eigs(i,j).imag();
-	eigs(i,j).imag()=0;
+	eigs(i,j).imag(0);
+	//	eigs(i,j).imag()=0;
       }
     infile.close();
   }

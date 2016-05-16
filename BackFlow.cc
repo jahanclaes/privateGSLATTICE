@@ -50,6 +50,7 @@ void BackFlowClass::CheckDerivs(SystemClass &system, Array<complex<double>,1> &d
   complex<double> Det_a_new1,Det_b_new1,var_tmp;
   complex<double> Det_a_new2,Det_b_new2;
   complex<double> Det_a_old,Det_b_old;
+  complex<double> eps(0.0001,0.0);
 
   ConvertSpin(system);
   BackFlowCoord(system);
@@ -59,13 +60,14 @@ void BackFlowClass::CheckDerivs(SystemClass &system, Array<complex<double>,1> &d
   for(i = start; i < stop; i++)
   {
     var_tmp = var(i);
-    var(i).real() += 0.0001;
-
+    var(i)+=eps;
+    //    var(i).real() += 0.0001;
+    //    real(var(i)) += 0.0001;
     BackFlowCoord(system);
     FillDet(system,Da,Db,Ma_bf,Mb_bf);
     Det_a_new1 = Da.Det(); Det_b_new1 = Db.Det();
-
-    var(i).real() -= 0.0002;
+    var(i)-=2.0*eps;
+    //    var(i).real() -= 0.0002;
 
     BackFlowCoord(system);
     FillDet(system,Da,Db,Ma_bf,Mb_bf);
@@ -99,12 +101,13 @@ void BackFlowClass::AllDerivs(SystemClass &system, Array<complex<double>,1>
     derivs(i) = (0.,0.);
     var_tmp = var(i);
     
-    var(i).real() = 1.; var(i).imag() = 0.;
+    //    var(i).real() = 1.; var(i).imag() = 0.;
+    var(i)={1.0,0.0};
     BackFlowCoord(system);
     FillDet(system,Da_tmp,Db_tmp,Ma_bf,Mb_bf);
 
-
-    var(i).real() = 0.; var(i).imag() = 0.; 
+    var(i)={0.0,0.0};
+    //    var(i).real() = 0.; var(i).imag() = 0.; 
     BackFlowCoord(system);
     FillDet(system,Da,Db,Ma_bf,Mb_bf);
 
@@ -148,12 +151,12 @@ void BackFlowClass::AllDerivs(SystemClass &system, Array<complex<double>,1>
 
 void BackFlowClass::SetParam_real(int i, double param)
 {
-  var(i).real()=param;
+  var(i).real(param);
 }
 
 void BackFlowClass::SetParam_imag(int i, double param)
 {
-  var(i).imag()=param;
+  var(i).imag(param);
 }
 
 double BackFlowClass::GetParam_real(int i)
@@ -250,9 +253,13 @@ void BackFlowClass::GetEigs(SystemClass &system)
   {
     for (j = 0;j < eigs.extent(1);j++)
     {      
-      infile >> eigs(i,j).real();
+  double real; double imag;
+  infile>>real;
+  infile>>imag;
+  eigs(i,j)={real,imag};
+  //      infile >> eigs(i,j).real();
       //eigs(i,j).imag() = 0.;
-      infile >> eigs(i,j).imag();
+  //      infile >> eigs(i,j).imag();
     }
   }
 
@@ -475,8 +482,11 @@ void BackFlowClass::GetParameters(SystemClass &system)
  
   for(int i = 0; i < NumParams; i++)
   {
-    infile >> var(i).real(); 
-    infile >> var(i).imag(); 
+    double real, imag;
+    infile>>real; infile>>imag;
+    var(i)={real,imag};
+    //    infile >> var(i).real(); 
+    //    infile >> var(i).imag(); 
   }
 
   infile.close();

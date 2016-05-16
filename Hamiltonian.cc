@@ -98,6 +98,8 @@ double Heisenberg::Energy(SystemClass &system,
   for (int counter=0;counter<bondList.size();counter++){
     int i=bondList[counter].first;
     int j=bondList[counter].second;
+    if (!(( (abs(system.x(i))==1) &&  (abs(system.x(j))==1))))
+      continue;
     if (system.x(i)==system.x(j)){
       total_Jz+=1.0*Jz;
     }
@@ -116,7 +118,7 @@ double Heisenberg::Energy(SystemClass &system,
 	(*wf)->Swap(i,j);
       int sign =  ((( ( system.CountElectrons(i,j,-1)+system.CountElectrons(i,j,1)) % 2) == 0)  ? -1: 1);
       //HACK!      cerr<<"My quick ratio is "<<quick_ratio<<endl;
-      total_Jx=total_Jx+2.0 * quick_ratio * Jx*sign;
+      total_Jx=total_Jx+2.0 * quick_ratio * Jx *sign;
     }
   }
   //The total energy eventually needs to be real so let's just some
@@ -129,7 +131,11 @@ double Heisenberg::Energy(SystemClass &system,
   //  cerr<<"Energies are "<<total_Jz.real()<<" "<<total_Jx.real()<<endl;
   term1+=total_Jz.real()/4.;
   term2+=total_Jx.real()/4.;
-  //cerr<<"ENERGIES: "<<total_Jz.real()/4.<<" "<<total_Jx.real()/4.0<<endl;
+  // cerr<<"The system is ";
+  // for (int i=0;i<system.x.size();i++){
+  //   cerr<<system.x(i)<<" ";
+  // }
+  // cerr<<endl;
   return (total_Jz+total_Jx).real()/4.0;
   //  return total.real()/4.0;// *J
 }
@@ -199,7 +205,6 @@ complex<double> Hubbard::GetEnergyRatio(int site, int end_site, int spin,
   complex<double> quick_ratio=1.0;
   for (list<WaveFunctionClass*>::iterator wf=wf_list.begin();wf!=wf_list.end();wf++)
     quick_ratio*=(*wf)->evaluateRatio(system,site,end_site,spin);
-
   for (list<WaveFunctionClass*>::iterator wf=wf_list.begin();wf!=wf_list.end();wf++)
     (*wf)->Reject(system,site,end_site,spin);
   system.Move(end_site,site,spin);
@@ -209,13 +214,17 @@ complex<double> Hubbard::GetEnergyRatio(int site, int end_site, int spin,
   //  cerr<<"My sign is "<<sign<<endl;
   quick_ratio.real(quick_ratio.real()*sign); // *=sign;
   quick_ratio.imag(quick_ratio.imag()*sign); //*=sign;
+  //  cerr<<"Quick ratio is "<<quick_ratio<<endl;
   return quick_ratio*-1.0*t;
 }
 
 double Hubbard::Energy(SystemClass &system, 
 		       list<WaveFunctionClass*> &wf_list)
 {
-
+  //  for (int i=0;i<system.x.size();i++){
+  //    cerr<<system.x(i)<<" ";
+  //  }
+  //  cerr<<endl;
   complex<double> energy=0.0;
   for (int bond=0;bond<bondList.size();bond++){
     int site=bondList[bond].first;
@@ -272,7 +281,6 @@ void Hopping::Init(SystemClass &system)
 {
   string fileName("U.txt");
   Init(system,fileName);
-  
 }
 
 
@@ -368,7 +376,7 @@ double Hopping::Energy(SystemClass &system,
   for (int site=0;site<system.x.size();site++){
     energy+=U*( (system.x(site)==2) ? 1 : 0);
   }
-  //  cerr<<"My energy is "<<energy<<endl;
+
   return energy.real();
 }
 

@@ -10,7 +10,7 @@ class KondoHelp
   vector<int> layer2Sites;
   
   vector<pair<int,int> > heisenbergBonds;
-  void Read(string &layer1File, string &layer2File, string &bondFile)
+  void Read(string layer1File, string layer2File, string bondFile)
   {
     ifstream infile;
     infile.open(layer1File.c_str());

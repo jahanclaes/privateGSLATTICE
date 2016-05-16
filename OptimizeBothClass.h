@@ -32,7 +32,7 @@ using namespace std;
 
 enum OptType {GRADIENT, TIMEEVOLUTION, SR};
 
-enum SweepType {HOP, EXCHANGE};
+enum SweepType {HOP, EXCHANGE,KONDO};
 
 class OptimizeBothClass
 {
@@ -40,7 +40,7 @@ public:
   SystemClass System;
   RandomClass &Random;
   list<WaveFunctionClass*> wf_list;  
-  
+  KondoHelp kondo_help;  
   SweepType sweep;
   //  vector<list<WaveFunctionClass*> > wf_list_;  
 
@@ -159,8 +159,8 @@ public:
     sign=1;
 
     cerr<<"Initializing the system"<<endl;
-    System.Init();
-    System.Stagger();
+    System.Init(myInput);
+    //    System.Stagger();
     
 
     cerr<<"Initializing the wavefunction"<<endl;
@@ -454,7 +454,8 @@ public:
     complex<double> ans=1.0;
     for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
       if ((*wf_iter)->NeedFrequentReset){
-	ans*=(*wf_iter)->evaluate(System);
+	complex<double> val=(*wf_iter)->evaluate(System);
+	ans*=val;
       }
     }
     return ans;
@@ -466,12 +467,11 @@ public:
     int site;
     do { 
       site=positions[Random.randInt(positions.size())];
-    } while ((system.x(site)!=spin) || (system.x(site)!=2)) ;
-    
+    } while ((system.x(site)!=spin) && (system.x(site)!=2)) ;
     int end_site;
     do {
       end_site=positions[Random.randInt(positions.size())];
-    } while ((system.x(site)==spin) || (system.x(site)==2));
+    } while ((system.x(end_site)==spin) || (system.x(end_site)==2));
     //    HopMove move(site,end_site,spin);
     return HopMove(site,end_site,spin);
   }
@@ -485,7 +485,7 @@ public:
 
   complex<double> Ratio(HopMove &hop, SystemClass &system, list<WaveFunctionClass*> &wf)
   {
-    complex<double> quick_ratio;
+    complex<double> quick_ratio=1.0;
     for (auto wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
       complex<double> myRatioIs=(*wf_iter)->evaluateRatio(System,hop.start,hop.end,hop.spin);
       quick_ratio*=myRatioIs;
@@ -513,28 +513,38 @@ public:
 
   double Sweep_kondo_hop()
   {
-    KondoHelp kondo_help;
+    bool noHop=true;
+    for (int i=1;i<kondo_help.layer1Sites.size();i++)
+      if (System.x(kondo_help.layer1Sites[0])!=System.x(kondo_help.layer1Sites[i]))
+	noHop=false;
+    if (noHop)
+      return 0.0;
     int numAccepted=0;
     int numAttempted=0;
     EvaluateWF_ifNeedReset(wf_list);
     HopMove hop_move;
     for (int step=0;step<System.x.size();step++){ 
-      if (Random.randInt(2) ==0)
-	hop_move=ChooseHop(kondo_help.layer1Sites,System);
-      else 
-	hop_move=ChooseHop(kondo_help.layer2Sites,System);
+      hop_move=ChooseHop(kondo_help.layer1Sites,System);
+      //      if (Random.randInt(2) ==0)
+      //	hop_move=ChooseHop(kondo_help.layer1Sites,System);
+      //      else 
+      //	hop_move=ChooseHop(kondo_help.layer2Sites,System);
+      //      cerr<<"I am moving from "<<hop_move.start<<" to "<<hop_move.end<<" with "<<hop_move.spin<<endl;
       MakeMove(hop_move,System,wf_list);
       complex<double> quick_ratio=Ratio(hop_move,System,wf_list);
+      //      cerr<<"My ratio is "<<quick_ratio<<endl;
       double ranNum=Random.ranf();
       numAttempted++;
       if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
 	numAccepted++;
 	Accept(hop_move,System,wf_list);
+
 	//accept
       }
       else {
 	MakeMove(ReverseHop(hop_move),System,wf_list);
 	Reject(hop_move,System,wf_list);
+
       }
     }
     //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
@@ -543,26 +553,23 @@ public:
   }
   bool LegalExchange(ExchangeMove &e,SystemClass &system)
   {
-    (e.site1 != e.site2) &&
+    return ((e.site1 != e.site2) &&
       ( 
       ( (system.x(e.site1)==1) && (system.x(e.site2)==-1)) || 
-      ( (system.x(e.site1)==-1) && (system.x(e.site2)==1)) ||
-      ( (system.x(e.site1)==1) && (system.x(e.site2)==2) ) ||
-      ( (system.x(e.site1)==-1) && (system.x(e.site2)==2) ) ||
-      ( (system.x(e.site1)==2) && (system.x(e.site2)==1) ) ||
-      ( (system.x(e.site1)==2) && (system.x(e.site2)==-1) )
-	);
+      ( (system.x(e.site1)==-1) && (system.x(e.site2)==1)) 
+	)
+	    );
   }
 
   ExchangeMove ChooseExchange(vector<pair<int, int > > &bonds)
   {
     
     ExchangeMove e;
-    do {
+    //    do {
       int bondIndex=Random.randInt(bonds.size());
       e.site1=bonds[bondIndex].first;
       e.site2=bonds[bondIndex].second;
-    } while (!(LegalExchange(e,System)));
+      //    } while (!(LegalExchange(e,System)));
     e.spin1=System.x(e.site1);
     e.spin2=System.x(e.site2);
     return e;
@@ -601,28 +608,38 @@ public:
   
   double Sweep_kondo_exchange()
   {
-    KondoHelp kondo_help;
+
+
     int numAccepted=0;
     int numAttempted=0;
     EvaluateWF_ifNeedReset(wf_list);
     ExchangeMove exchange;
-    for (int step=0;step<System.x.size();step++){ 
+
+    for (int step=0;step<System.x.size()*System.x.size();step++){ 
       ExchangeMove exchange_move=ChooseExchange(kondo_help.heisenbergBonds);
-      MakeMove(exchange_move,System,wf_list);
-      complex<double> quick_ratio=Ratio(exchange_move,System,wf_list);
-      double ranNum=Random.ranf();
-      numAttempted++;
-      if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
-	numAccepted++;
-	Accept(exchange_move,System,wf_list);
-	//accept
-      }
-      else {
+      if (LegalExchange(exchange_move,System)){
+	//	cerr<<"I am going to try "<<exchange_move.site1<<" to "<<exchange_move.site2<<" with spin "<<exchange_move.spin1<<" to "<<exchange_move.spin2<<endl;
 	MakeMove(exchange_move,System,wf_list);
-	Reject(exchange_move,System,wf_list);
+	complex<double> quick_ratio=Ratio(exchange_move,System,wf_list);
+	double ranNum=Random.ranf();
+	numAttempted++;
+	if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
+	  numAccepted++;
+	  Accept(exchange_move,System,wf_list);
+
+	  //accept
+	}
+	else {
+	  MakeMove(exchange_move,System,wf_list);
+	  Reject(exchange_move,System,wf_list);
+
+	}
       }
+
     }
+
     //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
+
     return (double)numAccepted/(double)numAttempted;
     //
   }
@@ -633,6 +650,15 @@ public:
   {
     if (sweep==EXCHANGE)
       return Sweep();
+    else if (sweep==KONDO){
+      double acceptProb_hop=Sweep_kondo_hop();
+      //      cerr<<"Hop prob is "<<acceptProb_hop<<endl;
+      double acceptProb_exchange=Sweep_kondo_exchange();
+      //      cerr<<"exchange prob is "<<acceptProb_exchange<<endl;
+      //      double acceptProb_exchange=0.0;
+
+      return (acceptProb_hop+acceptProb_exchange)/2.0;
+    }
       //    cerr<<endl;
     int numAccepted=0;
     int numAttempted=0;
@@ -977,6 +1003,9 @@ void BroadcastParams(CommunicatorClass &myComm)
 	 Psi.SetParam_real(i,newParam); //Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf());
        }
        else if (myDeriv.real()==0){
+	 double newParam=Psi.GetParam_real(i)+-StepSize*0.1*Random.ranf()* (Random.ranf()>0.5 ? -1: 1);
+	 Psi.SetParam_real(i,newParam); //Psi.GetParam_real(i)+-StepSize*(myDeriv.real())/abs(myDeriv.real())*Random.ranf());
+
        }
        else 
 	 assert(1==2);
@@ -1035,6 +1064,7 @@ void BroadcastParams(CommunicatorClass &myComm)
 
   void Optimize()
   {
+    cerr<<"IN optimize"<<endl;
     int currStart=0;
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
       WaveFunctionClass &Psi =**wf_iter;

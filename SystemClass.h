@@ -2,14 +2,14 @@
 #define SYSTEM_CLASS_H
 #include <vector>
 #include "Blitz.h"
-
+class InputClass;
 
 class SystemClass
 {
  public:
   Array<int,1> x;
   //  Array<int,1> ABSites;
-  void Init();
+  void Init(InputClass &input);
   double tau;
   //  Array<int,2> neighbors;
   vector<dVec> rList;
@@ -23,7 +23,7 @@ class SystemClass
   void GenerateKList();
   void ReadNeighbors();
   void SetupABSites();
-  void Stagger();
+  void Stagger(double &doping);
   void Swap(int i, int j);
   void Move(int site, int end_site, int spin);
   int CountElectrons(int i,int j,int spin);

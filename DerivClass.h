@@ -141,6 +141,11 @@ public:
   void Add(double &val_El, 
 	   Array<complex<double>,1> &derivs)
   {
+
+    //    cerr<<"My derivs are "<<endl;
+    //    for (int i=0;i<derivs.size();i++){
+    //      cerr<<derivs(i)<<endl;
+    //    }
     NumTimes=NumTimes+1;
     E_avgp+=val_El;
     E_avg2p+=val_El*val_El;

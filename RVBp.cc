@@ -340,6 +340,7 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
   if (spin==1){
     complex<double> ratio= mat.RowRatio(mat.UpPos[stop],col);
     //    complex<double> ratio_check=evaluateRatio_check(system,start,stop,spin);
+    //    cerr<<"GRR: "<<ratio<<" "<<ratio_check<<endl;
     ratio.real(ratio.real()*countParity);
     ratio.imag(ratio.imag()*countParity);
     //    ratio.real()*=countParity;
@@ -350,11 +351,13 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
 
     complex<double> ratio= mat.ColRatio(mat.DownPos[stop],col);
     //    complex<double> ratio_check=evaluateRatio_check(system,start,stop,spin);
+    //    cerr<<"GRR: "<<ratio<<" "<<ratio_check<<endl;
     ratio.real(ratio.real()*countParity);
     ratio.imag(ratio.imag()*countParity);
     //    ratio.real()*=countParity;
     //    ratio.imag()*=countParity;
     //    cerr<<"Ratios B are: "<<ratio<<" "<<ratio_check<<endl;
+
     return ratio;// _check;
   }
 }
@@ -384,6 +387,7 @@ RVBpPsiClass::evaluateRatio_check(SystemClass &system, int site, int end_site,
 complex<double> 
 RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 {
+
   int maxSwap=max(swap1,swap2);
   int minSwap=min(swap1,swap2);
   int mySign=1;
@@ -410,12 +414,12 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   //swap1 has been set to be the spin up value
   //loop over the spin down particles
   for (int j=0;j<system.x.size();j++){
-    if (system.x(j)==-1){ 
+    if ((system.x(j)==-1) || ((system.x(j)==2))){  
       newColsp(mat.DownPos[j],0)=Phi(swap1,j,system);
     }
-  //swap2 has been set to be the spin down value
-  //loops over the spin up particles
-    else if (system.x(j)==1){
+    //swap2 has been set to be the spin down value
+    //loops over the spin up particles
+    if ((system.x(j)==1) || (system.x(j)==2)){
       newRowsp(0,mat.UpPos[j])=Phi(j,swap2,system);
     }
   }
@@ -425,16 +429,22 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   int countParity=0;
   int myMin=min(swap1,swap2);
   int myMax=max(swap1,swap2);
-  for (int i=myMin+1;i<myMax;i++)
-    if ( (mat.UpPos[i]!=-1)  || (mat.DownPos[i]!=-1))
+  for (int i=myMin+1;i<myMax;i++){
+    //    if ( (mat.UpPos[i]!=-1)  || (mat.DownPos[i]!=-1))//HACK!
+    if ( (mat.UpPos[i]!=-1) )
       countParity++;
+    if (mat.DownPos[i]!=-1)
+      countParity++;
+  }
   test_ratio*= (( (countParity % 2)==0)  ? 1 :-1);
 
   //  complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
   //  complex<double> diff=test_ratio-check_ratio;
   //  cerr<<"CHECKING: "<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
-
+  //  assert(fabs(diff)<1e-4);
   rebuild=false;
+  //  cerr<<"The ratio is "<<test_ratio<<endl;
+  
   return test_ratio;
 }
 
@@ -461,6 +471,7 @@ RVBpPsiClass::FillDet(SystemClass &system,SmartEigen &myMat)
 	if ((system.x(j)==-1) || (system.x(j)==2) ){ //HACK!
 	  downDet++;
 	  //	  cerr<<"GRR GRR"<<upDet<<" "<<downDet<<endl;
+	  //	  cerr<<"The phi is "<<i<<" "<<j<<" "<<Phi(i,j,system)<<endl;
 	  myMat.M(upDet,downDet)=Phi(i,j,system);
 	  myMat.UpPos[i]=upDet;
 	  myMat.DownPos[j]=downDet;
@@ -470,6 +481,14 @@ RVBpPsiClass::FillDet(SystemClass &system,SmartEigen &myMat)
       }
     }
   }
+  ///  cerr<<"WRITING ME "<<endl;
+  //  for (int i=0;i<myMat.M.rows();i++){
+  //    for (int j=0;j<myMat.M.cols();j++){
+  //      cerr<<myMat.M(i,j)<<" ";
+  //    }
+  //    cerr<<endl;
+  //  }
+  //  cerr<<"DONE WRITING ME "<<endl;
 }
 
 complex<double> 

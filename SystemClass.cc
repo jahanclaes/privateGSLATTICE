@@ -1,5 +1,6 @@
 #include "SystemClass.h"
 #include <fstream>
+#include "input.h"
 
 double SystemClass::minDist(dVec r1, dVec r2)
 {
@@ -184,7 +185,7 @@ void SystemClass::SetupABSites()
 }
 
 
-void SystemClass::Init()
+void SystemClass::Init(InputClass &input)
 {
   GenerateRList();
   x.resize(rList.size());
@@ -192,12 +193,18 @@ void SystemClass::Init()
   ReadNeighbors();
   ////  cerr<<"Reading k list"<<endl;
   ////  GenerateKList();
+  double doping=input.toDouble(input.GetVariable("doping"));
   
   //  SetupABSites();
   tau=0.1;
   cerr<<"Staggering"<<endl;
-  Stagger(); //HACK FOR HONEYCOMB!
+  Stagger(doping);
+  cerr<<"I am done staggering"<<endl;
   int numUp=CountElectrons(-1,x.size(),1);
+  cerr<<"my numUp is "<<numUp<<endl;
+  for (int i=0;i<x.size();i++)
+    cerr<<x(i)<<" ";
+  cerr<<endl;
   for (int i=0;i<numUp;i++){
     dVec garbage;
     kList.push_back(garbage);
@@ -209,8 +216,37 @@ void SystemClass::Init()
 
 //Assumes your neighbor is on a different
 //bipartite lattice
-void SystemClass::Stagger()
+void SystemClass::Stagger(double &doping)
 {
+  for (int i=0;i<x.size();i++){
+    x(i)=0;
+  }
+  int numUp=0.5*doping*x.size();
+  cerr<<"I want to set the num Up to be "<<numUp<<endl;
+  {
+    int pos=-2;
+    for (int ii=0;ii<numUp;ii++){
+      pos+=2;
+      if (pos>=x.size())
+	pos=1;
+      x(pos)=1;
+    }
+  }
+  {
+    int pos=-1;
+    for (int ii=0;ii<numUp;ii++){
+      pos+=2;
+      if (pos>=x.size())
+	pos=0;
+      x(pos) = ( (x(pos)==1) ? 2 : -1);
+    }
+  }
+  cerr<<"The current system is "<<endl;
+  for (int i=0;i<x.size();i++){
+    cerr<<x(i)<<endl;
+  }
+ return;
+    
   //  assert(1==2);
   //  RandomClass Random;
   x(0)=1;

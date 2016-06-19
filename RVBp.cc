@@ -48,7 +48,7 @@ RVBpPsiClass::Init(SystemClass &system)
        }
    }
   
-  ReadPairingFunction=false;
+  ReadPairingFunction=true;
   if (ReadPairingFunction){
     int bin=0;
     ifstream infile;

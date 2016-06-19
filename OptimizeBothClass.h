@@ -461,6 +461,29 @@ public:
     return ans;
   }
 
+  HopMove ChooseHopFast(vector<int> &positions, SystemClass &system)
+
+  {
+    int spin = (Random.randInt(2)==0 ? -1: 1);
+    int notSpin = (spin ==1 ) ? -1: 1;
+    int site;
+    vector<int> canStart;
+    vector<int> canEnd;
+    for (int i=0;i<positions.size();i++){
+      if ( (system.x(positions[i])==spin) || (system.x(positions[i])==2) )
+   	canStart.push_back(i);
+      else if ( (system.x(positions[i])==notSpin) ||  (system.x(positions[i]))==0 )
+	canEnd.push_back(i);
+    }
+    if ( (canStart.size()==0)  || (canEnd.size()==0) ){
+      site=-1; int end_site=-1;
+      return HopMove(site,end_site,spin);
+    }
+    site=positions[canStart[Random.randInt(canStart.size())]];
+    int end_site=positions[canEnd[Random.randInt(canEnd.size())]];
+    return HopMove(site,end_site,spin);
+
+  }
   HopMove ChooseHop(vector<int> &positions,SystemClass &system)
   {
     int spin = (Random.randInt(2)==0 ? -1: 1);
@@ -524,27 +547,29 @@ public:
     EvaluateWF_ifNeedReset(wf_list);
     HopMove hop_move;
     for (int step=0;step<System.x.size();step++){ 
-      hop_move=ChooseHop(kondo_help.layer1Sites,System);
+      hop_move=ChooseHopFast(kondo_help.layer1Sites,System);
+      numAttempted++;
+      if (hop_move.start!=-1){
       //      if (Random.randInt(2) ==0)
       //	hop_move=ChooseHop(kondo_help.layer1Sites,System);
       //      else 
       //	hop_move=ChooseHop(kondo_help.layer2Sites,System);
       //      cerr<<"I am moving from "<<hop_move.start<<" to "<<hop_move.end<<" with "<<hop_move.spin<<endl;
-      MakeMove(hop_move,System,wf_list);
-      complex<double> quick_ratio=Ratio(hop_move,System,wf_list);
-      //      cerr<<"My ratio is "<<quick_ratio<<endl;
-      double ranNum=Random.ranf();
-      numAttempted++;
-      if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
-	numAccepted++;
-	Accept(hop_move,System,wf_list);
+	MakeMove(hop_move,System,wf_list);
+	complex<double> quick_ratio=Ratio(hop_move,System,wf_list);
+	//      cerr<<"My ratio is "<<quick_ratio<<endl;
+	double ranNum=Random.ranf();
 
-	//accept
-      }
-      else {
-	MakeMove(ReverseHop(hop_move),System,wf_list);
-	Reject(hop_move,System,wf_list);
-
+	if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ 
+	  numAccepted++;
+	  Accept(hop_move,System,wf_list);
+	  
+	  //accept
+	}
+	else {
+	  MakeMove(ReverseHop(hop_move),System,wf_list);
+	  Reject(hop_move,System,wf_list);
+	}
       }
     }
     //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;

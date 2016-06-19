@@ -213,7 +213,6 @@ void SystemClass::Init(InputClass &input)
   cerr<<"SystemClass init done"<<endl;
 }
 
-
 //Assumes your neighbor is on a different
 //bipartite lattice
 void SystemClass::Stagger(double &doping)
@@ -221,13 +220,13 @@ void SystemClass::Stagger(double &doping)
   for (int i=0;i<x.size();i++){
     x(i)=0;
   }
-  int numUp=0.5*doping*x.size();
+  int numUp=0.5*doping*(x.size()/2);
   cerr<<"I want to set the num Up to be "<<numUp<<endl;
   {
     int pos=-2;
     for (int ii=0;ii<numUp;ii++){
       pos+=2;
-      if (pos>=x.size())
+      if (pos>=x.size()/2)
 	pos=1;
       x(pos)=1;
     }
@@ -236,11 +235,16 @@ void SystemClass::Stagger(double &doping)
     int pos=-1;
     for (int ii=0;ii<numUp;ii++){
       pos+=2;
-      if (pos>=x.size())
+      if (pos>=x.size()/2)
 	pos=0;
       x(pos) = ( (x(pos)==1) ? 2 : -1);
     }
   }
+  x(x.size()/2)=1;
+  for (int ii=x.size()/2+1;ii<x.size();ii++){
+    x(ii)=x(ii-1)*-1;
+  }
+
   cerr<<"The current system is "<<endl;
   for (int i=0;i<x.size();i++){
     cerr<<x(i)<<endl;

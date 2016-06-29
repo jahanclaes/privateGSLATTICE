@@ -24,6 +24,7 @@ class SystemClass
   void ReadNeighbors();
   void SetupABSites();
   void Stagger(double &doping);
+  void Stagger_kondo(double &doping);
   void Swap(int i, int j);
   void Move(int site, int end_site, int spin);
   int CountElectrons(int i,int j,int spin);

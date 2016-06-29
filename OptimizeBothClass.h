@@ -547,7 +547,10 @@ public:
     EvaluateWF_ifNeedReset(wf_list);
     HopMove hop_move;
     for (int step=0;step<System.x.size();step++){ 
-      hop_move=ChooseHopFast(kondo_help.layer1Sites,System);
+      if (Random.randInt(2)==0)
+	hop_move=ChooseHopFast(kondo_help.layer1Sites,System);
+      else
+	hop_move=ChooseHopFast(kondo_help.layer2Sites,System);
       numAttempted++;
       if (hop_move.start!=-1){
       //      if (Random.randInt(2) ==0)

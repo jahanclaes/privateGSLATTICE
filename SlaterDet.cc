@@ -655,7 +655,7 @@ complex<double>
 SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 {
   
-  assert(1==2);
+  //swap assumes that  you have just one spin up and one spin down
   int maxSwap=max(swap1,swap2);
   int minSwap=min(swap1,swap2);
   int mySign=1;
@@ -695,7 +695,7 @@ SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   //swap2 has been set to be the spin down value
   //loops over the spin up particles
   //  for (int i=0;i<system.x.size();i++)
-    else if (system.x(j)==0){
+    else if (system.x(j)==-1){
       //      up(mat.DetPos(i))=Phi(i,swap2,system);
       newRows[0](mat.DetPos[j])=Phi(j,swap2,system);
     }

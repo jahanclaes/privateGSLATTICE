@@ -8,6 +8,18 @@
 /////spin 0 -> first index
 ////spin 1 -> second index
 
+void SlaterDetPsiClass::MakeProductState(vector<int> &myState)
+{
+  int countElectrons=0;
+  SharedEigs.SetZero();
+  for (int i=0;i<myState.size();i++){
+    if (myState[i]==mySpin){
+      SharedEigs.eigs(countElectrons,i)=1.0;
+      countElectrons++;
+    }
+  }
+}
+
 void 
 SlaterDetPsiClass::Init(SystemClass &system,int t_mySpin)
 {
@@ -322,7 +334,7 @@ void SlaterDetPsiClass::SetParam_real(int i, double param)
   int numSites=SharedEigs.eigs.cols();
   int orb=i/numSites;
   int site=i % numSites;
-  SharedEigs.eigs(orb,site).real()=param;
+  SharedEigs.eigs(orb,site).real(param);
 
 }
 void SlaterDetPsiClass::SetParam_imag(int i, double param)
@@ -331,7 +343,7 @@ void SlaterDetPsiClass::SetParam_imag(int i, double param)
   int numSites=SharedEigs.eigs.cols();
   int orb=i/numSites;
   int site=i % numSites;
-  SharedEigs.eigs(orb,site).imag()=param;
+  SharedEigs.eigs(orb,site).imag(param);
 
 }
 
@@ -642,9 +654,8 @@ SlaterDetPsiClass::evaluateRatio_check(SystemClass &system, int site, int end_si
 complex<double> 
 SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 {
-
   
-  assert(1==2);
+  //swap assumes that  you have just one spin up and one spin down
   int maxSwap=max(swap1,swap2);
   int minSwap=min(swap1,swap2);
   int mySign=1;
@@ -653,9 +664,7 @@ SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   else
     mySign=1;
 
-  //  mat.SaveInverse();
-  ///let's define spin up as swap1
-  if (system.x(swap1)!=0){
+  if (system.x(swap1)!=1){
     swap(swap1,swap2);
   }
 
@@ -686,26 +695,42 @@ SlaterDetPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
   //swap2 has been set to be the spin down value
   //loops over the spin up particles
   //  for (int i=0;i<system.x.size();i++)
-    else if (system.x(j)==0){
+    else if (system.x(j)==-1){
       //      up(mat.DetPos(i))=Phi(i,swap2,system);
       newRows[0](mat.DetPos[j])=Phi(j,swap2,system);
     }
   }
 
   complex<double> test_ratio=mat.Ratio_ncol_nrowp(colIndices,rowIndices,newCols,newRows);
-  //  complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
-//    complex<double> diff=test_ratio-check_ratio;
-//    cerr<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
+  complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
+  complex<double> diff=test_ratio-check_ratio;
+  cerr<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
       //HACK!      assert((diff*conj(diff)).real()<1e-10);
   //  cerr<<"test ratio is "<<test_ratio<<" "<<endl; //evaluateRatio_check(system,swap1,swap2)<<endl;
 
   rebuild=false;
   //  cerr<<"CURRENT RATIO IS "<<test_ratio<<endl;
-  test_ratio.real()=-1*test_ratio.real(); //*mySign;
-  test_ratio.imag()=-1*test_ratio.imag(); //*mySign;
+  test_ratio.real(-1*test_ratio.real()); //*mySign;
+  test_ratio.imag(-1*test_ratio.imag()); //*mySign;
   return test_ratio;
   //return check_ratio;
 }
+
+std::complex<double> 
+SlaterDetPsiClass::evaluateRatio_check(SystemClass &system, int swap1, int swap2)
+{
+  SmartEigen mat_check;
+  mat_check.Init(mat.M.rows());
+  system.Swap(swap1,swap2);
+  FillDet(system,mat_check);
+  complex<double> pre=mat_check.Det();
+  system.Swap(swap1,swap2);
+  FillDet(system,mat_check);
+  complex<double> post=mat_check.Det();
+  return post/pre;
+}
+
+
 
 double 
 SlaterDetPsiClass::Sign(SystemClass &system)

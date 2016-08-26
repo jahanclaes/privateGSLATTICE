@@ -22,7 +22,7 @@ complex<double>
 RVBFastPsiClass::evaluateRatio_noStore(SystemClass &system,int swap1, int swap2)
 {
   ///let's define spin up as swap1
-  if (system.x(swap1)!=0){
+  if (system.x(swap1)!=-1){
     swap(swap1,swap2);
   }
 
@@ -38,7 +38,7 @@ RVBFastPsiClass::evaluateRatio_noStore(SystemClass &system,int swap1, int swap2)
   //swap2 has been set to be the spin down value
   //loops over the spin up particles
   for (int i=0;i<system.x.size();i++)
-    if (system.x(i)==0){
+    if (system.x(i)==-1){
       up(mat.DetPos(i))=Phi(i,swap2,system);
     }
 
@@ -72,7 +72,7 @@ RVBFastPsiClass::evaluateRatio_check(SystemClass &system, int swap1, int swap2)
   system.Swap(swap1,swap2);
   FillDet(system,mat_check);
   complex<double> post=mat_check.Det();
-  cerr<<"Check ratio: "<<post<<" "<<pre<<" "<<post/pre<<endl;
+  //  cerr<<"Check ratio: "<<post<<" "<<pre<<" "<<post/pre<<endl;
   return post/pre;
 }
  
@@ -88,7 +88,7 @@ RVBFastPsiClass::FillDet_check(SystemClass &system,SmartMatrix &myMat)
   int downDet=-1;
   bool ok=true;
   for (int i=0;i<system.x.size();i++){
-    if (system.x(i)==0){
+    if (system.x(i)==-1){
       upDet++;
       downDet=-1;
       for (int j=0;j<system.x.size();j++){

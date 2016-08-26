@@ -10,6 +10,7 @@
 #include "SystemClass.h"
 #include "WaveFunction.h"
 #include "SmartMatrix.h"
+#include "SmartEigen.h"
 #include "PairingFunctionAllBin.h"
 
 
@@ -17,6 +18,7 @@ class RVBFastPsiClass  : public WaveFunctionClass
 {
 public:
   SmartMatrix mat;
+  SmartEigen matp;
   bool ReadParams;
   bool ReadPairingFunction;
   //  RVBFastPsiClass::
@@ -27,12 +29,16 @@ public:
   }
   vector<Array<complex<double>  ,1> > newCols;
   vector<Array<complex<double>  ,1> > newRows;
+  Eigen::MatrixXcd newColsp;
+  Eigen::MatrixXcd newRowsp;
+
   vector<int> colIndices;
   vector<int> rowIndices;
   void Copy(WaveFunctionClass* wf)
   {
     RVBFastPsiClass &b(*(RVBFastPsiClass*)wf);
     mat=b.mat;
+    matp=b.matp;
     newCols=b.newCols;
     newRows=b.newRows;
     colIndices=b.colIndices;
@@ -68,10 +74,11 @@ public:
   complex<double>Phi(int i,int j,SystemClass &system);
 
   void FillDet(SystemClass &system, SmartMatrix &myMat);
+  void FillDet(SystemClass &system, SmartEigen &myMat);
   complex<double> evaluate(SystemClass &system);
   complex<double> evaluate_noInverse(SystemClass &system);
   complex<double> evaluateRatio(SystemClass &system,int swap1, int swap2);
-  complex<double> evaluateRatio_energy(SystemClass &system,int swap1, int swap2);
+
 
   double Sign(SystemClass &system);
 
@@ -95,6 +102,7 @@ public:
 
 
   void FillDet_check(SystemClass &system,SmartMatrix &myMat);
+
 
 };
 

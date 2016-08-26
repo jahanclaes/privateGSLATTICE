@@ -166,6 +166,7 @@ static void MatrixMultiply(blitz::Array<std::complex<double>,2> &A,blitz::Array<
   static void MatMult (const blitz::Array<double,2> &A, const blitz::Array<double,2> &B,
               blitz::Array<double,2> &C)
 {
+  assert(1==2);
 /*   int m = A.rows(); */
 /*   int n = B.cols(); */
 /*   int k = A.cols(); */

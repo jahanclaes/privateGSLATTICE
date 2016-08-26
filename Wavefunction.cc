@@ -1,5 +1,6 @@
 #include "WaveFunction.h"
 
+
 void WaveFunctionClass::Copy(WaveFunctionClass* wf)
 {
   assert(1==2);
@@ -94,4 +95,18 @@ complex<double> WaveFunctionClass::evaluateRatio(SystemClass &system,int start, 
 void WaveFunctionClass::RebuildParams()
 {
 
+}
+WaveFunctionClass* WaveFunctionClass::clone()
+{
+  assert(1==2);
+}
+
+void WaveFunctionClass::MakeProductState(vector<int> &myState)
+{
+  assert(1==2);
+}
+
+void WaveFunctionClass::MakeUniformState()
+{
+  assert(1==2);
 }

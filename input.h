@@ -2,7 +2,7 @@
 #define input_h
 #include <vector>
 #include <string>
-
+#include <map>
 using namespace std;
 
 class InputTree
@@ -58,7 +58,7 @@ class InputClass
 	tree=tree->sections[i];
 	return true;
       }
-      else {
+      else if (tree->sections[i]->name==myVar){
 	foundSection++;
       }
     }

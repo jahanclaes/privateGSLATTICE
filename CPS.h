@@ -64,7 +64,7 @@ public:
   void SetParam_real(int i,double param)
   {
     pair<int,int> myLoc=PF.ParamLoc[i];
-    PF.f0[myLoc.first][myLoc.second].real()=param;
+    PF.f0[myLoc.first][myLoc.second].real(param);
   }
 
   double GetParam_imag(int i)
@@ -75,7 +75,8 @@ public:
   void SetParam_imag(int i,double param)
   {
     pair<int,int> myLoc=PF.ParamLoc[i];
-    PF.f0[myLoc.first][myLoc.second].imag()=param;
+    PF.f0[myLoc.first][myLoc.second].imag(param);
+
   }
 
 

@@ -31,6 +31,10 @@ public:
   bool rebuild;
   int mySpin;
   //  int NumElectrons;
+  void MakeProductState(vector<int> &myState);
+
+
+
 
 
 
@@ -114,10 +118,8 @@ public:
       assert(1==2);
     }
   
-  std::complex<double> evaluateRatio_check(SystemClass &system, int a, int b)
-    {
-      assert(1==2);
-    }
+  std::complex<double> evaluateRatio_check(SystemClass &system, int swap1, int swap2);
+
 
 
   void  FillDet_check(SystemClass &system,SmartEigen &myMat);

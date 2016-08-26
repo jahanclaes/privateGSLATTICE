@@ -32,6 +32,8 @@ public:
   complex<double> evaluateRatio(SystemClass &system,int start, int stop, int spin);
   vector<Array<complex<double>  ,1> > newCols;
   vector<Array<complex<double>  ,1> > newRows;
+  Eigen::MatrixXcd newColsp;
+  Eigen::MatrixXcd newRowsp;
   vector<int> colIndices;
   vector<int> rowIndices;
   void Copy(WaveFunctionClass* wf)
@@ -77,11 +79,11 @@ public:
   complex<double> evaluate(SystemClass &system);
   complex<double> evaluate_noInverse(SystemClass &system);
   complex<double> evaluateRatio(SystemClass &system,int swap1, int swap2);
-  complex<double> evaluateRatio_energy(SystemClass &system,int swap1, int swap2);
+
   complex<double>  evaluateRatio_check(SystemClass &system, int site, int end_site,
 				       int spin);
 
-  double Sign(SystemClass &system);
+
 
   void Reject(SystemClass &system,int site,int end_site,int spin);
   complex<double> evaluateRatio_swap(SystemClass &system, int swap1, int swap2);
@@ -96,10 +98,7 @@ public:
       assert(1==2);
     }
   
-  std::complex<double> evaluateRatio_check(SystemClass &system, int a, int b)
-    {
-      assert(1==2);
-    }
+  std::complex<double> evaluateRatio_check(SystemClass &system, int a, int b);
 
 
 

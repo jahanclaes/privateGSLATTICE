@@ -1,5 +1,6 @@
 #include "SystemClass.h"
 #include <fstream>
+#include "input.h"
 
 double SystemClass::minDist(dVec r1, dVec r2)
 {
@@ -139,83 +140,134 @@ void SystemClass::GenerateRList()
 void SystemClass::ReadNeighbors()
 {
   
-  ifstream infile;
-  infile.open("neighbors.txt");
-  int numNeighbors;
-  infile>>numNeighbors;
-  //    cerr<<"numNeighbors is "<<numNeighbors<<" "<<rList.size()<<endl;
-  neighbors.resize(rList.size(),numNeighbors);
-  int latticeSite;
-  int neighbor;
-  while (!infile.eof()){
-    infile>>latticeSite;
-    if (!infile.eof())
-      for (int i=0;i<numNeighbors;i++)
-	infile>>neighbors(latticeSite,i);
-  }
+  // ifstream infile;
+  // infile.open("neighbors.txt");
+  // int numNeighbors;
+  // infile>>numNeighbors;
+  // //    cerr<<"numNeighbors is "<<numNeighbors<<" "<<rList.size()<<endl;
+  // neighbors.resize(rList.size(),numNeighbors);
+  // int latticeSite;
+  // int neighbor;
+  // while (!infile.eof()){
+  //   infile>>latticeSite;
+  //   if (!infile.eof())
+  //     for (int i=0;i<numNeighbors;i++)
+  // 	infile>>neighbors(latticeSite,i);
+  // }
 }
 
 
 void SystemClass::SetupABSites()
 {
   assert(1==2);
-  ABSites.resize(rList.size());
-  ABSites(Range::all())=-1;
+  // ABSites.resize(rList.size());
+  // ABSites(Range::all())=-1;
    
-  //Figure out what the AB Sites are 
-  //for the bipartite lattice!
-  //Should be eventually moved into system!
-  ABSites(0)=0;
-  bool notDone=true;
-  while (notDone){
-    notDone=false;
-    for (int i=0;i<neighbors.extent(0);i++)
-      for (int j=0;j<neighbors.extent(1);j++){
-	if (ABSites(i)==0)
-	  ABSites(neighbors(i,j))=1;
-	else if (ABSites(i)==1)
-	  ABSites(neighbors(i,j))=0;
-	else if (ABSites(i)==-1)
-	  notDone=true;
-      }
-  }
-  for (int i=0;i<ABSites.size();i++)
-    cerr<<"ABSITES: "<<i<<" "<<ABSites(i)<<endl;
+  // //Figure out what the AB Sites are 
+  // //for the bipartite lattice!
+  // //Should be eventually moved into system!
+  // ABSites(0)=0;
+  // bool notDone=true;
+  // while (notDone){
+  //   notDone=false;
+  //   for (int i=0;i<neighbors.extent(0);i++)
+  //     for (int j=0;j<neighbors.extent(1);j++){
+  // 	if (ABSites(i)==0)
+  // 	  ABSites(neighbors(i,j))=1;
+  // 	else if (ABSites(i)==1)
+  // 	  ABSites(neighbors(i,j))=0;
+  // 	else if (ABSites(i)==-1)
+  // 	  notDone=true;
+  //     }
+  // }
+  // for (int i=0;i<ABSites.size();i++)
+  //   cerr<<"ABSITES: "<<i<<" "<<ABSites(i)<<endl;
 }
 
 
-void SystemClass::Init()
+void SystemClass::Init(InputClass &input)
 {
   GenerateRList();
   x.resize(rList.size());
   cerr<<"Reading neighbors"<<endl;
   ReadNeighbors();
-  cerr<<"Reading k list"<<endl;
-  GenerateKList();
+  ////  cerr<<"Reading k list"<<endl;
+  ////  GenerateKList();
+  double doping=input.toDouble(input.GetVariable("doping"));
+  
   //  SetupABSites();
   tau=0.1;
   cerr<<"Staggering"<<endl;
-  Stagger(); //HACK FOR HONEYCOMB!
+  Stagger(doping);
+  cerr<<"I am done staggering"<<endl;
+  int numUp=CountElectrons(-1,x.size(),1);
+  cerr<<"my numUp is "<<numUp<<endl;
+  for (int i=0;i<x.size();i++)
+    cerr<<x(i)<<" ";
+  cerr<<endl;
+  for (int i=0;i<numUp;i++){
+    dVec garbage;
+    kList.push_back(garbage);
+  }
+  cerr<<"SIZE OF K LIST IS "<<kList.size()<<endl;
   cerr<<"SystemClass init done"<<endl;
 }
 
-
 //Assumes your neighbor is on a different
 //bipartite lattice
-void SystemClass::Stagger()
+void SystemClass::Stagger_kondo(double &doping)
 {
+  for (int i=0;i<x.size();i++){
+    x(i)=0;
+  }
+  int numUp=0.5*doping*(x.size()/2);
+  cerr<<"I want to set the num Up to be "<<numUp<<endl;
+  {
+    int pos=-2;
+    for (int ii=0;ii<numUp;ii++){
+      pos+=2;
+      if (pos>=x.size()/2)
+	pos=1;
+      x(pos)=1;
+    }
+  }
+  {
+    int pos=-1;
+    for (int ii=0;ii<numUp;ii++){
+      pos+=2;
+      if (pos>=x.size()/2)
+	pos=0;
+      x(pos) = ( (x(pos)==1) ? 2 : -1);
+    }
+  }
+  x(x.size()/2)=1;
+  for (int ii=x.size()/2+1;ii<x.size();ii++){
+    x(ii)=x(ii-1)*-1;
+  }
+
+  cerr<<"The current system is "<<endl;
+  for (int i=0;i<x.size();i++){
+    cerr<<x(i)<<endl;
+  }
+ return;
+    
   //  assert(1==2);
   //  RandomClass Random;
   x(0)=1;
-  for (int i=1;i<x.size();i++){
-    x(i)=x(i-1)*-1;
-  }
+  //  for (int i=1;i<x.size();i++){
+  //    x(i)=x(i-1)*-1;
+  //  }
+  x(0)=2;
+  x(1)=2;
+  x(2)=1;
+  x(3)=-1;
+
   //  x(x.size()-6)=0;
   //  x(x.size()-5)=0;
   //  x(x.size()-4)=0;
   //  x(x.size()-3)=0;
-  x(x.size()-2)=0;
-  x(x.size()-1)=0;
+  //  x(x.size()-2)=0;
+  //  x(x.size()-1)=0;
   //  for (int i=1;i<x.size();i++){
   //    x(i)=x(i-1)*-1+1;
   //  }
@@ -228,6 +280,44 @@ void SystemClass::Stagger()
   //    for (int i=0;i<N/2;i++)
   //     x(i)=0;
   
+    
+}
+
+
+
+//Assumes your neighbor is on a different
+//bipartite lattice
+void SystemClass::Stagger(double &doping)
+{
+  for (int i=0;i<x.size();i++){
+    x(i)=0;
+  }
+  int numUp=0.5*doping*(x.size());
+  cerr<<"I want to set the num Up to be "<<numUp<<endl;
+  {
+    int pos=-2;
+    for (int ii=0;ii<numUp;ii++){
+      pos+=2;
+      if (pos>=x.size())
+	pos=1;
+      x(pos)=1;
+    }
+  }
+  {
+    int pos=-1;
+    for (int ii=0;ii<numUp;ii++){
+      pos+=2;
+      if (pos>=x.size())
+	pos=0;
+      x(pos) = ( (x(pos)==1) ? 2 : -1);
+    }
+  }
+
+  cerr<<"The current system is "<<endl;
+  for (int i=0;i<x.size();i++){
+    cerr<<x(i)<<endl;
+  }
+ return;
     
 }
 

@@ -18,179 +18,34 @@ RVBpPsiClass::Init(SystemClass &system)
   for (int i=0;i<system.x.size();i++){
     NumSpinUp += ((system.x(i)==1 || system.x(i)==2) ? 1: 0);
   }
-    //  NumSpinUp=system.x.size()/2;
   mat.Init(NumSpinUp,system.x.size());
-  //  u.resize(NumSpinUp);  
-  //  up.resize(NumSpinUp);
   cerr<<"RVB BINS"<<endl;
   PairingFunction.Init(system);
   cerr<<"RVB BINS done"<<endl;
   ReadParams=false;
 
-//   bool param2=false;
-//   if (ReadParams){
-//       cerr<<"Now reading parameters"<<endl;
-//       ifstream infile;
-
-//       infile.open("paramsAA.txt");
-// 	//HACK	infile.open("paramspAA.txt");
-//      dVec zero(0.0,0.0);
-//      while (!infile.eof()){
-//        dVec r;
-//        infile>>r[0];
-//        infile>>r[1];
-//        //       double minDist=system.minDist(r,zero);
-
-//        dVec minDiff=system.minDiff(r,zero);
-//        int theBin=PairingFunctionAA.FindBin(minDiff);
-// 	if (theBin==-1){
-// 	bool found=false;
-// 	for (int ip=-1;ip<=1;ip++)
-// 	  for (int jp=-1;jp<=1;jp++){
-// 	    dVec diffp(minDiff[0]+system.a1[0]*system.N1*ip+system.a2[0]*jp*system.N2,minDiff[1]+system.a1[1]*ip*system.N1+system.a2[1]*jp*system.N2);
-// 	    dVec negDiff=-diffp;
-// 	    if (theBin==-1)
-// 	      theBin=PairingFunctionAA.FindBin(diffp);
-// 	    if (theBin==-1)
-// 	      theBin=PairingFunctionAA.FindBin(negDiff);
-// 	    //	    cerr<<"Bin not found but now: "<<bin<<" "<<diff<<endl;
-// 	  }
-// 	}
-//        if (theBin==-1){
-// 	 cerr<<"Min dist is "<<minDiff<<endl;
-// 	 for (int i=0;i<PairingFunctionAA.binVals.size();i++)
-// 	   cerr<<"Bin Vals "<<i<<" "<<PairingFunctionAA.binVals[i]<<endl;
-
-//        }
-//        if (theBin!=-1){
-// 	 cerr<<"Going to be Setting AA "<<theBin<<" to "<<PairingFunctionAA.f0[theBin]<<endl;
-// 	 infile>>PairingFunctionAA.f0[theBin].real();
-// 	 infile>>PairingFunctionAA.f0[theBin].imag();
-// 	 cerr<<"Setting AA "<<theBin<<" to "<<PairingFunctionAA.f0[theBin]<<endl;
-//        }
-//      }
-//      cerr<<"done with AA"<<endl;
-//      infile.close();
-//      if (!param2)
-//        infile.open("paramsBB.txt");
-//      else 
-//        infile.open("paramsBB.txt");
-//        //HACK       infile.open("paramspBB.txt");
-//      while (!infile.eof()){
-//        dVec r;
-//        infile>>r[0];
-//        infile>>r[1];
-//        //       double minDist=system.minDist(r,zero);
-//        dVec minDiff=system.minDiff(r,zero);
-//        int theBin=PairingFunctionBB.FindBin(minDiff);
-// 	if (theBin==-1){
-// 	bool found=false;
-// 	for (int ip=-1;ip<=1;ip++)
-// 	  for (int jp=-1;jp<=1;jp++){
-// 	    dVec diffp(minDiff[0]+system.a1[0]*system.N1*ip+system.a2[0]*jp*system.N2,minDiff[1]+system.a1[1]*ip*system.N1+system.a2[1]*jp*system.N2);
-// 	    dVec negDiff=-diffp;
-// 	    if (theBin==-1)
-// 	      theBin=PairingFunctionBB.FindBin(diffp);
-// 	    if (theBin==-1)
-// 	      theBin=PairingFunctionBB.FindBin(negDiff);
-// 	    //	    cerr<<"Bin not found but now: "<<bin<<" "<<diff<<endl;
-// 	  }
-// 	}
-
-    	
-
-
-//  	if (theBin!=-1){
-//  	  infile>>PairingFunctionBB.f0[theBin].real();
-//  	  infile>>PairingFunctionBB.f0[theBin].imag();
-//  	  cerr<<"Min dist for BB is "<<minDiff<<endl;
-//  	  cerr<<"Setting BB "<<theBin<<" to "<<PairingFunctionBB.f0[theBin]<<endl;
-//  	}
-//       }
-//       infile.close();
-//       if (!param2)
-//         infile.open("paramsAB.txt");
-//       else 
-//         //HACK       infile.open("paramspAB.txt");
-//         infile.open("paramsAB.txt");
-//       while (!infile.eof()){
-//         dVec r;
-//         infile>>r[0];
-//         infile>>r[1];
-//         dVec minDiff=system.minDiff(r,zero);
-//         int theBin=PairingFunctionAB.FindBin(minDiff);
-
-//  	if (theBin==-1){
-//  	bool found=false;
-//  	for (int ip=-1;ip<=1;ip++)
-//  	  for (int jp=-1;jp<=1;jp++){
-//  	    dVec diffp(minDiff[0]+system.a1[0]*system.N1*ip+system.a2[0]*jp*system.N2,minDiff[1]+system.a1[1]*ip*system.N1+system.a2[1]*jp*system.N2);
-//  	    dVec negDiff=-1.0*diffp;
-//  	    if (theBin==-1)
-//  	      theBin=PairingFunctionAB.FindBin(diffp);
-//  	    if (theBin==-1)
-//  	      theBin=PairingFunctionAB.FindBin(negDiff);
-//  	    //	    cerr<<"Bin not found but now: "<<bin<<" "<<diff<<endl;
-//  	  }
-//  	}
-
-//  	if (theBin!=-1){
-	  
-//  	  infile>>PairingFunctionAB.f0[theBin].real();
-//  	  infile>>PairingFunctionAB.f0[theBin].imag();
-//  	  cerr<<"Setting AB "<<theBin<<" to "<<PairingFunctionAB.f0[theBin]<<endl;
-     
-//         if (theBin==-1){
-//  	 cerr<<"Min dist is "<<minDiff<<endl;
-//  	 for (int i=0;i<PairingFunctionAB.binVals.size();i++)
-//  	   cerr<<"Bin Vals "<<i<<" "<<PairingFunctionAB.binVals[i]<<endl;
-
-//         }
-//  	}
-
-
-//       }
-//       infile.close();
-
-
-
-//      }
-
-
-
-   if (ReadParams){
-     cerr<<"READING IN THE PARMS HERE"<<endl;
-     //    exit(1);
-     ifstream infile;
-     infile.open("params.dat");
-     assert(infile);
-     int num=0;
-     while (!infile.eof()){
-       //       int num;
-       double numGarbage;
-       double val;
-       string garbage;
-       //       infile>>garbage;
-       //       infile>>num;
+  if (ReadParams){
+    cerr<<"READING IN THE PARMS HERE"<<endl;
+    ifstream infile;
+    infile.open("params.dat");
+    assert(infile);
+    int num=0;
+    while (!infile.eof()){
+      double numGarbage;
+      double val;
        infile>>val;
-       //       infile>>numGarbage;
        infile>>numGarbage;
-       //HACK!      cerr<<"Setting num val "<<num<<" "<<val<<endl;
        if (!infile.eof())
  	PairingFunction.f0[num]=val;
        num++;
- 	//oldREAD	if (!infile.eof() && num>=2352)
- 	//oldREAD	  PairingFunction.f0[num-2352]=val;
      }
      infile.close();
-
+     
      for (int i=0;i<system.rList.size();i++)
        for (int j=0;j<system.rList.size();j++){
- 	int bin=PairingFunction.FindBin(i,j);
- 	cerr<<"READ BIN VALUES: "<<i<<" "<<j<<" "<<PairingFunction.f0[bin].real()<<endl;
+	 int bin=PairingFunction.FindBin(i,j);
+	 cerr<<"READ BIN VALUES: "<<i<<" "<<j<<" "<<PairingFunction.f0[bin].real()<<endl;
        }
-
-
    }
   
   ReadPairingFunction=false;
@@ -201,46 +56,42 @@ RVBpPsiClass::Init(SystemClass &system)
     assert(infile);
     while (!infile.eof()){
       int i;	int j; double tr; double ti;
-     
 	assert(!infile.eof());
 	infile>>i;
 	if (!infile.eof()){
+	  assert(!infile.eof());
+	  infile>>j;
+	  bin=PairingFunction.FindBin(i,j);
+	  assert(bin<PairingFunction.f0.size());
 	assert(!infile.eof());
-	infile>>j;
-	bin=PairingFunction.FindBin(i,j);
-	assert(bin<PairingFunction.f0.size());
-	assert(!infile.eof());
-	infile>>PairingFunction.f0[bin].real();
+	double real; infile>>real;;
+	PairingFunction.f0[bin].real(real);
+	
 	PairingFunction.f0[bin].real(); //=PairingFunction.f0[bin].real()/100.0;
 	assert(!infile.eof());
-	infile>>PairingFunction.f0[bin].imag();
+	double imag; infile>>imag;
+	PairingFunction.f0[bin].imag(imag);
 	PairingFunction.f0[bin].imag(); //=PairingFunction.f0[bin].imag()/100.0;
       }
-      cerr<<i<<" "<<j<<" "<<PairingFunction.f0[bin]<<" "<<bin<<endl;
+	cerr<<i<<" "<<j<<" "<<PairingFunction.f0[bin]<<" "<<bin<<endl;
     }
     infile.close();
     cerr<<"READ IN PAIRING FUNCTIONS"<<endl;
   }
-
-//   for (int i=0;i<system.x.size();i++)
-//     for (int j=0;j<system.x.size();j++){
-//       int bin=PairingFunction.FindBin(i,j);
-//       cerr<<"GRR: "<<i<<" "<<j<<" "<<PairingFunction.f0[bin].real()<<" "<<PairingFunction.f0[bin].imag()<<endl;
-// 	//<<bin<<endl;
-//     }
   cerr<<"done writing "<<endl;
-  //  exit(1);
   NumParams=PairingFunction.f0.size();
   evaluate(system);
   cerr<<"Init Done"<<endl;
 }
 
 
-//currently only the size matters
+
 void 
 RVBpPsiClass::Swap(int i, int j)
 {
-  swap(mat.DetPos[i],mat.DetPos[j]);
+  swap(mat.UpPos[i],mat.UpPos[j]);
+  swap(mat.DownPos[i],mat.DownPos[j]);
+  //  swap(mat.DetPos[i],mat.DetPos[j]);
 }
 
 
@@ -295,12 +146,12 @@ double RVBpPsiClass::GetParam_imag(int i)
 
 void RVBpPsiClass::SetParam_real(int i, double param)
 {
-  PairingFunction.f0[i].real()=param;
+  PairingFunction.f0[i].real(param);
 
 }
 void RVBpPsiClass::SetParam_imag(int i, double param)
 {
-  PairingFunction.f0[i].imag()=param;
+  PairingFunction.f0[i].imag(param);
 
 }
 
@@ -375,20 +226,6 @@ double RVBpPsiClass::TestDerivs(int derivInt,SystemClass &system)
 complex<double>
 RVBpPsiClass::Phi(int i,int j,SystemClass &system)
 {
-  //  ofstream infile;
-
-//   infile.open("PF.dat");
-//   int size=system.x.size();
-//   for (int a=0;a<size;a++){
-//     for (int b=0;b<size;b++){
-//       infile<<PairingFunction.Phi(a,b).real()<<" ";
-//     }
-//     infile<<endl;
-//   }
-//   infile.close();
-  // exit(1);
-  //  cerr<<"i j "<<i<<" "<<j<<endl;
-  //  cerr<<"The pairing function is "<<PairingFunction.Phi(i,j)<<endl;
   return PairingFunction.Phi(i,j);
   double gutz_correct=PairingFunction.gutz(i,j,system);
   if (fabs(gutz_correct-PairingFunction.Phi(i,j).real())>1e-10){
@@ -453,7 +290,7 @@ void RVBpPsiClass::Reject(SystemClass &system,int site,int end_site,int spin)
 void 
 RVBpPsiClass::UpdateDets(SystemClass &system,int swap1, int swap2)
 {
-  mat.InverseUpdate(colIndices,rowIndices,newCols,newRows);  
+  mat.InverseUpdate(colIndices,rowIndices,newColsp,newRowsp);  
 }
 
 void 
@@ -461,14 +298,10 @@ RVBpPsiClass::UpdateDets(SystemClass &system,int site, int end_site,int spin)
 {
 
   if (spin==1){
-    //    cerr<<"I'm updating "<<mat.UpPos[end_site]<<endl;
     mat.UpdateRowAndInverse(mat.UpPos[end_site],col);
-    //    cerr<<"I'm done updating"<<endl;
   }
   else{
-    //    cerr<<"I'm d updating "<<mat.DownPos[end_site]<<endl;
     mat.UpdateColAndInverse(mat.DownPos[end_site],col);
-    //    cerr<<"I'm done updating"<<endl;
   }
 
 
@@ -477,14 +310,6 @@ RVBpPsiClass::UpdateDets(SystemClass &system,int site, int end_site,int spin)
 complex<double>
 RVBpPsiClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
 {
-//   cerr<<"In evaluate ratio "<<endl;
-//   for (int i=0;i<mat.UpPos.size();i++){
-//     cerr<<i<<" "<<mat.UpPos[i]<<endl;
-//   }
-//   cerr<<endl;
-//   for (int i=0;i<mat.DownPos.size();i++){
-//     cerr<<i<<" "<<mat.DownPos[i]<<endl;
-//   }
 
   int countParity=0;
   int myMin=min(start,stop);
@@ -499,9 +324,7 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
       if (mat.DownPos[i]!=-1)
 	countParity++;
   }
-  //  cerr<<"DIFF IS "<<countParity<<" "<<system.CountElectrons(start,stop,spin)<<endl;
   countParity = ( (countParity % 2) ==0 ) ?  1: -1;
-  //
   int not_spin = (spin==1) ? -1 : 1;
   col=Eigen::VectorXcd::Zero(NumSpinUp);
   for (int site=0;site<system.x.size();site++){
@@ -511,33 +334,30 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int start, int stop, int spin)
       col(mat.DownPos[site])=Phi(stop,site,system);
     }
     else if (spin==-1 && (system.x(site)==not_spin ||  system.x(site)==2)){
-      //      cerr<<"DOWN: "<<col.size()<<" "<<mat.UpPos[site]<<endl;
       col(mat.UpPos[site])=Phi(site,stop,system);
     }
   }
-  //  cerr<<"HERE"<<endl;
   if (spin==1){
     complex<double> ratio= mat.RowRatio(mat.UpPos[stop],col);
-    //    cerr<<"A"<<endl;
     //    complex<double> ratio_check=evaluateRatio_check(system,start,stop,spin);
-    //    cerr<<"B"<<endl;
-    ratio.real()*=countParity;
-    ratio.imag()*=countParity;
-    //    cerr<<"Ratios A are: "<<ratio<<" "<<ratio_check<<endl;
-
+    //    cerr<<"GRR: "<<ratio<<" "<<ratio_check<<endl;
+    ratio.real(ratio.real()*countParity);
+    ratio.imag(ratio.imag()*countParity);
+    //    ratio.real()*=countParity;
+    //    ratio.imag()*=countParity;
     return ratio; //_check;
   }
   else{
 
     complex<double> ratio= mat.ColRatio(mat.DownPos[stop],col);
-    //    cerr<<"AA"<<endl;
-
     //    complex<double> ratio_check=evaluateRatio_check(system,start,stop,spin);
-    //    cerr<<"BB"<<endl;
-    ratio.real()*=countParity;
-    ratio.imag()*=countParity;
-
+    //    cerr<<"GRR: "<<ratio<<" "<<ratio_check<<endl;
+    ratio.real(ratio.real()*countParity);
+    ratio.imag(ratio.imag()*countParity);
+    //    ratio.real()*=countParity;
+    //    ratio.imag()*=countParity;
     //    cerr<<"Ratios B are: "<<ratio<<" "<<ratio_check<<endl;
+
     return ratio;// _check;
   }
 }
@@ -546,11 +366,6 @@ complex<double>
 RVBpPsiClass::evaluateRatio_check(SystemClass &system, int site, int end_site,
 				     int spin)
 {
-  //  cerr<<"updating "<<endl;
-  //  UpdateDets(system,site,end_site,spin);
-  //  cerr<<"checking"<<endl;
-  //FillDet_check(system,mat);
-  //  assert(1==2);
 
   SmartEigen mat_check;
   mat_check.Init(mat.M.rows(),mat.UpPos.size());
@@ -573,8 +388,6 @@ complex<double>
 RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 {
 
-  
-  assert(1==2);
   int maxSwap=max(swap1,swap2);
   int minSwap=min(swap1,swap2);
   int mySign=1;
@@ -585,127 +398,54 @@ RVBpPsiClass::evaluateRatio(SystemClass &system,int swap1, int swap2)
 
   //  mat.SaveInverse();
   ///let's define spin up as swap1
-  if (system.x(swap1)!=0){
+  if (system.x(swap1)!=1){
     swap(swap1,swap2);
   }
 
   //evaluate the new spin up column
-  newCols.resize(1);
-  newRows.resize(1);
-  //  newCols[0].resize(u.size());
-  //  newRows[0].resize(u.size());
-  newCols[0].resize(NumSpinUp);
-  newRows[0].resize(NumSpinUp);
-  
+  newRowsp.resize(1,NumSpinUp);
+  newColsp.resize(NumSpinUp,1);
 
   colIndices.resize(1);
-  colIndices[0]=mat.DetPos[swap1];
-
-
+  colIndices[0]=mat.UpPos[swap1];
   rowIndices.resize(1);
-  rowIndices[0]=mat.DetPos[swap2];
+  rowIndices[0]=mat.DownPos[swap2];
 
   //swap1 has been set to be the spin up value
   //loop over the spin down particles
   for (int j=0;j<system.x.size();j++){
-    if (system.x(j)==1){
-      //      u(mat.DetPos(j))=Phi(swap1,j,system);
-      newCols[0](mat.DetPos[j])=Phi(swap1,j,system);
+    if ((system.x(j)==-1) || ((system.x(j)==2))){  
+      newColsp(mat.DownPos[j],0)=Phi(swap1,j,system);
     }
-
-  //swap2 has been set to be the spin down value
-  //loops over the spin up particles
-  //  for (int i=0;i<system.x.size();i++)
-    else if (system.x(j)==0){
-      //      up(mat.DetPos(i))=Phi(i,swap2,system);
-      newRows[0](mat.DetPos[j])=Phi(j,swap2,system);
+    //swap2 has been set to be the spin down value
+    //loops over the spin up particles
+    if ((system.x(j)==1) || (system.x(j)==2)){
+      newRowsp(0,mat.UpPos[j])=Phi(j,swap2,system);
     }
   }
 
-  complex<double> test_ratio=mat.Ratio_ncol_nrowp(colIndices,rowIndices,newCols,newRows);
+  complex<double> test_ratio=mat.Ratio_ncol_nrowp(colIndices,rowIndices,newColsp,newRowsp);
+
+  int countParity=0;
+  int myMin=min(swap1,swap2);
+  int myMax=max(swap1,swap2);
+  for (int i=myMin+1;i<myMax;i++){
+    //    if ( (mat.UpPos[i]!=-1)  || (mat.DownPos[i]!=-1))//HACK!
+    if ( (mat.UpPos[i]!=-1) )
+      countParity++;
+    if (mat.DownPos[i]!=-1)
+      countParity++;
+  }
+  test_ratio*= (( (countParity % 2)==0)  ? 1 :-1);
+
   //  complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
-//    complex<double> diff=test_ratio-check_ratio;
-//    cerr<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
-      //HACK!      assert((diff*conj(diff)).real()<1e-10);
-  //  cerr<<"test ratio is "<<test_ratio<<" "<<endl; //evaluateRatio_check(system,swap1,swap2)<<endl;
-
+  //  complex<double> diff=test_ratio-check_ratio;
+  //  cerr<<"CHECKING: "<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
+  //  assert(fabs(diff)<1e-4);
   rebuild=false;
-  //  cerr<<"CURRENT RATIO IS "<<test_ratio<<endl;
-  test_ratio.real()=-1*test_ratio.real(); //*mySign;
-  test_ratio.imag()=-1*test_ratio.imag(); //*mySign;
+  //  cerr<<"The ratio is "<<test_ratio<<endl;
+  
   return test_ratio;
-  //return check_ratio;
-}
-
-double 
-RVBpPsiClass::Sign(SystemClass &system)
-{
-  assert(1==2);
-    Array<int,1> detPos(mat.DetPos.size());
-    for (int i=0;i<mat.DetPos.size();i++)
-      if (system.x(i)==0)
-	detPos(i)=mat.DetPos[i];
-      else 
-	detPos(i)=mat.DetPos[i]+system.x.size()/2;
-    int numSwap=0;
-    for (int i=0;i<detPos.size();i++){
-      while (detPos(i)!=i){
-	numSwap++;
-	int temp=detPos(i);
-	swap(detPos(i),detPos(temp));
-      }
-    }
-    if (numSwap %2==0)
-      return 1;
-    else 
-      return -1;
-}
-
-//assumes swap1 and swap2 are of different spin
-complex<double> 
-RVBpPsiClass::evaluateRatio_energy(SystemClass &system,int swap1, int swap2)
-{
-  assert(1==2);
-  //  cerr<<"Evaluate ratio energy"<<endl;
-  //  mat.SaveInverse();
-  ///let's define spin up as swap1
-  if (system.x(swap1)!=0){
-    swap(swap1,swap2);
-  }
-
-  //evaluate the new spin up column
-  newCols.resize(1);
-  newRows.resize(1);
-  newCols[0].resize(u.size());
-  newRows[0].resize(u.size());
-  colIndices.resize(1);
-  colIndices[0]=mat.DetPos[swap1];
-  rowIndices.resize(1);
-  rowIndices[0]=mat.DetPos[swap2];
-  //loop over the spin down particles
-  for (int j=0;j<system.x.size();j++){
-    if (system.x(j)==1){
-      //      u(mat.DetPos(j))=Phi(swap1,j,system);
-      newCols[0](mat.DetPos[j])=Phi(swap1,j,system);
-    }
-
-  //swap2 has been set to be the spin down value
-  //loops over the spin up particles
-  //  for (int i=0;i<system.x.size();i++)
-    else if (system.x(j)==0){
-      //      up(mat.DetPos(i))=Phi(i,swap2,system);
-      newRows[0](mat.DetPos[j])=Phi(j,swap2,system);
-    }
-  }
-  complex<double> test_ratio=mat.Ratio_ncol_nrowp(colIndices,rowIndices,newCols,newRows);
-  //    complex<double> check_ratio = evaluateRatio_check(system,swap1,swap2);
-  //    complex<double> diff=test_ratio-check_ratio;
-  //    cerr<<diff<<" "<<check_ratio<<" "<<test_ratio<<endl;
-    //  assert((diff*conj(diff)).real()<1e-10);
-  //  cerr<<"test ratio is "<<test_ratio<<" "<<endl; //evaluateRatio_check(system,swap1,swap2)<<endl;
-
-  rebuild=false;
-  return -test_ratio;
 }
 
 
@@ -717,38 +457,53 @@ RVBpPsiClass::FillDet(SystemClass &system,SmartEigen &myMat)
   //  for (int i=0;i<system.x.size();i++){
   //    cerr<<system.x(i)<<endl;
   //  }
+  for (int i=0;i<myMat.UpPos.size();i++){
+    myMat.UpPos[i]=-1;
+    myMat.DownPos[i]=-1;
+  }
   int upDet=-1;
   int downDet=-1;
   for (int i=0;i<system.x.size();i++){
-    if ( (system.x(i)==1) || (system.x(i)==2) ){
+    if ( (system.x(i)==1) || (system.x(i)==2) ){ //HACK!
       upDet++;
       downDet=-1;
       for (int j=0;j<system.x.size();j++){
-	if ((system.x(j)==-1) || (system.x(j)==2) ){
+	if ((system.x(j)==-1) || (system.x(j)==2) ){ //HACK!
 	  downDet++;
 	  //	  cerr<<"GRR GRR"<<upDet<<" "<<downDet<<endl;
+	  //	  cerr<<"The phi is "<<i<<" "<<j<<" "<<Phi(i,j,system)<<endl;
 	  myMat.M(upDet,downDet)=Phi(i,j,system);
 	  myMat.UpPos[i]=upDet;
 	  myMat.DownPos[j]=downDet;
+	  //	  myMat.DetPos[i]=upDet;
+	  //	  myMat.DetPos[j]=downDet;
 	}
       }
     }
   }
-
-//   cerr<<"In evaluate ratio "<<endl;
-//   for (int i=0;i<mat.UpPos.size();i++){
-//     cerr<<i<<" "<<mat.UpPos[i]<<endl;
-//   }
-//   cerr<<endl;
-//   for (int i=0;i<mat.DownPos.size();i++){
-//     cerr<<i<<" "<<mat.DownPos[i]<<endl;
-//   }
-
-//   cerr<<"Done FILLING NOW"<<endl;
-
-  //  cerr<<"CHECKING NOW"<<endl;
-  //  FillDet_check(system,myMat);
-  //  cerr<<"done CHECKING NOW"<<endl;
+  ///  cerr<<"WRITING ME "<<endl;
+  //  for (int i=0;i<myMat.M.rows();i++){
+  //    for (int j=0;j<myMat.M.cols();j++){
+  //      cerr<<myMat.M(i,j)<<" ";
+  //    }
+  //    cerr<<endl;
+  //  }
+  //  cerr<<"DONE WRITING ME "<<endl;
 }
 
+complex<double> 
+RVBpPsiClass::evaluateRatio_check(SystemClass &system, int swap1, int swap2)
+{
+
+  SmartEigen mat_check;
+  mat_check.Init(mat.M.rows());
+  system.Swap(swap1,swap2);
+  FillDet(system,mat_check);
+  complex<double> pre=mat_check.Det();
+  system.Swap(swap1,swap2);
+  FillDet(system,mat_check);
+  complex<double> post=mat_check.Det();
+  //  cerr<<"Check ratio: "<<post<<" "<<pre<<" "<<post/pre<<endl;
+  return post/pre;
+}
 

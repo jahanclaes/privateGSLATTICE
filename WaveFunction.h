@@ -26,6 +26,7 @@ public:
 		Array<complex<double>,1>  &derivs,int start, int stop);
 
   virtual void Copy(WaveFunctionClass* wf);
+  virtual WaveFunctionClass* clone();
 
   virtual complex<double> logevaluate(SystemClass &system,int &sign)=0;
   virtual complex<double> evaluate(SystemClass &system)=0;
@@ -42,6 +43,9 @@ public:
 
 
   virtual void SetParams(double delta3,SystemClass &system);
+  
+  virtual void MakeProductState(vector<int> &myState);
+  virtual void MakeUniformState();
 };
 
 #endif

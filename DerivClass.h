@@ -141,6 +141,11 @@ public:
   void Add(double &val_El, 
 	   Array<complex<double>,1> &derivs)
   {
+
+    //    cerr<<"My derivs are "<<endl;
+    //    for (int i=0;i<derivs.size();i++){
+    //      cerr<<derivs(i)<<endl;
+    //    }
     NumTimes=NumTimes+1;
     E_avgp+=val_El;
     E_avg2p+=val_El*val_El;
@@ -163,7 +168,7 @@ public:
       double myDeriv=0;
       for (int i=0;i<S.cols();i++){
         myDeriv=myDeriv+(S_inverse(i,param)*
-                         2.0 *(El_times_Psi_alpha_over_Psip[i].real()/NumTimes -
+                         (El_times_Psi_alpha_over_Psip[i].real()/NumTimes -
 			       (Psi_alpha_over_Psip[i].real()/NumTimes)*
                                (E_avgp.real()/NumTimes)));
       }

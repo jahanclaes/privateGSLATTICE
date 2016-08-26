@@ -227,7 +227,63 @@ void SmartEigen::Init(int size,int size2)
 /*     ///    CheckInverse(); */
   }
 
+  void SmartEigen::InverseUpdate(vector<int> &colIndices, vector<int> &rowIndices, 
+				   Eigen::MatrixXcd &newCols,
+				   Eigen::MatrixXcd &newRows)
+  {
+    int size=M.rows();
+    int n=colIndices.size();
+     if (n==0) 
+       assert(1==2);
 
+     U_r1c1=Eigen::MatrixXcd::Zero(2*n,size);
+     V_r1c1=Eigen::MatrixXcd::Zero(size,2*n);
+
+     for (int i=0;i<n;i++){ 
+       V_r1c1.col(2*i+1)=newRows.row(i).transpose()-M.col(rowIndices[i]);
+       V_r1c1.col(2*i)(colIndices[i])=1.0;
+       U_r1c1.row(2*i)=newCols.col(i).transpose()-M.row(colIndices[i]);
+       U_r1c1.row(2*i+1)(rowIndices[i])=1.0;
+     }
+     Eigen::MatrixXcd MInverseV=MInverse*V_r1c1;
+     MInverseU=U_r1c1*MInverse;
+     Det_UV=MInverseU*V_r1c1;
+     Det_UV=Det_UV+Eigen::MatrixXcd::Identity(Det_UV.rows(),Det_UV.cols());
+     Eigen::MatrixXcd Det_UVp=Det_UV.inverse();
+
+     //     MInverse=MInverse-MInverse*V_r1c1*Det_UVp*MInverseU;
+     MatrixXcd VU=(MInverseV*Det_UVp)*MInverseU;
+     MInverse=MInverse-VU;
+     for (int i=0;i<colIndices.size();i++)
+       M.row(colIndices[i])=newCols.col(i).transpose();
+
+     for (int i=0;i<rowIndices.size();i++)
+       M.col(rowIndices[i])=newRows.row(i).transpose();
+  }
+
+
+complex<double> SmartEigen::Ratio_ncol_nrowp(vector<int> &colIndices, 
+					     vector<int> &rowIndices,
+					     Eigen::MatrixXcd &newCols,
+					     Eigen::MatrixXcd &newRows)
+{
+  int size=M.rows();
+  int n=colIndices.size();
+  if (n==0)
+    return 1.0;
+
+  U_r1c1=Eigen::MatrixXcd::Zero(2*n,size);
+  V_r1c1=Eigen::MatrixXcd::Zero(size,2*n);
+  for (int i=0;i<n;i++){
+    V_r1c1.col(2*i+1)=newRows.row(i).transpose()-M.col(rowIndices[i]);
+    V_r1c1.col(2*i)(colIndices[i])=1.0;
+    U_r1c1.row(2*i)=newCols.col(i).transpose()-M.row(colIndices[i]);
+    U_r1c1.row(2*i+1)(rowIndices[i])=1.0;
+  }
+  Det_UV.noalias()=U_r1c1*MInverse*V_r1c1;
+  Det_UV=Det_UV+Eigen::MatrixXcd::Identity(Det_UV.rows(),Det_UV.cols());
+  return Det_UV.determinant();
+}
 
 
 
@@ -237,6 +293,9 @@ void SmartEigen::Init(int size,int size2)
 			 vector<blitz::Array<complex<double> ,1> > &newCols,
 			 vector<blitz::Array<complex<double> ,1> > &newRows)
   {
+    assert(1==2);
+
+
 /*     //    cerr<<"DETPOS SIZE IS "<<DetPos.size()<<endl; */
 /*     //    blitz::Array<complex<double> ,2> &U(U_r1c1); */
 /*     //    blitz::Array<complex<double> ,2> &V(V_r1c1); */

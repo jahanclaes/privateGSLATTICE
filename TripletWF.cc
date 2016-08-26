@@ -17,11 +17,13 @@ void TripletWF::ReadPairingFunction()
       bin=PF.FindBin(i,j);
       assert(bin<PF.f0.size());
       assert(!infile.eof());
-      infile>>PF.f0[bin].real();
-      PF.f0[bin].real()=PF.f0[bin].real(); ///100.0;
+      double real; infile>>real;
+      PF.f0[bin].real(real);
+      //      PF.f0[bin].real()=PF.f0[bin].real(); ///100.0;
       assert(!infile.eof());
-      infile>>PF.f0[bin].imag();
-      PF.f0[bin].imag()=PF.f0[bin].imag(); ///100.0;
+      double imag; infile >> imag;
+      PF.f0[bin].imag(imag);
+      //      PF.f0[bin].imag()=PF.f0[bin].imag(); ///100.0;
     }
     cerr<<i<<" "<<j<<" "<<PF.f0[bin]<<" "<<bin<<endl;
   }
@@ -145,12 +147,12 @@ complex<double> TripletWF::Phi(int i,int j)
 
 void TripletWF::SetParam_real(int i,double param)
 {
-  PF.f0[i].real()=param;
+  PF.f0[i].real(param);
 }
 
 void TripletWF::SetParam_imag(int i,double param)
 {
-  PF.f0[i].imag()=param;
+  PF.f0[i].imag(param);
 }
 
 

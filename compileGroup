@@ -1,3 +1,3 @@
-mpicxx -cxx=icpc -DUSE_MPI -fopenmp -O4 -I/media/bkcgroup/CoolStuff/Install/include/ -L/media/bkcgroup/CoolStuff/Install/lib/ -pthread  -L/opt/local/lib/ -lsprng   ../*.cc ../cPEPS_Base_Class/*.cc  ../Communication/*.cc  -mkl -mkl=parallel -larpack
+mpicxx -Wno-deprecated-declarations -std=c++11 -DUSE_MPI -fopenmp -O4 -I/media/bkcgroup/Install/include/ -I/media/bkcgroup/Install/eigen-eigen-dc6cfdf9bcec/ -I/media/bkcgroup/Install/  -I/media/bkcgroup/Install/blitz-0.9/ -L/media/bkcgroup/Install/lib/ -pthread  -L/opt/local/lib/   ../*.cc ../cPEPS_Base_Class/*.cc  ../Communication/*.cc  -lblas  -llapack -lsprng 
 
 #blitz and spring -llapack

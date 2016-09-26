@@ -168,30 +168,9 @@ class VMCDriverClass
   }
 
 
-double MeasureStaggered(OptimizeBothClass &vmc)
-{
-  
-  vector<int> s(16);
-  int currSign=1;
-  for (int i=0;i<4;i++){
-    for (int j=0;j<4;j++){
-      s[4*i+j]=currSign;
-      currSign*=-1;
-    }
-    currSign*=-1;
-  }
-  double sl_local=0.0;
-  for (int i=0;i<vmc.System.x.size();i++)
-    sl_local+=s[(i % 16)]*(vmc.System.x(i)==0 ? 1: -1);
-  return sl_local*sl_local; 
-}
-
-
 
   void RunFiniteT(InputClass &input)
   {
-    //    std::map<string,string> input;
-    //    ReadInput(infile,input);
     CommunicatorClass myComm; 
     cerr<<"My processor is "<<myComm.MyProc()<<endl; 
     RandomClass Random(myComm); 
@@ -202,16 +181,13 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 
     
     list<pair<string,SharedWaveFunctionDataClass* > > wf_list;
-    //    wf_list.push_back(make_pair("RVB",new PairingFunctionAllBin()));
     wf_list.push_back(make_pair("CPS",new PairingFunctionMany()));
     VMC_combine.Init(wf_list,input);
 
-    //    VMC_combine.opt_equilSweeps=atoi(input["EquilSweeps"].c_str());
-    //    VMC_combine.opt_SampleSweeps=atoi(input["SampleSweeps"].c_str()); 
-    VMC_combine.opt_equilSweeps=input.toInteger(input.GetVariable("EquilSweeps"));  //atoi(input["EquilSweeps"].c_str());
-    VMC_combine.opt_SampleSweeps=input.toInteger(input.GetVariable("SampleSweeps")); //atoi(input["SampleSweeps"].c_str()); 
+    VMC_combine.opt_equilSweeps=input.toInteger(input.GetVariable("EquilSweeps"));
+    VMC_combine.opt_SampleSweeps=input.toInteger(input.GetVariable("SampleSweeps"));
 
-    int NumWalkers=input.toInteger(input.GetVariable("NumWalkers")); // atoi(input["NumWalkers"].c_str()); 
+    int NumWalkers=input.toInteger(input.GetVariable("NumWalkers")); 
     cerr<<"Number of Walkers: "<<NumWalkers<<endl;
     cerr<<"Equil Sweeps: "<<VMC_combine.opt_equilSweeps<<endl;
     cerr<<"Sample Sweeps: "<<VMC_combine.opt_SampleSweeps<<endl;
@@ -226,7 +202,6 @@ double MeasureStaggered(OptimizeBothClass &vmc)
        VMC_vec[i]->opt_equilSweeps=VMC_combine.opt_equilSweeps;
        VMC_vec[i]->opt_SampleSweeps=VMC_combine.opt_SampleSweeps;
     }
-    //    VMC_combine.GetParams("params.dat"); 
      VMC_combine.EvaluateAll();
 #pragma omp parallel for 
      for (int i=0;i<NumWalkers;i++){ 
@@ -289,7 +264,6 @@ double MeasureStaggered(OptimizeBothClass &vmc)
      //BUG: Slow 
      for (int i=0;i<NumWalkers;i++)  {
        VMC_vec[i]->computeObservables=true;
-       cout <<"computingObservables"<<endl;
        VMC_vec[i]->VMC(true,myFiles[i]);
        VMC_vec[i]->computeObservables=false;
      }
@@ -300,21 +274,39 @@ double MeasureStaggered(OptimizeBothClass &vmc)
        cerr<<VMC_vec[0]->System.x(i)<<" ";
      cerr<<endl;
        //       cerr<<"The "<<i<<" particle is at "<<VMC_vec[0]->System.x(i)<<endl;
-     cerr<<"My staggered magnetization is "<<MeasureStaggered(*VMC_vec[0])<<endl;
      CPSClass *cps =((CPSClass*)(*(VMC_vec[0]->wf_list.begin())));
      for (int i=0;i<cps->PF.f0.size();i++){
-       int theBin=cps->PF.corr2Bin(VMC_vec[0]->System.x,i);
-       for (int j=0;j<cps->PF.f0[i].size();j++){
-	 if (theBin==j || i>=4)
-	   cps->PF.f0[i][j]=1+0.001*i+0.002*j;
-	 else
-       	   cps->PF.f0[i][j]=0.001+0.001*i+0.002*j;
-       }
+   	    if (i>=cps->PF.NumCorrsCover){
+            for (int j=0;j<cps->PF.f0[i].size();j++){
+	            cps->PF.f0[i][j]=1.;
+            }
+        }
+	    else if (cps->PF.f0[i].size()==2){
+            int theBin=cps->PF.corr2Bin(VMC_vec[0]->System.x,i);
+            if (theBin==0){
+                cps->PF.f0[i][0]=1;
+                cps->PF.f0[i][1]=1;
+            }
+            else if (theBin==1){
+                cps->PF.f0[i][0]=1;
+                cps->PF.f0[i][1]=-1;
+            }
+            else
+                assert (1==2);
+        }
+        else
+            assert (1==2);
+            
      }
      for (int i=0;i<cps->PF.f0.size();i++){
        for (int j=0;j<cps->PF.f0[i].size();j++){
 	 cerr<<i<<" "<<j<<" "<<cps->PF.f0[i][j]<<endl;
        }
+     }
+     if (myComm.MyProc()==0){
+        for (int i=0;i<VMC_vec[0]->System.x.size();i++)
+            cout << VMC_vec[0]->System.x(i)<<" ";
+        cout << endl;
      }
      
      VMC_vec[0]->BroadcastParams(myComm); 
@@ -326,10 +318,9 @@ double MeasureStaggered(OptimizeBothClass &vmc)
        VMC_vec[i]->VMC(true); 
      }
      //I don't think VMC_Combine needs to evaluate all but I'm a bit worried?
-     }
-     
-     energyFile.close(); 
-     exit(1);
+   }
+   energyFile.close(); 
+   exit(1);
 
 
   }

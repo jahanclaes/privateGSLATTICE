@@ -408,7 +408,28 @@ void BroadcastParams(CommunicatorClass &myComm)
 /*     } */
 /*   } */
 
+  int toInt(){
+    int result=0;
+    for (int i=0;i<System.x.size();i++){
+        if( System.x(i)==1){
+            result += (1 << (System.x.size()-i-1));
+        }
+    }
+    return result;
+    }
 
+  void toSystem(int sysInt){
+    complex<double> result=0;
+    int current = sysInt;
+    for (int i=0;i<System.x.size();i++){
+        if (current >=(1 << (System.x.size()-i-1))){
+            System.x(i)=1;
+            current-=(1 << (System.x.size()-i-1));
+        }
+        else
+            System.x(i)=0;
+    }
+  }
   
 
   void Optimize()

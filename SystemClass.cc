@@ -560,3 +560,10 @@ void SystemClass::Swap(int i,int j)
   swap(x(i),x(j));
 
 }
+
+void SystemClass::Flip(int i){
+    if (x(i)==0)
+        x(i)=1;
+    else
+        x(i)=0;
+}

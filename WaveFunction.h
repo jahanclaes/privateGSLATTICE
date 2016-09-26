@@ -29,6 +29,7 @@ public:
   virtual complex<double> logevaluate(SystemClass &system,int &sign)=0;
   virtual complex<double> evaluate(SystemClass &system)=0;
   virtual complex<double> evaluateRatio(SystemClass &system,int swap1, int swap2)=0;
+  virtual complex<double> evaluateRatioFlip(SystemClass &system,int swap1)=0;
   virtual complex<double> evaluateRatio_check(SystemClass &system, int swap1, int swap2)=0;
   virtual void Swap(int i, int j)=0;
   virtual void UpdateDets(SystemClass &system,int swap1, int swap2)=0;

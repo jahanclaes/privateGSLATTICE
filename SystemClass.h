@@ -31,6 +31,7 @@ class SystemClass
   void GetRhombusB(int i,TinyVector<int,4> &locs);
   bool notNeighbor(int i,int neighbor);
   void Swap(int i, int j);
+  void Flip(int i);
   void RotateHoneycomb(TinyVector<int,6> &honeycomb,
 		       TinyVector<int,6> &honeycomb_backup,
 		       int amt);

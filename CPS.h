@@ -70,6 +70,7 @@ public:
   
   complex<double> evaluate(SystemClass &system);
   complex<double> evaluateRatio(SystemClass &system,int swap1, int swap2);
+  complex<double> evaluateRatioFlip(SystemClass &system,int swap1);
   complex<double> evaluateRatio_check(SystemClass &system, int swap1, int swap2);
   void UpdateDets(SystemClass &system,int swap1, int swap2)
   {

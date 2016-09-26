@@ -68,3 +68,8 @@ WaveFunctionClass::SetParams(double delta3,SystemClass &system)
 {
 
 }
+complex<double> 
+WaveFunctionClass::evaluateRatioFlip(SystemClass &system, int swap1)
+{
+
+}

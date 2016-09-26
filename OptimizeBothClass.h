@@ -17,7 +17,6 @@ using namespace std;
 #include "TripletWF.h"
 #include "DerivClass.h"
 #include "ProjGutz.h"
-#include "RVB_fast.h"
 #include "SharedWaveFunctionData.h"
 #include "input.h"
 #include "Timer.h"
@@ -136,12 +135,6 @@ public:
 	t_CPS->Init(System);
 	wf_list.push_back(t_CPS);
       }
-      else if (wf_type_string=="RVB"){
-	cerr<<"ADDING RVB"<<endl;
-	RVBFastPsiClass *RVB=new RVBFastPsiClass(*((PairingFunctionAllBin*)((*iter).second)));
-	RVB->Init(System,myInput);
-	wf_list.push_back(RVB); 
-      }
       
     }
     
@@ -226,38 +219,59 @@ public:
     for (int step=0;step<System.x.size();step++){ 
       int swap1=step;
       int swap2=Random.randInt(System.x.size());
-      while (System.x(swap1)==System.x(swap2))
-	swap2=Random.randInt(System.x.size());
-      System.Swap(swap1,swap2);
-      for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
-	(*wf_iter)->Swap(swap1,swap2);
-      complex<double> quick_ratio=1.0;
-      for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
-	complex<double> myRatioIs=(*wf_iter)->evaluateRatio(System,swap1,swap2);
-	quick_ratio*=myRatioIs;
+      int reset=0;
+      while (System.x(swap1)==System.x(swap2) and reset<50){
+	    swap2=Random.randInt(System.x.size());
+        reset++;
       }
-      double ranNum=Random.ranf();
-      
-      numAttempted++;
-      if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ //HACK FOR HONEYCOMB
-	numAccepted++;
-	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
-	  (*wf_iter)->UpdateDets(System,swap1,swap2);
-	
-	//accept
-	
-      }
-      else {
-	System.Swap(swap1,swap2);
-	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
-	  (*wf_iter)->Swap(swap1,swap2);
-	
-	for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
-	  (*wf_iter)->Reject(System,swap1,swap2) ;
-	
+      if (reset!=50){
+          System.Swap(swap1,swap2);
+          for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+    	    (*wf_iter)->Swap(swap1,swap2);
+          complex<double> quick_ratio=1.0;
+          for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+    	    complex<double> myRatioIs=(*wf_iter)->evaluateRatio(System,swap1,swap2);
+    	    quick_ratio*=myRatioIs;
+          }
+          double ranNum=Random.ranf();
+          
+          numAttempted++;
+          if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){ //HACK FOR HONEYCOMB
+    	    numAccepted++;
+    	    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+    	        (*wf_iter)->UpdateDets(System,swap1,swap2);
+          }
+          else {
+    	    System.Swap(swap1,swap2);
+    	    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+    	    (*wf_iter)->Swap(swap1,swap2);
+    	    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++)
+    	        (*wf_iter)->Reject(System,swap1,swap2) ;
+          }
       }
     }
-    //    cerr<<"Accepted: "<<(double)numAccepted/(double)numAttempted<<endl;
+    for (int step=0;step<System.x.size();step++){
+        int flipSpin = Random.randInt(2);
+        if (flipSpin==1){
+            System.Flip(step);
+            complex<double> quick_ratio=1.;
+            for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+                complex<double> myRatioIs=(*wf_iter)->evaluateRatioFlip(System,step);
+                quick_ratio*=myRatioIs;
+            }
+            double ranNum=Random.ranf();
+            numAttempted++;
+            if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){
+                numAccepted++;
+            }
+            else{
+                System.Flip(step);
+            }
+        }
+    }
+
+
+
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
       if ((*wf_iter)->NeedFrequentReset){
 	complex<double> ans=(*wf_iter)->evaluate(System);
@@ -550,9 +564,10 @@ void BroadcastParams(CommunicatorClass &myComm)
     //    cerr<<"Started VMC"<<endl;
     double numAttempt=0;
     double numAccept=0;
+    cerr << "Starting VMC "<<endl;
     if (equilibrate){
       for (int sweeps=0;sweeps<VMC_equilSweeps;sweeps++){
-	Sweep();
+	    Sweep();
       }
     }
     vector<double> energy_terms(Ham.size(),0);

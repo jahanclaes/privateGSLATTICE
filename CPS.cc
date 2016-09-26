@@ -119,6 +119,28 @@ CPSClass::evaluateRatio(SystemClass &system, int swap1, int swap2)
 }
 
 
+// Called AFTER spin flip
+// No side effects
+complex<double>
+CPSClass::evaluateRatioFlip(SystemClass &system, int swap1)
+{
+  double ratio=1.0;
+  set<int> correlatorsChanged;
+  correlatorsChanged.insert(PF.correlatorsForSite[swap1].begin(),PF.correlatorsForSite[swap1].end());
+  for (set<int>::iterator corrIter = correlatorsChanged.begin();corrIter!=correlatorsChanged.end();corrIter++){
+    int corr=*corrIter;
+    double newVal=PF.corr2Val(system.x,corr).real();
+    system.Flip(swap1);
+    double oldVal=PF.corr2Val(system.x,corr).real();
+    system.Flip(swap1);
+    ratio*=(newVal/oldVal);
+  }
+  return ratio;
+}
+
+
+
+
 complex<double> 
 CPSClass::logevaluate(SystemClass &system,int &sign)
 {

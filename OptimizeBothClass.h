@@ -537,14 +537,16 @@ void BroadcastParams(CommunicatorClass &myComm)
     vector<double> energy_terms(Ham.size(),0);
     double energy=0.0;
     int NumCounts=0;
+    double observable=0.;
     for (int sweeps=0;sweeps<VMC_SampleSweeps;sweeps++){
       numAccept+=Sweep();
+      if ((outfile!=NULL) && computeObservables){
+        observable+=StaggeredMagnetization();
+      }
       numAttempt+=1;
       NumCounts++;
       int i=0;
       for (list<HamiltonianClass*>::iterator iter=Ham.begin();iter!=Ham.end();iter++){
-	//       	cerr<<"J1 J2: "<<(*iter)->term1<<" "<<(*iter)->term2<<endl;
-	//	(*iter)->term1=0; (*iter)->term2=0;
 	double te=(*iter)->Energy(System,wf_list);
 	energy_terms[i]+=te;
 	i++;
@@ -555,33 +557,39 @@ void BroadcastParams(CommunicatorClass &myComm)
     }
     int NumParams=(*(wf_list.begin()))->NumParams;
 
-    //    cerr<<(*(wf_list.begin()))->NumParams<<endl;
-    //    Array<complex<double>,1> derivs(NumParams);
-    //    (*(wf_list.begin()))->AllDerivs(System,derivs,0,derivs.size());
-    //    (*(wf_list.begin()))->CheckDerivs(System,derivs,0,derivs.size());
-    //    cerr<<"THE OUTFILE IS "<<outfile<<endl;
     double oldEnergy=energy/(double)NumCounts;
     if ((1==1)) { 
-      if (outfile!=NULL){
-	(*outfile)<< (energy/(double)NumCounts) <<" "<<endl;
+      if (outfile!=NULL && (computeObservables==false)){
+	    (*outfile)<< (energy/(double)NumCounts) <<" "<<endl;
       }
-      //      cerr<<"VMCENERGY: "<<energy/(double)NumCounts<<" "<<endl;
-      //      cerr<<"J1 J2: "<<((*(Ham.begin()))->term1)/(double)NumCounts<<" "<<((*(Ham.begin()))->term2)/(double)NumCounts<<endl;
+      if (outfile!=NULL && computeObservables){
+	    (*outfile)<< (observable/(double)NumCounts) <<" "<<endl;
+        (*outfile).flush();
+      }
       (*(Ham.begin()))->term1=0; (*(Ham.begin()))->term2=0;
 
-      //      cerr<<"ENERGY TERMS: ";
       for (int i=0;i<energy_terms.size();i++)
-	//	cerr<<energy_terms[i]/(double)NumCounts<<" ";
-	//      cerr<<endl;
-
-	//      cerr<<"ACCEPT: "<<numAccept/numAttempt<<endl;
       energy=0.0;
       NumCounts=0;
     }
-    //    cerr<<"Ended VMC"<<endl;
     return oldEnergy;
   }
   
+double StaggeredMagnetization(){
+    vector<int> s(System.x.size());
+    s[0] = 1;
+    for (int i=0; i<System.neighbors.size(); i++){
+        for (int j=0; j<System.neighbors[i].size(); j++){
+            s[System.neighbors[i][j]] = (-1)*s[i];
+        }
+    }
+    double sl_local = 0.0;
+    for (int i=0;i<System.x.size();i++){
+        sl_local+=s[i]*(System.x(i)==0 ? 1: -1);
+    }
+    return sl_local*sl_local;
+ }
+
 
  
 
@@ -591,30 +599,6 @@ void BroadcastParams(CommunicatorClass &myComm)
 
 };
 
-//Old CPS initializiation
-/*     InitDeriv(); */
-/*     OptimizeCalled=0; */
-/*     H.Init(System); */
-/*     Hp.Init(System,J2); */
-/*     if (1==2){ */
-/*      for (int i=0;i<System.x.size();i++)  */
-/*        for (int j=i+1;j<System.x.size();j++){  */
-/*  	set<int> theSet;  */
-/*  	std::set_intersection( Psi_CSP.PF.correlatorsForSite[i].begin(),  Psi_CSP.PF.correlatorsForSite[i].end(),  */
-/*  			       Psi_CSP.PF.correlatorsForSite[j].begin(),  Psi_CSP.PF.correlatorsForSite[j].end(),   */
-/*  			       std::inserter( theSet, theSet.begin() ) );  */
-/*  	int theBin=Psi.PairingFunction.FindBin(i,j);  */
-/*  	int CSP_bin=(*(theSet.begin()));  */
-/*  	if (Psi.PairingFunction.f0[theBin].real()==0 || Psi.PairingFunction_diff.f0[theBin].real()==0)  */
-/*  	  assert(1==2);  */
-/*  	Psi_CSP.PF.f0[CSP_bin][0]=Psi.PairingFunction.f0[theBin];  */
-/*  	Psi_CSP.PF.f0[CSP_bin][3]=Psi.PairingFunction.f0[theBin];  */
-/*  	Psi_CSP.PF.f0[CSP_bin][1]=Psi.PairingFunction_diff.f0[theBin];  */
-/*  	Psi_CSP.PF.f0[CSP_bin][2]=Psi.PairingFunction_diff.f0[theBin];  */
-/*        }  */
-/*      for (int i=0;i<Psi_CSP.PF.f0.size();i++)  */
-/*        if (Psi_CSP.PF.f0[i][0].real()==0 || Psi_CSP.PF.f0[i][1].real()==0)  */
-/*  	assert(1==2);  */
 /*     } */
 
 #endif

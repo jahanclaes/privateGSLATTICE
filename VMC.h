@@ -289,6 +289,7 @@ double MeasureStaggered(OptimizeBothClass &vmc)
      //BUG: Slow 
      for (int i=0;i<NumWalkers;i++)  {
        VMC_vec[i]->computeObservables=true;
+       cout <<"computingObservables"<<endl;
        VMC_vec[i]->VMC(true,myFiles[i]);
        VMC_vec[i]->computeObservables=false;
      }
@@ -309,26 +310,6 @@ double MeasureStaggered(OptimizeBothClass &vmc)
 	 else
        	   cps->PF.f0[i][j]=0.001+0.001*i+0.002*j;
        }
-       //       if (cps->PF.f0[i].size()==2){
-       //	 int spin=VMC_vec[0]->System.x(i);
-	 //	 cps->PF.f0[i][1]=1*(spin)+0.001*(i+1)+0.002*0;
-	 //	 cps->PF.f0[i][0]= -1*(spin-1)+0.001*(i+1)+0.002*1;
-/* 	 if (spin==0){ */
-/* 	   cps->PF.f0[i][1]=1+0.001*(i+1)+0.002*0; */
-/* 	   cps->PF.f0[i][0]=1+0.001*(i+1)+0.002*1; */
-/* 	 } */
-/* 	 else { */
-/* 	   cps->PF.f0[i][1]=1+0.001*(i+1)+0.002*0; */
-/* 	   cps->PF.f0[i][0]=-1+0.001*(i+1)+0.002*1; */
-/* 	 } */
-//	 cps->PF.f0[i][1]= 1*(spin)+0.001*(i+1)+0.002*0+0.01;
-//	 cps->PF.f0[i][0]= -1*(spin-1)+0.001*(i+1)+0.002*1+0.01;
-//       }
-//       else {
-//	 for (int j=0;j<cps->PF.f0[i].size();j++){
-//	   cps->PF.f0[i][j]=1+0.001*i+0.002*j;
-//	 }
-//       }
      }
      for (int i=0;i<cps->PF.f0.size();i++){
        for (int j=0;j<cps->PF.f0[i].size();j++){

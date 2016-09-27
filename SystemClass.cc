@@ -63,6 +63,7 @@ void SystemClass::GenerateKList()
 {
    ifstream infile;
   infile.open("kPoints.txt");
+  assert(infile);
   dVec k;
   kList.clear();
   while (!infile.eof()){
@@ -88,6 +89,7 @@ void SystemClass::GenerateRList()
   cerr<<"reading r points"<<endl;
   ifstream infile;
   infile.open("rPoints.txt");
+  assert(infile);
   
   infile>>a1[0];
   infile>>a1[1];
@@ -148,6 +150,9 @@ void SystemClass::ReadNeighbors()
   
   ifstream infile;
   infile.open("neighbors.txt");
+  cerr << "File Open"<<endl;
+  assert(infile);
+  cerr << "Assert Passed"<<endl;
   int numNeighbors;
   //  infile>>numNeighbors;
   //    cerr<<"numNeighbors is "<<numNeighbors<<" "<<rList.size()<<endl;
@@ -158,8 +163,10 @@ void SystemClass::ReadNeighbors()
   int count=-1;
   while (!infile.eof()){
     infile>>latticeSite;
+    if (!infile.eof())
     infile>>numNeighbors;
     count++;
+    if (!infile.eof())
     neighbors[count].resize(numNeighbors);
     if (!infile.eof())
       for (int i=0;i<numNeighbors;i++)
@@ -561,9 +568,11 @@ void SystemClass::Swap(int i,int j)
 
 }
 
-void SystemClass::Flip(int i){
-    if (x(i)==0)
-        x(i)=1;
-    else
-        x(i)=0;
+void SystemClass::Flip(int i)
+{
+  if (x(i)==0)
+    x(i)=1;
+  else
+    x(i)=0;
 }
+

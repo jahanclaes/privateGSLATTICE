@@ -114,7 +114,6 @@ class PairingFunctionMany :public SharedWaveFunctionDataClass
 	//	NumParams++;
 	MaxSite=max(myCorrs[i][j],MaxSite);
 	//	binLoc[i][j]=ParamLoc.size();
-    cout<<"ReadCorrs "  << NumCorrelators<<" "<<NumCorrsCover<<endl;
 
 
       }

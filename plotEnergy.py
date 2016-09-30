@@ -17,13 +17,16 @@ StepSize = float(inputDict["StepSize"])
 energyFile = open("Energy.dat")
 energyList = []
 varianceList = []
+acceptanceRatioList = []
 for line in energyFile:
     pieces = line.split(" ")
-    energyList.append(float(pieces[1]))
+ #   energyList.append(float(pieces[1]))
+    energyList.append(float(pieces[3]))
     if -float(pieces[3])<5.:
-        varianceList.append(-float(pieces[3]))
+        varianceList.append(-float(pieces[4]))
     else:
         varianceList.append(5.)
+    acceptanceRatioList.append(float(pieces[5]))
 index= len(energyList)
 print index
 
@@ -48,16 +51,14 @@ plt.figure(num=None, figsize=(8, 6))
 #        plt.annotate('', xytext=(StepSize*rng3[i],energyList[rng3[i]]),xy=(StepSize*rng3[i+1],energyList[rng3[i+1]]),arrowprops=dict(color='g',ls='dotted',lw=lineweight,arrowstyle='-|>',connectionstyle='angle3,angleA=80,angleB=-10',shrinkA=10,shrinkB=5))
 #    else:
 #        plt.annotate('', xytext=(StepSize*rng3[i],energyList[rng3[i]]),xy=(StepSize*rng3[i+1],energyList[rng3[i+1]]),arrowprops=dict(color='g',ls='dotted',lw=lineweight,arrowstyle='-|>',connectionstyle='angle3,angleA=-10,angleB=100',shrinkA=10,shrinkB=5))
+plt.subplot(2,1,1)
 plt.plot([StepSize*i for i in rng1], [energyList[i] for i in rng1],lw=lineweight,label="Energy")
 plt.plot([StepSize*i for i in rng3], [energyList[i] for i in rng3], 'go',lw=lineweight,ms=markersize,label="Start of Markov step")
 plt.plot([StepSize*i for i in rng2], [energyList[i] for i in rng2], 'rs',lw=lineweight,ms=markersize,label="End of Markov step")
 plt.plot([StepSize*i for i in rng2], [average2 for i in rng2],'r--',lw=2,label="Average Energy" )
-#plt.plot([StepSize*i for i in rng3], [average3 for i in rng3], 'g--')
-legend=plt.legend()
-plt.setp(legend.get_texts(),fontsize=fontsize)
-plt.xlabel("Imaginary Time")
-plt.ylabel("Energy")
-plt.xlim([index/5*StepSize,index/5*StepSize+StepSize*numCycles*TimeStepsTaken])
-plt.ylim([-11,8])
-plt.savefig('../ImaginaryTimeEvolution.png', bbox_inches='tight')
+plt.subplot(2,1,2)
+plt.plot([StepSize*i for i in rng1], [varianceList[i] for i in rng1],lw=lineweight,label="Variance")
+plt.plot([StepSize*i for i in rng1], [acceptanceRatioList[i] for i in rng1],lw=lineweight,label="AcceptanceRatio")
+plt.ylim([-.5,3])
+plt.legend()
 plt.show()

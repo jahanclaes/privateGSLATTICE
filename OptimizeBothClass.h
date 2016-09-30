@@ -216,6 +216,7 @@ public:
 	complex<double> ans=(*wf_iter)->evaluate(System);
       }
     }
+    //random swaps
     for (int step=0;step<System.x.size();step++){ 
       int swap1=step;
       int swap2=Random.randInt(System.x.size());
@@ -250,6 +251,7 @@ public:
           }
       }
     }
+    // Random flips
     for (int step=0;step<System.x.size();step++){
         int flipSpin = Random.randInt(2);
         if (flipSpin==1){
@@ -269,17 +271,42 @@ public:
             }
         }
     }
-
-
+    // Random global flip
+    vector<int> flips;
+    flips.resize(System.x.size());
+    complex<double> quick_ratio = 1.;
+    numAttempted++;
+    for (int step=0;step<System.x.size();step++){
+        int flipSpin = Random.randInt(2);
+        if (flipSpin==1){
+            flips[step]=1;
+            System.Flip(step);
+            for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+                complex<double> myRatioIs=(*wf_iter)->evaluateRatioFlip(System,step);
+                quick_ratio*=myRatioIs;
+            }
+        }
+        else
+            flips[step]=0;
+    }
+    double ranNum=Random.ranf();
+    if ( (2*log(abs(quick_ratio.real())) >log(ranNum))){
+        numAccepted++;
+    }
+    else{
+        for (int step=0;step<System.x.size();step++){
+            if (flips[step]==1)
+                System.Flip(step);
+        }
+    }
 
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
       if ((*wf_iter)->NeedFrequentReset){
-	complex<double> ans=(*wf_iter)->evaluate(System);
+	    complex<double> ans=(*wf_iter)->evaluate(System);
       }
     }
 
     return (double)numAccepted/(double)numAttempted;
-    //
   }
 
 
@@ -446,7 +473,7 @@ void BroadcastParams(CommunicatorClass &myComm)
   }
   
 
-  void Optimize()
+  double Optimize()
   {
     int currStart=0;
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
@@ -461,6 +488,7 @@ void BroadcastParams(CommunicatorClass &myComm)
     
     VarDeriv.Clear();
     derivs=0;
+    double acceptanceRatio = 0.0;
     
     ///FIXME!
     
@@ -469,7 +497,7 @@ void BroadcastParams(CommunicatorClass &myComm)
     for (int sweeps=0;sweeps<opt_equilSweeps;sweeps++)
       Sweep();
     for (int sweeps=0;sweeps<opt_SampleSweeps;sweeps++){
-      Sweep();
+      acceptanceRatio+=Sweep();
       double te=0;
       for (list<HamiltonianClass*>::iterator iter=Ham.begin();iter!=Ham.end();iter++){
 	double tte=(*iter)->Energy(System,wf_list);
@@ -518,6 +546,7 @@ void BroadcastParams(CommunicatorClass &myComm)
     
     }
     ///DONE FIXME
+    return acceptanceRatio/opt_SampleSweeps;
 
 
 

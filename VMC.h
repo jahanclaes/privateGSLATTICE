@@ -226,29 +226,38 @@ class VMCDriverClass
      }
      ///INITIALIZATION UP TO HERE SHOULD BE SAME FOR FINITE TEMPERATURE!
      for (int markovSteps=0;markovSteps<max_markovSteps;markovSteps++){
+      complex<double> theEnergy=1000000;
+      complex<double> theVariance=0;
        //     int numSteps=10;
      for (int step=0;step<numSteps;step++){ 
        if (myComm.MyProc()==0)
 	 cerr<<"Step number: "<<step<<endl; 
+     double acceptanceRatio = 0.;
 #pragma omp parallel for 
        for (int i=0;i<NumWalkers;i++) { 
-	 VMC_vec[i]->Optimize(); 
+	       acceptanceRatio+=VMC_vec[i]->Optimize()/NumWalkers; 
        } 
        VMC_combine.Combine(VMC_vec);
        VMC_combine.VarDeriv.ParallelCombine(myComm); 
+       acceptanceRatio = myComm.Sum(acceptanceRatio)/myComm.NumProcs();
        if (myComm.MyProc()==0){ 
-	 VMC_combine.TakeStep(myComm); 
+	    VMC_combine.TakeStep(myComm); 
        } 
        VMC_combine.BroadcastParams(myComm); 
 
        if (myComm.MyProc()==0){
-	 string fileName="params.dat.";
-	 ostringstream ss;
-	 ss<<fileName<<(step+1);
-	 VMC_combine.SaveParams(ss.str()); 
-	 complex<double> theEnergy=VMC_combine.VarDeriv.ComputeEnergy();
-	 complex<double> theVariance=VMC_combine.VarDeriv.ComputeVariance();
-	 energyFile<<step<<" "<<theEnergy.real()<<" "<<theEnergy.imag()<<" "<<theVariance.real()<<" "<<theVariance.imag()<<endl;
+	    string fileName="params.dat.";
+	    ostringstream ss;
+	    ss<<fileName<<(step+1);
+	    VMC_combine.SaveParams(ss.str()); 
+        complex<double> newEnergy = VMC_combine.VarDeriv.ComputeEnergy();
+        complex<double> newVariance = VMC_combine.VarDeriv.ComputeVariance();
+        if (newEnergy.real()>theEnergy.real())
+            cout << markovSteps<<" "<<step << " " <<newVariance.real()<<endl;
+        energyFile << markovSteps<<" "<<step << " " <<theEnergy.real()<<" "<<newEnergy.real()<<" "<<newVariance.real()<<" "<<acceptanceRatio<<" "<<(newEnergy.real()>theEnergy.real())<<endl;
+	    theEnergy=newEnergy;
+        theVariance=newVariance;
+	    //energyFile<<step<<" "<<theEnergy.real()<<" "<<theEnergy.imag()<<" "<<theVariance.real()<<" "<<theVariance.imag()<<endl;
        }
        VMC_combine.VarDeriv.Clear(); 
        for (int i=0;i<NumWalkers;i++)  

@@ -252,8 +252,6 @@ class VMCDriverClass
 	    VMC_combine.SaveParams(ss.str()); 
         complex<double> newEnergy = VMC_combine.VarDeriv.ComputeEnergy();
         complex<double> newVariance = VMC_combine.VarDeriv.ComputeVariance();
-        if (newEnergy.real()>theEnergy.real())
-            cout << markovSteps<<" "<<step << " " <<newVariance.real()<<endl;
         energyFile << markovSteps<<" "<<step << " " <<theEnergy.real()<<" "<<newEnergy.real()<<" "<<newVariance.real()<<" "<<acceptanceRatio<<" "<<(newEnergy.real()>theEnergy.real())<<endl;
 	    theEnergy=newEnergy;
         theVariance=newVariance;

@@ -381,7 +381,16 @@ void BroadcastParams(CommunicatorClass &myComm)
  
  void TakeStep(CommunicatorClass &myComm)
  {
-   int currStart=0;
+    int currStart=0;
+    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+        WaveFunctionClass &Psi =**wf_iter;
+        for (int i=0;i<Psi.NumParams;i++){
+            ParamsOld(currStart+i).real()=Psi.GetParam_real(i);
+	        ParamsOld(currStart+i).imag()=Psi.GetParam_imag(i);
+        }
+        currStart=currStart+Psi.NumParams;
+    }
+    currStart=0;
    if (opt==TIMEEVOLUTION)
      VarDeriv.GetSInverse();
 
@@ -475,16 +484,7 @@ void BroadcastParams(CommunicatorClass &myComm)
 
   double Optimize()
   {
-    int currStart=0;
-    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
-      WaveFunctionClass &Psi =**wf_iter;
-      for (int i=0;i<Psi.NumParams;i++){
-	ParamsOld(currStart+i).real()=Psi.GetParam_real(i);
-	ParamsOld(currStart+i).imag()=Psi.GetParam_imag(i);
-      }
-      currStart=currStart+Psi.NumParams;
-    }
-        
+       
     
     VarDeriv.Clear();
     derivs=0;

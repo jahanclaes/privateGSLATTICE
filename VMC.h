@@ -235,9 +235,9 @@ class VMCDriverClass
        //     int numSteps=10;
      for (int step=0;step<numSteps;step++){ 
        if (myComm.MyProc()==0)
-	 cerr<<"Step number: "<<step<<endl; 
-     double acceptanceRatio = 0.;
-     #pragma omp parallel for 
+	    cerr<<"Step number: "<<step<<endl; 
+       double acceptanceRatio = 0.;
+       #pragma omp parallel for 
        for (int i=0;i<NumWalkers;i++) { 
 	       acceptanceRatio+=VMC_vec[i]->Optimize()/NumWalkers; 
        } 
@@ -246,19 +246,20 @@ class VMCDriverClass
        acceptanceRatio = myComm.Sum(acceptanceRatio)/myComm.NumProcs();
        newEnergy = VMC_combine.VarDeriv.ComputeEnergy();
        newVariance = VMC_combine.VarDeriv.ComputeVariance();
-       if (((theEnergy-newEnergy).real()>-pow((theVariance+newVariance).real()/VMC_combine.VarDeriv.NumTimes,.5)-.0001) and (not takeStep)){
+       if ((((theEnergy-newEnergy).real()>-pow((theVariance+newVariance).real()/VMC_combine.VarDeriv.NumTimes,.5)-.0001) or cutoff>.09) and (not takeStep)){
            if (myComm.MyProc()==0){
-            cout <<step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<< " Take Step No Problem"<<endl;
+            cout <<markovSteps<<" "<<step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<< " Take Step Normal"<<endl;
             VMC_combine.TakeStep(myComm,0); 
             cutoff=0;
            }
-           takeStep=false;
        }
        else if (takeStep){
            if (myComm.MyProc()==0){
             VMC_combine.TakeStep(myComm,cutoff);
-            cout <<step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<< " Step Taken"<<endl;
+            cout <<markovSteps<<" "<<step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<< " Take Step Cutoff "<<cutoff<<endl;
            }
+           //theEnergy=newEnergy;
+           //theVariance=newVariance;
            takeStep=false;
        }
        else{
@@ -268,19 +269,21 @@ class VMCDriverClass
            else
                cutoff *=10;
            if (myComm.MyProc()==0){
-            cout << step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<<" Increase Cutoff"<<endl;
+            cout <<markovSteps<<" "<< step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<<" Increase Cutoff"<<endl;
             VMC_combine.RestoreParamsOld();
            }
            takeStep=true;
        }
        VMC_combine.BroadcastParams(myComm); 
 
-       if ((myComm.MyProc()==0 and cutoff==0)){
-	    string fileName="params.dat.";
-	    ostringstream ss;
-	    ss<<fileName<<(step+1);
-	    VMC_combine.SaveParams(ss.str()); 
-        energyFile << markovSteps<<" "<<step << " " <<theEnergy.real()<<" "<<newEnergy.real()<<" "<<newVariance.real()<<" "<<acceptanceRatio<<" "<<(newEnergy.real()>theEnergy.real())<<endl;
+       if (cutoff==0){
+        if (myComm.MyProc()==0){ 
+	        string fileName="params.dat.";
+	        ostringstream ss;
+	        ss<<fileName<<(step+1);
+	        VMC_combine.SaveParams(ss.str()); 
+            energyFile << markovSteps<<" "<<step << " " <<theEnergy.real()<<" "<<newEnergy.real()<<" "<<newVariance.real()<<" "<<acceptanceRatio<<" "<<(newEnergy.real()>theEnergy.real())<<endl;
+        }
 	    theEnergy=newEnergy;
         theVariance=newVariance;
 	    //energyFile<<step<<" "<<theEnergy.real()<<" "<<theEnergy.imag()<<" "<<theVariance.real()<<" "<<theVariance.imag()<<endl;

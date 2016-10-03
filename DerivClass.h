@@ -127,7 +127,7 @@ public:
     }
     for (int i=0;i<S.cols();i++)
       S(i,i)=S(i,i)+1e-8;
-    if (cutoff==0)
+    if (cutoff<2e-7)
         S_inverse=S.inverse();
     else
         S_inverse=pinv(S,cutoff);

@@ -379,7 +379,7 @@ void BroadcastParams(CommunicatorClass &myComm)
    
  }
  
- void TakeStep(CommunicatorClass &myComm)
+ void TakeStep(CommunicatorClass &myComm,double cutoff)
  {
     int currStart=0;
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
@@ -392,7 +392,7 @@ void BroadcastParams(CommunicatorClass &myComm)
     }
     currStart=0;
    if (opt==TIMEEVOLUTION)
-     VarDeriv.GetSInverse();
+     VarDeriv.GetSInverse(cutoff);
 
    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
      WaveFunctionClass &Psi =**wf_iter;
@@ -653,6 +653,18 @@ double StaggeredMagnetization(){
         sl_local+=s[i]*(System.x(i)==0 ? 1: -1);
     }
     return sl_local*sl_local;
+ }
+ 
+ void RestoreParamsOld(){
+    int currStart=0;
+    for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
+        WaveFunctionClass &Psi =**wf_iter;
+        for (int i=0;i<Psi.NumParams;i++){
+            Psi.SetParam_real(i,ParamsOld(currStart+i).real());
+            Psi.SetParam_imag(i,ParamsOld(currStart+i).imag());
+        }
+        currStart=currStart+Psi.NumParams;
+    }
  }
 
 

@@ -117,7 +117,7 @@ public:
 
 
   
-  void GetSInverse()
+  void GetSInverse(double cutoff)
   {
     for (int i=0;i<S.cols();i++){
       for (int j=0;j<S.rows();j++){
@@ -127,15 +127,10 @@ public:
     }
     for (int i=0;i<S.cols();i++)
       S(i,i)=S(i,i)+1e-8;
-	//    S_inverse=MatrixOps::Inverse(S);
-    S_inverse=S.inverse();
-    //    cerr<<"Diagonal "<<endl;
-    //    cerr<<S.diagonal()<<endl;
-    //    cerr<<endl;
-    //    cerr<<S_inverse<<endl;
-    //    cerr<<endl;
-    //    cerr<<endl;
-    //    exit(1);
+    if (cutoff==0)
+        S_inverse=S.inverse();
+    else
+        S_inverse=pinv(S,cutoff);
   }
   
   void Add(double &val_El, 
@@ -175,7 +170,7 @@ public:
     }
   complex<double> ComputeVariance()
     {
-      return (E_avgp.real()/NumTimes)*(E_avgp.real()/NumTimes)-E_avg2p.real()/NumTimes;
+      return -(E_avgp.real()/NumTimes)*(E_avgp.real()/NumTimes)+E_avg2p.real()/NumTimes;
     }
   complex<double> ComputeDerivp(int param)
     {
@@ -187,6 +182,19 @@ public:
       return 2.0 * (El_times_Psi_alpha_over_Psip[param].imag()/NumTimes - (Psi_alpha_over_Psip[param].imag()/NumTimes)*(E_avgp.real()/NumTimes));
 
     }
+  template <typename Matrix>
+  Matrix pinv(Matrix S,double cutoff)
+  {
+    Eigen::JacobiSVD<Matrix> svd;
+    svd.setThreshold(cutoff);
+    svd.compute(S, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    int nonzeroIndex = svd.rank();
+    Matrix D=Matrix::Zero(svd.singularValues().size(),svd.singularValues().size());
+    for (int i=0;i<nonzeroIndex;i++){
+        D(i,i) = 1/svd.singularValues()(i);
+    }
+    return svd.matrixV()*D*svd.matrixU().adjoint();
+  }
 
 
 };

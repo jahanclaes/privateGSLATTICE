@@ -22,8 +22,8 @@ for line in energyFile:
     pieces = line.split(" ")
  #   energyList.append(float(pieces[1]))
     energyList.append(float(pieces[3]))
-    if -float(pieces[3])<5.:
-        varianceList.append(-float(pieces[4]))
+    if float(pieces[3])<5.:
+        varianceList.append(float(pieces[4]))
     else:
         varianceList.append(5.)
     acceptanceRatioList.append(float(pieces[5]))

@@ -246,8 +246,17 @@ class VMCDriverClass
        acceptanceRatio = myComm.Sum(acceptanceRatio)/myComm.NumProcs();
        newEnergy = VMC_combine.VarDeriv.ComputeEnergy();
        newVariance = VMC_combine.VarDeriv.ComputeVariance();
-       if ((((theEnergy-newEnergy).real()>-pow((theVariance+newVariance).real()/VMC_combine.VarDeriv.NumTimes,.5)-.0001) or cutoff>.09) and (not takeStep)){
+       if (1==1){//((((theEnergy-newEnergy).real()>-pow((theVariance+newVariance).real()/VMC_combine.VarDeriv.NumTimes,.5)-.0001) or cutoff>.09) and (not takeStep)){
            if (myComm.MyProc()==0){
+            int currStart=0;
+            for (list<WaveFunctionClass*>::iterator wf_iter=VMC_combine.wf_list.begin();wf_iter!=VMC_combine.wf_list.end();wf_iter++){
+                WaveFunctionClass &Psi =**wf_iter;
+                for (int i=0;i<Psi.NumParams;i++){
+                    if (VMC_combine.ParamsOld(currStart+i).real()*Psi.GetParam_real(i)<0)
+                        cout << markovSteps<<" " <<step<<"PARAM CHANGED SIGN"<<endl;
+                }
+                currStart=currStart+Psi.NumParams;
+            }
             cout <<markovSteps<<" "<<step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<< " Take Step Normal"<<endl;
             VMC_combine.TakeStep(myComm,0); 
             cutoff=0;

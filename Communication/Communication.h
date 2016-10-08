@@ -105,6 +105,7 @@ public:
   void Broadcast (int root, int &val);
   void Broadcast (int root, bool &val);
   void Broadcast (int root, double &val);
+  void Broadcast (int root, float &val);
   void Broadcast (int root, blitz::Array<int,1> &buff);
   void Broadcast (int root, blitz::Array<double,1> &buff);
   void Broadcast (int root, blitz::Array<double,2> &buff);

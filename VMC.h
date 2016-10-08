@@ -142,7 +142,7 @@ class VMCDriverClass
     //If you want to optimize:    
     for (int step=0;step<10000;step++){
       VMC.Optimize();
-      VMC.TakeStep(myComm,0);
+      VMC.TakeStep(myComm);
       cerr<<"ACENERGY: "<<VMC.VarDeriv.ComputeEnergy()<<endl;;
       VMC.VarDeriv.Clear();
       VMC.EvaluateAll();
@@ -224,16 +224,21 @@ class VMCDriverClass
        myFiles[i]= new ofstream();
        myFiles[i]->open(filename.str().c_str());
      }
+     const float stepSize=VMC_combine.StepSize;
+     const float totalTime=stepSize*numSteps;
      ///INITIALIZATION UP TO HERE SHOULD BE SAME FOR FINITE TEMPERATURE!
      for (int markovSteps=0;markovSteps<max_markovSteps;markovSteps++){
       complex<double> theEnergy=1000000;
       complex<double> theVariance=0;
       complex<double> newEnergy;
       complex<double> newVariance;
-      double cutoff = 0;
       bool takeStep=false;
+      bool success=true;
        //     int numSteps=10;
-     for (int step=0;step<numSteps;step++){ 
+       
+     float timeTaken=0;
+     int step = 0;
+     while (timeTaken<totalTime-1e-8){ 
        if (myComm.MyProc()==0)
 	    cerr<<"Step number: "<<step<<endl; 
        double acceptanceRatio = 0.;
@@ -246,46 +251,49 @@ class VMCDriverClass
        acceptanceRatio = myComm.Sum(acceptanceRatio)/myComm.NumProcs();
        newEnergy = VMC_combine.VarDeriv.ComputeEnergy();
        newVariance = VMC_combine.VarDeriv.ComputeVariance();
-       if (1==1){//((((theEnergy-newEnergy).real()>-pow((theVariance+newVariance).real()/VMC_combine.VarDeriv.NumTimes,.5)-.0001) or cutoff>.09) and (not takeStep)){
-           if (myComm.MyProc()==0){
-            int currStart=0;
-            for (list<WaveFunctionClass*>::iterator wf_iter=VMC_combine.wf_list.begin();wf_iter!=VMC_combine.wf_list.end();wf_iter++){
-                WaveFunctionClass &Psi =**wf_iter;
-                for (int i=0;i<Psi.NumParams;i++){
-                    if (VMC_combine.ParamsOld(currStart+i).real()*Psi.GetParam_real(i)<0)
-                        cout << markovSteps<<" " <<step<<"PARAM CHANGED SIGN"<<endl;
+       if (myComm.MyProc()==0){
+           if (((theEnergy-newEnergy).real()>-pow((theVariance+newVariance).real()/VMC_combine.VarDeriv.NumTimes,.5)-.0001) and (not takeStep)){
+                int currStart=0;
+                for (list<WaveFunctionClass*>::iterator wf_iter=VMC_combine.wf_list.begin();wf_iter!=VMC_combine.wf_list.end();wf_iter++){
+                    WaveFunctionClass &Psi =**wf_iter;
+                    for (int i=0;i<Psi.NumParams;i++){
+                        if (VMC_combine.ParamsOld(currStart+i).real()*Psi.GetParam_real(i)<0)
+                            cout << markovSteps<<" " <<step<<"PARAM CHANGED SIGN"<<endl;
+                    }
+                    currStart=currStart+Psi.NumParams;
                 }
-                currStart=currStart+Psi.NumParams;
-            }
-            cout <<markovSteps<<" "<<step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<< " Take Step Normal"<<endl;
-            VMC_combine.TakeStep(myComm,0); 
-            cutoff=0;
+                if (stepSize<totalTime-timeTaken){
+                    VMC_combine.StepSize=stepSize; //Reset stepSize back to normal
+                }
+                else{
+                    VMC_combine.StepSize=totalTime-timeTaken; //Reset stepSize back to normal
+                }
+                VMC_combine.TakeStep(myComm); //Take a step with the normal stepsize
+                timeTaken+=VMC_combine.StepSize; //Decrement Time
+                cout <<markovSteps<<" "<<step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<< " Take Step Normal "<<VMC_combine.StepSize<<" "<<timeTaken<<endl;
+                success=true;
            }
-       }
-       else if (takeStep){
-           if (myComm.MyProc()==0){
-            VMC_combine.TakeStep(myComm,cutoff);
-            cout <<markovSteps<<" "<<step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<< " Take Step Cutoff "<<cutoff<<endl;
+           else if (takeStep){
+                VMC_combine.TakeStep(myComm); //Take a step forward with an adjusted stepsize
+                timeTaken+=VMC_combine.StepSize; //Decrement Time by the current stepsize
+                cout <<markovSteps<<" "<<step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<<" Take Step Modified "<<VMC_combine.StepSize<<" "<<timeTaken<<endl;
+                takeStep=false;
            }
-           //theEnergy=newEnergy;
-           //theVariance=newVariance;
-           takeStep=false;
-       }
-       else{
-           step -=2;
-           if (cutoff==0)
-               cutoff = 1e-8;
-           else
-               cutoff *=10;
-           if (myComm.MyProc()==0){
-            cout <<markovSteps<<" "<< step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<<" Increase Cutoff"<<endl;
-            VMC_combine.RestoreParamsOld();
+           else{
+               step -=2;
+               timeTaken-=VMC_combine.StepSize;
+               VMC_combine.StepSize*=.5; // Halve the stepsize
+               cout <<markovSteps<<" "<< step<<" "<<theEnergy.real()<<" "<<newEnergy.real()<<" Reset WF, Modify step "<<VMC_combine.StepSize<<" "<<timeTaken<<endl;
+               VMC_combine.RestoreParamsOld(); //Take one step back
+               takeStep=true;
+               success=false;
            }
-           takeStep=true;
        }
        VMC_combine.BroadcastParams(myComm); 
+       myComm.Broadcast(0,step);
+       myComm.Broadcast(0,timeTaken);
 
-       if (cutoff==0){
+       if (success){
         if (myComm.MyProc()==0){ 
 	        string fileName="params.dat.";
 	        ostringstream ss;
@@ -304,6 +312,7 @@ class VMCDriverClass
        for (int i=0;i<NumWalkers;i++)  
 	 VMC_vec[i]->EvaluateAll(); 
        //I don't think VMC_Combine needs to evaluate all but I'm a bit worried?
+      step++;
      }
      //Here is where you want to compute the observables
 
@@ -799,7 +808,7 @@ class VMCDriverClass
        TakeStepTimer.Start();
        cerr<<"Outside "<<endl;
        if (myComm.MyProc()==0){ 
-	 VMC_combine.TakeStep(myComm,0); 
+	 VMC_combine.TakeStep(myComm); 
        } 
        TakeStepTimer.Stop();
        BroadcastStepTimer.Start();

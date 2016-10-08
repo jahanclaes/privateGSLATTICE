@@ -379,8 +379,9 @@ void BroadcastParams(CommunicatorClass &myComm)
    
  }
  
- void TakeStep(CommunicatorClass &myComm,double cutoff)
+ void TakeStep(CommunicatorClass &myComm)
  {
+    float cutoff=0;
     int currStart=0;
     for (list<WaveFunctionClass*>::iterator wf_iter=wf_list.begin();wf_iter!=wf_list.end();wf_iter++){
         WaveFunctionClass &Psi =**wf_iter;

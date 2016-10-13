@@ -158,7 +158,7 @@ public:
       double myDeriv=0;
       for (int i=0;i<S.cols();i++){
         myDeriv=myDeriv+(S_inverse(i,param)*
-                         2.0 *(El_times_Psi_alpha_over_Psip[i].real()/NumTimes -
+                         (El_times_Psi_alpha_over_Psip[i].real()/NumTimes -
 			       (Psi_alpha_over_Psip[i].real()/NumTimes)*
                                (E_avgp.real()/NumTimes)));
       }

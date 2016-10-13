@@ -206,7 +206,6 @@ public:
     cerr<<"Done with init"<<endl;
   }
 
-
   double Sweep()
   {
     int numAccepted=0;
@@ -605,20 +604,23 @@ void BroadcastParams(CommunicatorClass &myComm)
     double observable=0.;
     for (int sweeps=0;sweeps<VMC_SampleSweeps;sweeps++){
       numAccept+=Sweep();
-      if ((outfile!=NULL) && computeObservables){
+      if ((outfile!=NULL) && computeObservables){// && count(System.x==1)==System.x.size()/2){
         observable+=StaggeredMagnetization();
+        cout << sweeps<<" | ";
+        for (int i=0;i<System.x.size();i++){
+            cout << System.x(i)<<" ";
+        }
+        cout << "| "<<StaggeredMagnetization()<<endl;
       }
       numAttempt+=1;
       NumCounts++;
       int i=0;
       for (list<HamiltonianClass*>::iterator iter=Ham.begin();iter!=Ham.end();iter++){
-	double te=(*iter)->Energy(System,wf_list);
-	energy_terms[i]+=te;
-	i++;
-	energy+=te;
-
+	    double te=(*iter)->Energy(System,wf_list);
+	    energy_terms[i]+=te;
+	    i++;
+	    energy+=te;
       }
-
     }
     int NumParams=(*(wf_list.begin()))->NumParams;
 
@@ -628,7 +630,7 @@ void BroadcastParams(CommunicatorClass &myComm)
 	    (*outfile)<< (energy/(double)NumCounts) <<" "<<endl;
       }
       if (outfile!=NULL && computeObservables){
-	    (*outfile)<< (observable/(double)NumCounts) <<" "<<endl;
+	    (*outfile)<< (observable/(double)NumCounts) <<endl;
         (*outfile).flush();
       }
       (*(Ham.begin()))->term1=0; (*(Ham.begin()))->term2=0;

@@ -602,15 +602,12 @@ void BroadcastParams(CommunicatorClass &myComm)
     double energy=0.0;
     int NumCounts=0;
     double observable=0.;
+    double norm=0;
     for (int sweeps=0;sweeps<VMC_SampleSweeps;sweeps++){
       numAccept+=Sweep();
-      if ((outfile!=NULL) && computeObservables){// && count(System.x==1)==System.x.size()/2){
+      if ((outfile!=NULL) && computeObservables && count(System.x==1)==System.x.size()/2){
         observable+=StaggeredMagnetization();
-        cout << sweeps<<" | ";
-        for (int i=0;i<System.x.size();i++){
-            cout << System.x(i)<<" ";
-        }
-        cout << "| "<<StaggeredMagnetization()<<endl;
+        norm+=1;
       }
       numAttempt+=1;
       NumCounts++;
@@ -637,9 +634,8 @@ void BroadcastParams(CommunicatorClass &myComm)
 
       for (int i=0;i<energy_terms.size();i++)
       energy=0.0;
-      NumCounts=0;
     }
-    return oldEnergy;
+    return norm/(double)NumCounts;
   }
   
 double StaggeredMagnetization(){

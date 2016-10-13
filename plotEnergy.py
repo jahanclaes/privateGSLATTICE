@@ -29,8 +29,12 @@ for line in energyFile:
     acceptanceRatioList.append(float(pieces[5]))
 index= len(energyList)
 print index
+observableFile=open("MyRunobservables.0_0")
+observableList=[]
+for line in observableFile:
+    observableList.append(float(line)/5.-3)
 
-numCycles = 15
+
 rng1 = [i for i in range(index)]
 rng2 = [i*TimeStepsTaken-1 for i in range(1,markovSteps+1) if i*TimeStepsTaken-1 <index]
 rng3 = [i*TimeStepsTaken for i in range(markovSteps) if i*TimeStepsTaken<index]
@@ -46,15 +50,10 @@ matplotlib.rcParams.update({'text.usetex':'True','font.family':'Computer Modern 
 
 
 plt.figure(num=None, figsize=(8, 6))
-#for i in range((len(rng3))/5+5,len(rng3)/5+9):
-#    if energyList[rng3[i+1]]>energyList[rng3[i]]:
-#        plt.annotate('', xytext=(StepSize*rng3[i],energyList[rng3[i]]),xy=(StepSize*rng3[i+1],energyList[rng3[i+1]]),arrowprops=dict(color='g',ls='dotted',lw=lineweight,arrowstyle='-|>',connectionstyle='angle3,angleA=80,angleB=-10',shrinkA=10,shrinkB=5))
-#    else:
-#        plt.annotate('', xytext=(StepSize*rng3[i],energyList[rng3[i]]),xy=(StepSize*rng3[i+1],energyList[rng3[i+1]]),arrowprops=dict(color='g',ls='dotted',lw=lineweight,arrowstyle='-|>',connectionstyle='angle3,angleA=-10,angleB=100',shrinkA=10,shrinkB=5))
 plt.subplot(2,1,1)
 plt.plot([StepSize*i for i in rng1], [energyList[i] for i in rng1],lw=lineweight,label="Energy")
 plt.plot([StepSize*i for i in rng3], [energyList[i] for i in rng3], 'go',lw=lineweight,ms=markersize,label="Start of Markov step")
-plt.plot([StepSize*i for i in rng2], [energyList[i] for i in rng2], 'rs',lw=lineweight,ms=markersize,label="End of Markov step")
+plt.plot([StepSize*i for i in rng2], observableList, 'rs',lw=lineweight,ms=markersize,label="SM")
 plt.plot([StepSize*i for i in rng2], [average2 for i in rng2],'r--',lw=2,label="Average Energy" )
 plt.subplot(2,1,2)
 plt.plot([StepSize*i for i in rng1], [varianceList[i] for i in rng1],lw=lineweight,label="Variance")

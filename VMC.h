@@ -212,7 +212,9 @@ class VMCDriverClass
      
      ofstream energyFile;
      energyFile.open("Energy.dat");
-
+     ofstream normFile;
+     normFile.open("Norm.dat");
+     double totalNorm=0;
 
      int max_markovSteps= input.toInteger(input.GetVariable("markovSteps"));
      int numSteps=input.toInteger(input.GetVariable("TimeStepsTaken"));
@@ -267,15 +269,19 @@ class VMCDriverClass
 	 VMC_vec[i]->EvaluateAll(); 
        //I don't think VMC_Combine needs to evaluate all but I'm a bit worried?
      }
-     //Here is where you want to compute the observables
 
+     //Here is where you want to compute the observables
      ///This will be slow when you have many walkers per node!
      //BUG: Slow 
+     double norm=0;
      for (int i=0;i<NumWalkers;i++)  {
        VMC_vec[i]->computeObservables=true;
-       VMC_vec[i]->VMC(true,myFiles[i]);
+       norm+=VMC_vec[i]->VMC(true,myFiles[i])/(double)NumWalkers;
+       cout <<"NORM: "<< norm<<endl;
        VMC_vec[i]->computeObservables=false;
      }
+     totalNorm+=myComm.Sum(norm)/myComm.NumProcs();
+     normFile<<markovSteps<<" "<<totalNorm/(markovSteps+1)<<endl;
 	 
      VMC_vec[0]->VMC(true); 
      cerr<<"The particles are at ";
